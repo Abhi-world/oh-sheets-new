@@ -3,6 +3,7 @@ import ConnectionStatus from '@/components/ConnectionStatus';
 import DateTriggerForm from '@/components/DateTriggerForm';
 import PeriodicExportForm from '@/components/PeriodicExportForm';
 import StatusTriggerForm from '@/components/StatusTriggerForm';
+import ItemCreationTriggerForm from '@/components/ItemCreationTriggerForm';
 import { toast } from 'sonner';
 
 const Index = () => {
@@ -65,6 +66,10 @@ const Index = () => {
               <div>
                 <h2 className="text-xl font-semibold mb-4">Status Change Template</h2>
                 <StatusTriggerForm />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Item Creation Template</h2>
+                <ItemCreationTriggerForm />
               </div>
             </div>
           )}
