@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ConnectionStatus from '@/components/ConnectionStatus';
 import DateTriggerForm from '@/components/DateTriggerForm';
+import PeriodicExportForm from '@/components/PeriodicExportForm';
 import { toast } from 'sonner';
 
 const Index = () => {
@@ -51,8 +52,15 @@ const Index = () => {
           )}
 
           {mondayConnected && sheetsConnected && (
-            <div className="flex justify-center">
-              <DateTriggerForm />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Date Trigger Template</h2>
+                <DateTriggerForm />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Periodic Export Template</h2>
+                <PeriodicExportForm />
+              </div>
             </div>
           )}
         </main>
