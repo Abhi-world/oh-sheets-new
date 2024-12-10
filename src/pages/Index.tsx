@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ConnectionStatus from '@/components/ConnectionStatus';
 import DateTriggerForm from '@/components/DateTriggerForm';
 import PeriodicExportForm from '@/components/PeriodicExportForm';
+import StatusTriggerForm from '@/components/StatusTriggerForm';
 import { toast } from 'sonner';
 
 const Index = () => {
@@ -60,6 +61,10 @@ const Index = () => {
               <div>
                 <h2 className="text-xl font-semibold mb-4">Periodic Export Template</h2>
                 <PeriodicExportForm />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Status Change Template</h2>
+                <StatusTriggerForm />
               </div>
             </div>
           )}
