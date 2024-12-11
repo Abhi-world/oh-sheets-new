@@ -7,6 +7,8 @@ import ItemCreationTriggerForm from '@/components/ItemCreationTriggerForm';
 import ColumnChangeTriggerForm from '@/components/ColumnChangeTriggerForm';
 import PersonAssignmentTriggerForm from '@/components/PersonAssignmentTriggerForm';
 import CustomValueTriggerForm from '@/components/CustomValueTriggerForm';
+import FormSubmissionTriggerForm from '@/components/FormSubmissionTriggerForm';
+import ButtonClickTriggerForm from '@/components/ButtonClickTriggerForm';
 import { toast } from 'sonner';
 
 const Index = () => {
@@ -85,6 +87,14 @@ const Index = () => {
               <div>
                 <h2 className="text-xl font-semibold mb-4">Custom Value Template</h2>
                 <CustomValueTriggerForm />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Form Submission Template</h2>
+                <FormSubmissionTriggerForm />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Button Click Template</h2>
+                <ButtonClickTriggerForm />
               </div>
             </div>
           )}
