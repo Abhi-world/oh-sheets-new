@@ -6,6 +6,7 @@ import StatusTriggerForm from '@/components/StatusTriggerForm';
 import ItemCreationTriggerForm from '@/components/ItemCreationTriggerForm';
 import ColumnChangeTriggerForm from '@/components/ColumnChangeTriggerForm';
 import PersonAssignmentTriggerForm from '@/components/PersonAssignmentTriggerForm';
+import CustomValueTriggerForm from '@/components/CustomValueTriggerForm';
 import { toast } from 'sonner';
 
 const Index = () => {
@@ -80,6 +81,10 @@ const Index = () => {
               <div>
                 <h2 className="text-xl font-semibold mb-4">Person Assignment Template</h2>
                 <PersonAssignmentTriggerForm />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Custom Value Template</h2>
+                <CustomValueTriggerForm />
               </div>
             </div>
           )}
