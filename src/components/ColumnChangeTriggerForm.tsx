@@ -1,3 +1,4 @@
+import React from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -37,9 +38,13 @@ export default function ColumnChangeTriggerForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    // Since our form schema ensures all fields are required, we can safely create the trigger
     const newTrigger: Trigger = {
       id: crypto.randomUUID(),
-      ...values,
+      columnName: values.columnName,
+      searchValues: values.searchValues,
+      newValues: values.newValues,
+      isActive: values.isActive,
     };
 
     setTriggers((prev) => [...prev, newTrigger]);
