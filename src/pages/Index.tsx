@@ -4,6 +4,7 @@ import DateTriggerForm from '@/components/DateTriggerForm';
 import PeriodicExportForm from '@/components/PeriodicExportForm';
 import StatusTriggerForm from '@/components/StatusTriggerForm';
 import ItemCreationTriggerForm from '@/components/ItemCreationTriggerForm';
+import ColumnChangeTriggerForm from '@/components/ColumnChangeTriggerForm';
 import { toast } from 'sonner';
 
 const Index = () => {
@@ -70,6 +71,10 @@ const Index = () => {
               <div>
                 <h2 className="text-xl font-semibold mb-4">Item Creation Template</h2>
                 <ItemCreationTriggerForm />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Column Change Template</h2>
+                <ColumnChangeTriggerForm />
               </div>
             </div>
           )}
