@@ -9,7 +9,119 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          google_sheets_credentials: Json | null
+          id: string
+          monday_api_key: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          google_sheets_credentials?: Json | null
+          id: string
+          monday_api_key?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          google_sheets_credentials?: Json | null
+          id?: string
+          monday_api_key?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sync_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          status: string
+          trigger_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          status: string
+          trigger_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          status?: string
+          trigger_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_logs_trigger_id_fkey"
+            columns: ["trigger_id"]
+            isOneToOne: false
+            referencedRelation: "triggers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sync_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      triggers: {
+        Row: {
+          button_name: string | null
+          condition: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          trigger_date: string | null
+          trigger_type: string
+          updated_at: string
+          user_id: string
+          values: string[] | null
+        }
+        Insert: {
+          button_name?: string | null
+          condition?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          trigger_date?: string | null
+          trigger_type: string
+          updated_at?: string
+          user_id: string
+          values?: string[] | null
+        }
+        Update: {
+          button_name?: string | null
+          condition?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          trigger_date?: string | null
+          trigger_type?: string
+          updated_at?: string
+          user_id?: string
+          values?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "triggers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

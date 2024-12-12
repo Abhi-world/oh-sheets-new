@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from "@/integrations/supabase/client";
 import ConnectionStatus from '@/components/ConnectionStatus';
 import DateTriggerForm from '@/components/DateTriggerForm';
 import PeriodicExportForm from '@/components/PeriodicExportForm';
@@ -12,6 +14,7 @@ import ButtonClickTriggerForm from '@/components/ButtonClickTriggerForm';
 import { toast } from 'sonner';
 
 const Index = () => {
+  const navigate = useNavigate();
   const [mondayConnected] = useState(false);
   const [sheetsConnected] = useState(false);
 
@@ -20,13 +23,27 @@ const Index = () => {
     toast.info(`Connecting to ${service}...`);
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success('Successfully logged out');
+    navigate('/login');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Monday.com + Google Sheets Integration
-          </h1>
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-3xl font-bold text-gray-900">
+              Monday.com + Google Sheets Integration
+            </h1>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Logout
+            </button>
+          </div>
           <div className="flex flex-wrap gap-4">
             <ConnectionStatus service="monday" isConnected={mondayConnected} />
             <ConnectionStatus service="sheets" isConnected={sheetsConnected} />
