@@ -17,26 +17,27 @@ import { toast } from 'sonner';
 const Index = () => {
   const navigate = useNavigate();
   const [mondayConnected, setMondayConnected] = useState(false);
-  const [sheetsConnected] = useState(false);
+  const [sheetsConnected, setSheetsConnected] = useState(false);
 
   useEffect(() => {
-    checkMondayConnection();
+    checkConnections();
   }, []);
 
-  const checkMondayConnection = async () => {
+  const checkConnections = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('monday_api_key')
+        .select('monday_api_key, google_sheets_credentials')
         .eq('id', user.id)
         .single();
 
       setMondayConnected(!!profile?.monday_api_key);
+      setSheetsConnected(!!profile?.google_sheets_credentials);
     } catch (error) {
-      console.error('Error checking Monday connection:', error);
+      console.error('Error checking connections:', error);
     }
   };
 
@@ -44,8 +45,7 @@ const Index = () => {
     if (service === 'monday') {
       navigate('/connect-monday');
     } else {
-      console.log(`Connecting to ${service}`);
-      toast.info(`Connecting to ${service}...`);
+      navigate('/connect-sheets');
     }
   };
 
