@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import ConnectionStatus from '@/components/ConnectionStatus';
 import DateTriggerForm from '@/components/DateTriggerForm';
 import PeriodicExportForm from '@/components/PeriodicExportForm';
@@ -15,12 +16,37 @@ import { toast } from 'sonner';
 
 const Index = () => {
   const navigate = useNavigate();
-  const [mondayConnected] = useState(false);
+  const [mondayConnected, setMondayConnected] = useState(false);
   const [sheetsConnected] = useState(false);
 
+  useEffect(() => {
+    checkMondayConnection();
+  }, []);
+
+  const checkMondayConnection = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('monday_api_key')
+        .eq('id', user.id)
+        .single();
+
+      setMondayConnected(!!profile?.monday_api_key);
+    } catch (error) {
+      console.error('Error checking Monday connection:', error);
+    }
+  };
+
   const handleConnect = (service: 'monday' | 'sheets') => {
-    console.log(`Connecting to ${service}`);
-    toast.info(`Connecting to ${service}...`);
+    if (service === 'monday') {
+      navigate('/connect-monday');
+    } else {
+      console.log(`Connecting to ${service}`);
+      toast.info(`Connecting to ${service}...`);
+    }
   };
 
   const handleLogout = async () => {
@@ -56,20 +82,20 @@ const Index = () => {
               <h2 className="text-xl font-semibold mb-4">Connect Your Services</h2>
               <div className="flex gap-4">
                 {!mondayConnected && (
-                  <button
+                  <Button
                     onClick={() => handleConnect('monday')}
-                    className="px-4 py-2 bg-monday-blue text-white rounded-md hover:bg-monday-blue/90 transition-colors"
+                    className="bg-[#ff3d57] hover:bg-[#ff3d57]/90"
                   >
                     Connect Monday.com
-                  </button>
+                  </Button>
                 )}
                 {!sheetsConnected && (
-                  <button
+                  <Button
                     onClick={() => handleConnect('sheets')}
-                    className="px-4 py-2 bg-google-green text-white rounded-md hover:bg-google-green/90 transition-colors"
+                    className="bg-[#34a853] hover:bg-[#34a853]/90"
                   >
                     Connect Google Sheets
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
