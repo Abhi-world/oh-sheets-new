@@ -3,7 +3,29 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import ConnectionStatus from '@/components/ConnectionStatus';
 import ConnectionCards from '@/components/ConnectionCards';
+import DateTriggerForm from '@/components/DateTriggerForm';
+import PeriodicExportForm from '@/components/PeriodicExportForm';
+import StatusTriggerForm from '@/components/StatusTriggerForm';
+import ItemCreationTriggerForm from '@/components/ItemCreationTriggerForm';
+import ColumnChangeTriggerForm from '@/components/ColumnChangeTriggerForm';
+import PersonAssignmentTriggerForm from '@/components/PersonAssignmentTriggerForm';
+import CustomValueTriggerForm from '@/components/CustomValueTriggerForm';
+import FormSubmissionTriggerForm from '@/components/FormSubmissionTriggerForm';
+import ButtonClickTriggerForm from '@/components/ButtonClickTriggerForm';
 import { toast } from 'sonner';
+
+// Define the type for Google Sheets credentials
+interface GoogleSheetsCredentials {
+  client_id: string;
+  client_secret: string;
+  refresh_token: string;
+}
+
+// Define the type for the profile data
+interface Profile {
+  monday_api_key: string | null;
+  google_sheets_credentials: GoogleSheetsCredentials | null;
+}
 
 const Index = () => {
   const navigate = useNavigate();
@@ -39,12 +61,13 @@ const Index = () => {
 
       console.log("Profile data:", profile);
       
-      // More strict checking of connections
-      setMondayConnected(!!profile?.monday_api_key && profile.monday_api_key.length > 0);
-      setSheetsConnected(!!profile?.google_sheets_credentials && 
-        !!profile.google_sheets_credentials.client_id &&
-        !!profile.google_sheets_credentials.client_secret &&
-        !!profile.google_sheets_credentials.refresh_token);
+      const typedProfile = profile as Profile;
+      
+      setMondayConnected(!!typedProfile?.monday_api_key && typedProfile.monday_api_key.length > 0);
+      setSheetsConnected(!!typedProfile?.google_sheets_credentials && 
+        !!typedProfile.google_sheets_credentials.client_id &&
+        !!typedProfile.google_sheets_credentials.client_secret &&
+        !!typedProfile.google_sheets_credentials.refresh_token);
     } catch (error) {
       console.error('Error checking connections:', error);
       toast.error("Error checking connections");
