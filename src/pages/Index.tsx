@@ -55,12 +55,60 @@ const Index = () => {
     navigate('/login');
   };
 
+  const templates = [
+    {
+      title: "Date-Based Automation",
+      description: "Automatically add data to Google Sheets when a specific date is reached in Monday.com. Perfect for deadline tracking and milestone management.",
+      component: DateTriggerForm
+    },
+    {
+      title: "Scheduled Data Export",
+      description: "Set up regular data exports from Monday.com to Google Sheets on an hourly, daily, weekly, or monthly basis.",
+      component: PeriodicExportForm
+    },
+    {
+      title: "Status Change Sync",
+      description: "Monitor status changes in Monday.com and automatically update or create new rows in Google Sheets when specific statuses are set.",
+      component: StatusTriggerForm
+    },
+    {
+      title: "New Item Sync",
+      description: "Automatically add new rows to Google Sheets whenever new items are created in Monday.com boards.",
+      component: ItemCreationTriggerForm
+    },
+    {
+      title: "Column Value Monitor",
+      description: "Track changes in specific Monday.com columns and sync the data to Google Sheets when values match your criteria.",
+      component: ColumnChangeTriggerForm
+    },
+    {
+      title: "Team Member Assignment",
+      description: "Keep track of task assignments by syncing person column changes from Monday.com to Google Sheets.",
+      component: PersonAssignmentTriggerForm
+    },
+    {
+      title: "Custom Value Integration",
+      description: "Create custom triggers based on specific values in Monday.com columns to sync data to Google Sheets.",
+      component: CustomValueTriggerForm
+    },
+    {
+      title: "Form Response Sync",
+      description: "Automatically sync Monday.com form submissions to Google Sheets for better data organization.",
+      component: FormSubmissionTriggerForm
+    },
+    {
+      title: "Button Action Sync",
+      description: "Trigger data sync to Google Sheets when specific buttons are clicked in Monday.com.",
+      component: ButtonClickTriggerForm
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <header className="mb-8">
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-navy">
               Monday.com + Google Sheets Integration
             </h1>
             <button
@@ -102,43 +150,18 @@ const Index = () => {
           )}
 
           {mondayConnected && sheetsConnected && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Date Trigger Template</h2>
-                <DateTriggerForm />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Periodic Export Template</h2>
-                <PeriodicExportForm />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Status Change Template</h2>
-                <StatusTriggerForm />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Item Creation Template</h2>
-                <ItemCreationTriggerForm />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Column Change Template</h2>
-                <ColumnChangeTriggerForm />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Person Assignment Template</h2>
-                <PersonAssignmentTriggerForm />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Custom Value Template</h2>
-                <CustomValueTriggerForm />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Form Submission Template</h2>
-                <FormSubmissionTriggerForm />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Button Click Template</h2>
-                <ButtonClickTriggerForm />
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {templates.map((template, index) => (
+                <div key={index} className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <div className="bg-navy p-4">
+                    <h2 className="text-xl font-semibold text-white mb-2">{template.title}</h2>
+                    <p className="text-gray-300 text-sm">{template.description}</p>
+                  </div>
+                  <div className="p-4">
+                    <template.component />
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </main>

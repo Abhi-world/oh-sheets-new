@@ -19,6 +19,10 @@ export default {
     },
     extend: {
       colors: {
+        navy: {
+          DEFAULT: '#1A1F2C',
+          light: '#2A2F3C'
+        },
         monday: {
           blue: "#0073ea",
           lightBlue: "#e6f0ff",
