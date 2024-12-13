@@ -25,15 +25,26 @@ const Index = () => {
 
   const checkConnections = async () => {
     try {
+      console.log("Checking connections...");
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log("No user found, redirecting to login");
+        navigate('/login');
+        return;
+      }
 
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('monday_api_key, google_sheets_credentials')
         .eq('id', user.id)
         .single();
 
+      if (error) {
+        console.error("Error fetching profile:", error);
+        return;
+      }
+
+      console.log("Profile data:", profile);
       setMondayConnected(!!profile?.monday_api_key);
       setSheetsConnected(!!profile?.google_sheets_credentials);
     } catch (error) {
@@ -42,6 +53,7 @@ const Index = () => {
   };
 
   const handleConnect = (service: 'monday' | 'sheets') => {
+    console.log(`Connecting to ${service}...`);
     if (service === 'monday') {
       navigate('/connect-monday');
     } else {
