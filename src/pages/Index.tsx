@@ -18,6 +18,7 @@ const Index = () => {
   const navigate = useNavigate();
   const [mondayConnected, setMondayConnected] = useState(false);
   const [sheetsConnected, setSheetsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     checkConnections();
@@ -49,6 +50,8 @@ const Index = () => {
       setSheetsConnected(!!profile?.google_sheets_credentials);
     } catch (error) {
       console.error('Error checking connections:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -67,53 +70,13 @@ const Index = () => {
     navigate('/login');
   };
 
-  const templates = [
-    {
-      title: "Date-Based Automation",
-      description: "Automatically add data to Google Sheets when a specific date is reached in Monday.com. Perfect for deadline tracking and milestone management.",
-      component: DateTriggerForm
-    },
-    {
-      title: "Scheduled Data Export",
-      description: "Set up regular data exports from Monday.com to Google Sheets on an hourly, daily, weekly, or monthly basis.",
-      component: PeriodicExportForm
-    },
-    {
-      title: "Status Change Sync",
-      description: "Monitor status changes in Monday.com and automatically update or create new rows in Google Sheets when specific statuses are set.",
-      component: StatusTriggerForm
-    },
-    {
-      title: "New Item Sync",
-      description: "Automatically add new rows to Google Sheets whenever new items are created in Monday.com boards.",
-      component: ItemCreationTriggerForm
-    },
-    {
-      title: "Column Value Monitor",
-      description: "Track changes in specific Monday.com columns and sync the data to Google Sheets when values match your criteria.",
-      component: ColumnChangeTriggerForm
-    },
-    {
-      title: "Team Member Assignment",
-      description: "Keep track of task assignments by syncing person column changes from Monday.com to Google Sheets.",
-      component: PersonAssignmentTriggerForm
-    },
-    {
-      title: "Custom Value Integration",
-      description: "Create custom triggers based on specific values in Monday.com columns to sync data to Google Sheets.",
-      component: CustomValueTriggerForm
-    },
-    {
-      title: "Form Response Sync",
-      description: "Automatically sync Monday.com form submissions to Google Sheets for better data organization.",
-      component: FormSubmissionTriggerForm
-    },
-    {
-      title: "Button Action Sync",
-      description: "Trigger data sync to Google Sheets when specific buttons are clicked in Monday.com.",
-      component: ButtonClickTriggerForm
-    }
-  ];
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-lg">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -138,24 +101,32 @@ const Index = () => {
 
         <main className="space-y-8">
           {(!mondayConnected || !sheetsConnected) && (
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h2 className="text-xl font-semibold mb-4">Connect Your Services</h2>
-              <div className="flex gap-4">
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <h2 className="text-xl font-semibold mb-4">First, Connect Your Services</h2>
+              <div className="flex flex-col gap-4 sm:flex-row">
                 {!mondayConnected && (
-                  <Button
-                    onClick={() => handleConnect('monday')}
-                    className="bg-[#ff3d57] hover:bg-[#ff3d57]/90"
-                  >
-                    Connect Monday.com
-                  </Button>
+                  <div className="flex-1 p-4 border rounded-lg">
+                    <h3 className="text-lg font-medium mb-2">Connect Monday.com</h3>
+                    <p className="text-gray-600 mb-4">Connect your Monday.com account to start syncing data.</p>
+                    <Button
+                      onClick={() => handleConnect('monday')}
+                      className="w-full bg-[#ff3d57] hover:bg-[#ff3d57]/90"
+                    >
+                      Connect Monday.com
+                    </Button>
+                  </div>
                 )}
                 {!sheetsConnected && (
-                  <Button
-                    onClick={() => handleConnect('sheets')}
-                    className="bg-[#34a853] hover:bg-[#34a853]/90"
-                  >
-                    Connect Google Sheets
-                  </Button>
+                  <div className="flex-1 p-4 border rounded-lg">
+                    <h3 className="text-lg font-medium mb-2">Connect Google Sheets</h3>
+                    <p className="text-gray-600 mb-4">Connect your Google Sheets account to enable data syncing.</p>
+                    <Button
+                      onClick={() => handleConnect('sheets')}
+                      className="w-full bg-[#34a853] hover:bg-[#34a853]/90"
+                    >
+                      Connect Google Sheets
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
@@ -163,7 +134,53 @@ const Index = () => {
 
           {mondayConnected && sheetsConnected && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {templates.map((template, index) => (
+              {[
+                {
+                  title: "Date-Based Automation",
+                  description: "Automatically add data to Google Sheets when a specific date is reached in Monday.com. Perfect for deadline tracking and milestone management.",
+                  component: DateTriggerForm
+                },
+                {
+                  title: "Scheduled Data Export",
+                  description: "Set up regular data exports from Monday.com to Google Sheets on an hourly, daily, weekly, or monthly basis.",
+                  component: PeriodicExportForm
+                },
+                {
+                  title: "Status Change Sync",
+                  description: "Monitor status changes in Monday.com and automatically update or create new rows in Google Sheets when specific statuses are set.",
+                  component: StatusTriggerForm
+                },
+                {
+                  title: "New Item Sync",
+                  description: "Automatically add new rows to Google Sheets whenever new items are created in Monday.com boards.",
+                  component: ItemCreationTriggerForm
+                },
+                {
+                  title: "Column Value Monitor",
+                  description: "Track changes in specific Monday.com columns and sync the data to Google Sheets when values match your criteria.",
+                  component: ColumnChangeTriggerForm
+                },
+                {
+                  title: "Team Member Assignment",
+                  description: "Keep track of task assignments by syncing person column changes from Monday.com to Google Sheets.",
+                  component: PersonAssignmentTriggerForm
+                },
+                {
+                  title: "Custom Value Integration",
+                  description: "Create custom triggers based on specific values in Monday.com columns to sync data to Google Sheets.",
+                  component: CustomValueTriggerForm
+                },
+                {
+                  title: "Form Response Sync",
+                  description: "Automatically sync Monday.com form submissions to Google Sheets for better data organization.",
+                  component: FormSubmissionTriggerForm
+                },
+                {
+                  title: "Button Action Sync",
+                  description: "Trigger data sync to Google Sheets when specific buttons are clicked in Monday.com.",
+                  component: ButtonClickTriggerForm
+                }
+              ].map((template, index) => (
                 <div key={index} className="bg-white rounded-lg shadow-sm overflow-hidden">
                   <div className="bg-navy p-4">
                     <h2 className="text-xl font-semibold text-white mb-2">{template.title}</h2>
