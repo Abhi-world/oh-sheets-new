@@ -13,6 +13,7 @@ import CustomValueTriggerForm from '@/components/CustomValueTriggerForm';
 import FormSubmissionTriggerForm from '@/components/FormSubmissionTriggerForm';
 import ButtonClickTriggerForm from '@/components/ButtonClickTriggerForm';
 import { toast } from 'sonner';
+import { Json } from '@/integrations/supabase/types';
 
 // Define the type for Google Sheets credentials
 interface GoogleSheetsCredentials {
@@ -21,7 +22,13 @@ interface GoogleSheetsCredentials {
   refresh_token: string;
 }
 
-// Define the type for the profile data
+// Define the type for the profile data from Supabase
+interface SupabaseProfile {
+  monday_api_key: string | null;
+  google_sheets_credentials: Json | null;
+}
+
+// Define the type for our application profile
 interface Profile {
   monday_api_key: string | null;
   google_sheets_credentials: GoogleSheetsCredentials | null;
@@ -61,7 +68,11 @@ const Index = () => {
 
       console.log("Profile data:", profile);
       
-      const typedProfile = profile as Profile;
+      const supabaseProfile = profile as SupabaseProfile;
+      const typedProfile: Profile = {
+        monday_api_key: supabaseProfile.monday_api_key,
+        google_sheets_credentials: supabaseProfile.google_sheets_credentials as GoogleSheetsCredentials | null
+      };
       
       setMondayConnected(!!typedProfile?.monday_api_key && typedProfile.monday_api_key.length > 0);
       setSheetsConnected(!!typedProfile?.google_sheets_credentials && 
