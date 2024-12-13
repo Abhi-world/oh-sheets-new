@@ -1,17 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import ConnectionStatus from '@/components/ConnectionStatus';
-import DateTriggerForm from '@/components/DateTriggerForm';
-import PeriodicExportForm from '@/components/PeriodicExportForm';
-import StatusTriggerForm from '@/components/StatusTriggerForm';
-import ItemCreationTriggerForm from '@/components/ItemCreationTriggerForm';
-import ColumnChangeTriggerForm from '@/components/ColumnChangeTriggerForm';
-import PersonAssignmentTriggerForm from '@/components/PersonAssignmentTriggerForm';
-import CustomValueTriggerForm from '@/components/CustomValueTriggerForm';
-import FormSubmissionTriggerForm from '@/components/FormSubmissionTriggerForm';
-import ButtonClickTriggerForm from '@/components/ButtonClickTriggerForm';
+import ConnectionCards from '@/components/ConnectionCards';
 import { toast } from 'sonner';
 
 const Index = () => {
@@ -42,25 +33,23 @@ const Index = () => {
 
       if (error) {
         console.error("Error fetching profile:", error);
+        toast.error("Error checking connections");
         return;
       }
 
       console.log("Profile data:", profile);
-      setMondayConnected(!!profile?.monday_api_key);
-      setSheetsConnected(!!profile?.google_sheets_credentials);
+      
+      // More strict checking of connections
+      setMondayConnected(!!profile?.monday_api_key && profile.monday_api_key.length > 0);
+      setSheetsConnected(!!profile?.google_sheets_credentials && 
+        !!profile.google_sheets_credentials.client_id &&
+        !!profile.google_sheets_credentials.client_secret &&
+        !!profile.google_sheets_credentials.refresh_token);
     } catch (error) {
       console.error('Error checking connections:', error);
+      toast.error("Error checking connections");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleConnect = (service: 'monday' | 'sheets') => {
-    console.log(`Connecting to ${service}...`);
-    if (service === 'monday') {
-      navigate('/connect-monday');
-    } else {
-      navigate('/connect-sheets');
     }
   };
 
@@ -100,38 +89,12 @@ const Index = () => {
         </header>
 
         <main className="space-y-8">
-          {(!mondayConnected || !sheetsConnected) && (
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h2 className="text-xl font-semibold mb-4">First, Connect Your Services</h2>
-              <div className="flex flex-col gap-4 sm:flex-row">
-                {!mondayConnected && (
-                  <div className="flex-1 p-4 border rounded-lg">
-                    <h3 className="text-lg font-medium mb-2">Connect Monday.com</h3>
-                    <p className="text-gray-600 mb-4">Connect your Monday.com account to start syncing data.</p>
-                    <Button
-                      onClick={() => handleConnect('monday')}
-                      className="w-full bg-[#ff3d57] hover:bg-[#ff3d57]/90"
-                    >
-                      Connect Monday.com
-                    </Button>
-                  </div>
-                )}
-                {!sheetsConnected && (
-                  <div className="flex-1 p-4 border rounded-lg">
-                    <h3 className="text-lg font-medium mb-2">Connect Google Sheets</h3>
-                    <p className="text-gray-600 mb-4">Connect your Google Sheets account to enable data syncing.</p>
-                    <Button
-                      onClick={() => handleConnect('sheets')}
-                      className="w-full bg-[#34a853] hover:bg-[#34a853]/90"
-                    >
-                      Connect Google Sheets
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          <ConnectionCards 
+            mondayConnected={mondayConnected} 
+            sheetsConnected={sheetsConnected} 
+          />
 
+          {/* Only show automation cards if both services are connected */}
           {mondayConnected && sheetsConnected && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[
