@@ -69,9 +69,26 @@ const Index = () => {
       console.log("Profile data:", profile);
       
       const supabaseProfile = profile as SupabaseProfile;
+      
+      // Type guard to check if google_sheets_credentials is a valid object with the required properties
+      const isValidGoogleCredentials = (creds: any): creds is GoogleSheetsCredentials => {
+        return (
+          creds &&
+          typeof creds === 'object' &&
+          'client_id' in creds &&
+          'client_secret' in creds &&
+          'refresh_token' in creds &&
+          typeof creds.client_id === 'string' &&
+          typeof creds.client_secret === 'string' &&
+          typeof creds.refresh_token === 'string'
+        );
+      };
+
       const typedProfile: Profile = {
         monday_api_key: supabaseProfile.monday_api_key,
-        google_sheets_credentials: supabaseProfile.google_sheets_credentials as GoogleSheetsCredentials | null
+        google_sheets_credentials: isValidGoogleCredentials(supabaseProfile.google_sheets_credentials) 
+          ? supabaseProfile.google_sheets_credentials 
+          : null
       };
       
       setMondayConnected(!!typedProfile?.monday_api_key && typedProfile.monday_api_key.length > 0);
