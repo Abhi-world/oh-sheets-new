@@ -4,14 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const MondayBoards = () => {
-  const { boards, isLoadingBoards, boardsError } = useMonday();
+  const { data, isLoading, error } = useMonday();
+  const boards = data?.data?.boards || [];
 
-  if (isLoadingBoards) {
+  if (isLoading) {
     return <div>Loading boards...</div>;
   }
 
-  if (boardsError) {
-    return <div>Error loading boards</div>;
+  if (error) {
+    return <div>Error loading boards: {error.message}</div>;
   }
 
   return (
