@@ -1,51 +1,64 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { fetchMondayBoards, createMondayItem, updateMondayItem } from '@/utils/monday';
-import { toast } from 'sonner';
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
-export function useMonday() {
-  const { data: boards, isLoading: isLoadingBoards, error: boardsError } = useQuery({
-    queryKey: ['monday-boards'],
-    queryFn: fetchMondayBoards,
-    onError: (error) => {
-      console.error('Error fetching Monday.com boards:', error);
-      toast.error('Failed to fetch Monday.com boards');
+export const useMonday = () => {
+  const fetchBoards = async () => {
+    const { data: profile } = await supabase.auth.getUser();
+    if (!profile.user) throw new Error("No user found");
+
+    const { data: userData } = await supabase
+      .from("profiles")
+      .select("monday_api_key")
+      .eq("id", profile.user.id)
+      .single();
+
+    if (!userData?.monday_api_key) {
+      throw new Error("Monday.com API key not found");
     }
-  });
 
-  const createItem = useMutation({
-    mutationFn: ({ boardId, itemName, columnValues }: {
-      boardId: string;
-      itemName: string;
-      columnValues: Record<string, any>;
-    }) => createMondayItem(boardId, itemName, columnValues),
-    onSuccess: () => {
-      toast.success('Item created successfully');
-    },
-    onError: (error) => {
-      console.error('Error creating Monday.com item:', error);
-      toast.error('Failed to create item');
-    }
-  });
+    const response = await fetch("https://api.monday.com/v2", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: userData.monday_api_key,
+      },
+      body: JSON.stringify({
+        query: `
+          query {
+            boards {
+              id
+              name
+              items {
+                id
+                name
+                column_values {
+                  id
+                  title
+                  value
+                }
+              }
+            }
+          }
+        `,
+      }),
+    });
 
-  const updateItem = useMutation({
-    mutationFn: ({ itemId, columnValues }: {
-      itemId: string;
-      columnValues: Record<string, any>;
-    }) => updateMondayItem(itemId, columnValues),
-    onSuccess: () => {
-      toast.success('Item updated successfully');
-    },
-    onError: (error) => {
-      console.error('Error updating Monday.com item:', error);
-      toast.error('Failed to update item');
-    }
-  });
-
-  return {
-    boards,
-    isLoadingBoards,
-    boardsError,
-    createItem,
-    updateItem
+    const data = await response.json();
+    console.log("Monday.com boards data:", data);
+    return data;
   };
-}
+
+  return useQuery({
+    queryKey: ["monday-boards"],
+    queryFn: fetchBoards,
+    meta: {
+      onError: (error: Error) => {
+        console.error("Error fetching Monday.com boards:", error);
+        toast.error(error.message);
+      }
+    }
+  });
+};
+
+export default useMonday;
