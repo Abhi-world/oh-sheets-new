@@ -1,19 +1,36 @@
 import { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const ConnectMonday = () => {
   const handleOAuthConnect = () => {
-    // Redirect to Monday.com OAuth endpoint
-    const clientId = import.meta.env.VITE_MONDAY_CLIENT_ID;
-    const redirectUri = `${window.location.origin}/oauth/monday`;
-    const scope = 'boards:read boards:write';
-    
-    console.log('Initiating OAuth connection with client ID:', clientId);
-    console.log('Redirect URI:', redirectUri);
-    
-    const authUrl = `https://auth.monday.com/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
-    
-    window.location.href = authUrl;
+    try {
+      // Redirect to Monday.com OAuth endpoint
+      const clientId = import.meta.env.VITE_MONDAY_CLIENT_ID;
+      const redirectUri = `${window.location.origin}/oauth/monday`;
+      const scope = 'boards:read boards:write me:read';
+      
+      console.log('Initiating OAuth connection with client ID:', clientId);
+      console.log('Redirect URI:', redirectUri);
+      
+      if (!clientId) {
+        console.error('Monday.com client ID is not configured');
+        toast.error('Monday.com integration is not properly configured. Please contact support.');
+        return;
+      }
+
+      // Add state parameter for security
+      const state = Math.random().toString(36).substring(7);
+      sessionStorage.setItem('monday_oauth_state', state);
+      
+      const authUrl = `https://auth.monday.com/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&state=${state}`;
+      
+      console.log('Redirecting to Monday.com OAuth URL:', authUrl);
+      window.location.href = authUrl;
+    } catch (error) {
+      console.error('Error initiating OAuth connection:', error);
+      toast.error('Failed to connect to Monday.com. Please try again.');
+    }
   };
 
   useEffect(() => {
