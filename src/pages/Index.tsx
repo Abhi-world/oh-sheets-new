@@ -4,25 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import ConnectionStatus from '@/components/ConnectionStatus';
 import ConnectionCards from '@/components/ConnectionCards';
 import { toast } from 'sonner';
-import { Json } from '@/integrations/supabase/types';
 import MarketplaceHeader from '@/components/marketplace/MarketplaceHeader';
 import RecipeGrid from '@/components/marketplace/RecipeGrid';
-
-interface GoogleSheetsCredentials {
-  client_id: string;
-  client_secret: string;
-  refresh_token: string;
-}
-
-interface SupabaseProfile {
-  monday_api_key: string | null;
-  google_sheets_credentials: Json | null;
-}
-
-interface Profile {
-  monday_api_key: string | null;
-  google_sheets_credentials: GoogleSheetsCredentials | null;
-}
 
 const Index = () => {
   const navigate = useNavigate();
@@ -37,17 +20,12 @@ const Index = () => {
   const checkConnections = async () => {
     try {
       console.log("Checking connections...");
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log("No user found, redirecting to login");
-        navigate('/login');
-        return;
-      }
-
+      
+      // Check for Monday.com connection
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('monday_api_key, google_sheets_credentials')
-        .eq('id', user.id)
+        .select('monday_access_token, google_sheets_credentials')
+        .eq('monday_user_id', window.localStorage.getItem('monday_user_id'))
         .single();
 
       if (error) {
@@ -58,42 +36,14 @@ const Index = () => {
 
       console.log("Profile data:", profile);
       
-      const supabaseProfile = profile as SupabaseProfile;
-      
-      const isValidGoogleCredentials = (creds: any): creds is GoogleSheetsCredentials => {
-        return (
-          creds &&
-          typeof creds === 'object' &&
-          'client_id' in creds &&
-          'client_secret' in creds &&
-          'refresh_token' in creds &&
-          typeof creds.client_id === 'string' &&
-          typeof creds.client_secret === 'string' &&
-          typeof creds.refresh_token === 'string'
-        );
-      };
-
-      const typedProfile: Profile = {
-        monday_api_key: supabaseProfile.monday_api_key,
-        google_sheets_credentials: isValidGoogleCredentials(supabaseProfile.google_sheets_credentials) 
-          ? supabaseProfile.google_sheets_credentials 
-          : null
-      };
-      
-      setMondayConnected(!!typedProfile?.monday_api_key);
-      setSheetsConnected(!!typedProfile?.google_sheets_credentials);
+      setMondayConnected(!!profile?.monday_access_token);
+      setSheetsConnected(!!profile?.google_sheets_credentials);
     } catch (error) {
       console.error('Error checking connections:', error);
       toast.error("Error checking connections");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast.success('Successfully logged out');
-    navigate('/login');
   };
 
   if (isLoading) {
@@ -115,12 +65,6 @@ const Index = () => {
               <ConnectionStatus service="monday" isConnected={mondayConnected} />
               <ConnectionStatus service="sheets" isConnected={sheetsConnected} />
             </div>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-            >
-              Logout
-            </button>
           </div>
 
           <ConnectionCards 

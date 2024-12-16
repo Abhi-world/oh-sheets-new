@@ -14,34 +14,96 @@ const MondayOAuth = () => {
         const code = params.get('code');
         
         if (!code) {
-          toast.error('No authorization code received');
+          console.error('No authorization code received');
+          toast.error('Authorization failed. Please try again.');
           navigate('/');
           return;
         }
 
         console.log('Received Monday.com OAuth code:', code);
 
-        // Get the current user
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          toast.error('You must be logged in to connect Monday.com');
-          navigate('/login');
-          return;
+        // Exchange code for access token (this would typically be done through your backend)
+        const tokenResponse = await fetch('https://api.monday.com/v2/oauth/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code,
+            client_id: process.env.MONDAY_CLIENT_ID,
+            client_secret: process.env.MONDAY_CLIENT_SECRET,
+          }),
+        });
+
+        if (!tokenResponse.ok) {
+          throw new Error('Failed to exchange code for token');
         }
 
-        // Store the code temporarily - in production you would exchange this for an access token
-        const { error } = await supabase
+        const { access_token } = await tokenResponse.json();
+
+        // Get user information from Monday.com
+        const userResponse = await fetch('https://api.monday.com/v2', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': access_token,
+          },
+          body: JSON.stringify({
+            query: `
+              query {
+                me {
+                  id
+                  email
+                }
+              }
+            `,
+          }),
+        });
+
+        if (!userResponse.ok) {
+          throw new Error('Failed to fetch user information');
+        }
+
+        const { data: { me: { id: mondayUserId, email: mondayUserEmail } } } = await userResponse.json();
+
+        // Create or update profile in Supabase
+        const { data: existingProfile } = await supabase
           .from('profiles')
-          .update({ monday_api_key: code })
-          .eq('id', user.id);
+          .select()
+          .eq('monday_user_id', mondayUserId)
+          .single();
 
-        if (error) throw error;
+        if (existingProfile) {
+          // Update existing profile
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({
+              monday_access_token: access_token,
+              monday_user_email: mondayUserEmail,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('monday_user_id', mondayUserId);
 
+          if (updateError) throw updateError;
+        } else {
+          // Create new profile
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              monday_user_id: mondayUserId,
+              monday_user_email: mondayUserEmail,
+              monday_access_token: access_token,
+            });
+
+          if (insertError) throw insertError;
+        }
+
+        console.log('Successfully stored Monday.com user information');
         toast.success('Successfully connected to Monday.com!');
         navigate('/');
       } catch (error) {
         console.error('Error during Monday.com OAuth:', error);
-        toast.error('Failed to connect to Monday.com');
+        toast.error('Failed to connect to Monday.com. Please try again.');
         navigate('/');
       }
     };

@@ -14,21 +14,30 @@ export type Database = {
           created_at: string
           google_sheets_credentials: Json | null
           id: string
+          monday_access_token: string | null
           monday_api_key: string | null
+          monday_user_email: string | null
+          monday_user_id: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           google_sheets_credentials?: Json | null
           id: string
+          monday_access_token?: string | null
           monday_api_key?: string | null
+          monday_user_email?: string | null
+          monday_user_id?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           google_sheets_credentials?: Json | null
           id?: string
+          monday_access_token?: string | null
           monday_api_key?: string | null
+          monday_user_email?: string | null
+          monday_user_id?: string | null
           updated_at?: string
         }
         Relationships: []
