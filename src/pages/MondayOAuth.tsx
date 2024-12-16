@@ -66,37 +66,41 @@ const MondayOAuth = () => {
 
         const { data: { me: { id: mondayUserId, email: mondayUserEmail } } } = await userResponse.json();
 
-        // Create or update profile in Supabase
-        const { data: existingProfile } = await supabase
-          .from('profiles')
-          .select()
-          .eq('monday_user_id', mondayUserId)
-          .single();
+        // First, create a Supabase user session
+        const { data: { user }, error: signUpError } = await supabase.auth.signUp({
+          email: mondayUserEmail,
+          password: `monday_${mondayUserId}`, // Generate a secure password
+        });
 
-        if (existingProfile) {
-          // Update existing profile
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({
-              monday_access_token: access_token,
-              monday_user_email: mondayUserEmail,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('monday_user_id', mondayUserId);
+        if (signUpError || !user) {
+          // If signup fails, try to sign in (user might already exist)
+          const { data: { user: existingUser }, error: signInError } = await supabase.auth.signInWithPassword({
+            email: mondayUserEmail,
+            password: `monday_${mondayUserId}`,
+          });
 
-          if (updateError) throw updateError;
-        } else {
-          // Create new profile
-          const { error: insertError } = await supabase
-            .from('profiles')
-            .insert({
-              monday_user_id: mondayUserId,
-              monday_user_email: mondayUserEmail,
-              monday_access_token: access_token,
-            });
-
-          if (insertError) throw insertError;
+          if (signInError || !existingUser) {
+            throw new Error('Authentication failed');
+          }
         }
+
+        const finalUser = user || (await supabase.auth.getUser()).data.user;
+        if (!finalUser) {
+          throw new Error('No authenticated user found');
+        }
+
+        // Update the profile with Monday.com information
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            monday_user_id: mondayUserId,
+            monday_user_email: mondayUserEmail,
+            monday_access_token: access_token,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', finalUser.id);
+
+        if (updateError) throw updateError;
 
         console.log('Successfully stored Monday.com user information');
         toast.success('Successfully connected to Monday.com!');
