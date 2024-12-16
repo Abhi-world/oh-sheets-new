@@ -20,10 +20,7 @@ const ConnectionCards = ({ mondayConnected, sheetsConnected }: ConnectionCardsPr
           <div className="flex-1 p-4 border rounded-lg">
             <h3 className="text-lg font-medium mb-2">Connect Monday.com</h3>
             <p className="text-gray-600 mb-4">
-              To get your API token:
-              1. Go to Monday.com
-              2. Click your profile → Admin → API
-              3. Generate a "Personal API Token"
+              Click below to securely connect your Monday.com account. We'll handle the authentication automatically.
             </p>
             <Button
               onClick={() => navigate('/connect-monday')}

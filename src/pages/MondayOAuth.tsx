@@ -66,26 +66,10 @@ const MondayOAuth = () => {
 
         const { data: { me: { id: mondayUserId, email: mondayUserEmail } } } = await userResponse.json();
 
-        // First, create a Supabase user session
-        const { data: { user }, error: signUpError } = await supabase.auth.signUp({
-          email: mondayUserEmail,
-          password: `monday_${mondayUserId}`, // Generate a secure password
-        });
-
-        if (signUpError || !user) {
-          // If signup fails, try to sign in (user might already exist)
-          const { data: { user: existingUser }, error: signInError } = await supabase.auth.signInWithPassword({
-            email: mondayUserEmail,
-            password: `monday_${mondayUserId}`,
-          });
-
-          if (signInError || !existingUser) {
-            throw new Error('Authentication failed');
-          }
-        }
-
-        const finalUser = user || (await supabase.auth.getUser()).data.user;
-        if (!finalUser) {
+        // Get or create Supabase user
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
           throw new Error('No authenticated user found');
         }
 
@@ -98,7 +82,7 @@ const MondayOAuth = () => {
             monday_access_token: access_token,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', finalUser.id);
+          .eq('id', user.id);
 
         if (updateError) throw updateError;
 
