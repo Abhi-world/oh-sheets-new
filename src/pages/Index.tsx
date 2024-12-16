@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import MarketplaceHeader from '@/components/marketplace/MarketplaceHeader';
 import RecipeGrid from '@/components/marketplace/RecipeGrid';
 import BoardTemplates from '@/components/BoardTemplates';
+import MondayBoards from '@/components/MondayBoards';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -22,10 +23,17 @@ const Index = () => {
     try {
       console.log("Checking connections...");
       
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log("No user found");
+        setIsLoading(false);
+        return;
+      }
+
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('monday_access_token, google_sheets_credentials')
-        .eq('monday_user_id', window.localStorage.getItem('monday_user_id'))
+        .select('monday_api_key, google_sheets_credentials')
+        .eq('id', user.id)
         .single();
 
       if (error) {
@@ -36,7 +44,7 @@ const Index = () => {
 
       console.log("Profile data:", profile);
       
-      setMondayConnected(!!profile?.monday_access_token);
+      setMondayConnected(!!profile?.monday_api_key);
       setSheetsConnected(!!profile?.google_sheets_credentials);
     } catch (error) {
       console.error('Error checking connections:', error);
@@ -49,7 +57,7 @@ const Index = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-lg">Loading...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-monday-blue"></div>
       </div>
     );
   }
@@ -75,7 +83,7 @@ const Index = () => {
 
         {mondayConnected && (
           <div className="space-y-8">
-            <BoardTemplates />
+            <MondayBoards />
             
             {sheetsConnected && (
               <>
