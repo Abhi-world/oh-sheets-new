@@ -6,6 +6,7 @@ import ConnectionCards from '@/components/ConnectionCards';
 import { toast } from 'sonner';
 import MarketplaceHeader from '@/components/marketplace/MarketplaceHeader';
 import RecipeGrid from '@/components/marketplace/RecipeGrid';
+import BoardTemplates from '@/components/BoardTemplates';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -21,7 +22,6 @@ const Index = () => {
     try {
       console.log("Checking connections...");
       
-      // Check for Monday.com connection
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('monday_access_token, google_sheets_credentials')
@@ -73,12 +73,18 @@ const Index = () => {
           />
         </div>
 
-        {mondayConnected && sheetsConnected && (
+        {mondayConnected && (
           <div className="space-y-8">
-            <h2 className="text-2xl font-semibold text-gray-800">
-              Available Integration Recipes
-            </h2>
-            <RecipeGrid />
+            <BoardTemplates />
+            
+            {sheetsConnected && (
+              <>
+                <h2 className="text-2xl font-semibold text-gray-800">
+                  Available Integration Recipes
+                </h2>
+                <RecipeGrid />
+              </>
+            )}
           </div>
         )}
       </div>
