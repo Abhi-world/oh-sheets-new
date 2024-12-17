@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight } from 'lucide-react';
@@ -28,15 +28,15 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
               {icon}
             </div>
             <div>
-              <CardTitle className="text-xl mb-2">{title}</CardTitle>
-              <Badge variant="secondary" className="mb-2">
+              <h3 className="text-xl font-semibold mb-2">{title}</h3>
+              <Badge variant="secondary" className="bg-gray-100">
                 {category}
               </Badge>
             </div>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex-grow">
+      <CardContent className="flex-grow flex flex-col justify-between">
         <p className="text-sm text-gray-600 mb-4">{description}</p>
         <Button 
           onClick={onClick}
