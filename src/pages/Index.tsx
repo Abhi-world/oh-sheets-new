@@ -1,33 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from "@/integrations/supabase/client";
-import ConnectionStatus from '@/components/ConnectionStatus';
-import ConnectionCards from '@/components/ConnectionCards';
-import { toast } from 'sonner';
+import React from 'react';
 import MarketplaceHeader from '@/components/marketplace/MarketplaceHeader';
 import RecipeGrid from '@/components/marketplace/RecipeGrid';
-import BoardTemplates from '@/components/BoardTemplates';
-import MondayBoards from '@/components/MondayBoards';
+import ConnectionStatus from '@/components/ConnectionStatus';
 
 const Index = () => {
-  const navigate = useNavigate();
-  // Temporarily set these to true for testing
-  const [mondayConnected, setMondayConnected] = useState(true);
-  const [sheetsConnected, setSheetsConnected] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Temporarily disable connection check
-  useEffect(() => {
-    console.log("Connection checks temporarily disabled for testing");
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-monday-blue"></div>
-      </div>
-    );
-  }
+  const mondayConnected = false;
+  const sheetsConnected = false;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -41,17 +19,11 @@ const Index = () => {
               <ConnectionStatus service="sheets" isConnected={sheetsConnected} />
             </div>
           </div>
-
-          <ConnectionCards 
-            mondayConnected={mondayConnected} 
-            sheetsConnected={sheetsConnected} 
-          />
         </div>
 
         <div className="space-y-8">
-          <MondayBoards />
           <h2 className="text-2xl font-semibold text-gray-800">
-            Available Integration Recipes
+            Available Integration Templates
           </h2>
           <RecipeGrid />
         </div>

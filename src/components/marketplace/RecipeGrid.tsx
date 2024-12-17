@@ -1,82 +1,101 @@
 import React from 'react';
 import RecipeCard from './RecipeCard';
-import DateTriggerForm from '@/components/DateTriggerForm';
-import PeriodicExportForm from '@/components/PeriodicExportForm';
-import StatusTriggerForm from '@/components/StatusTriggerForm';
-import ItemCreationTriggerForm from '@/components/ItemCreationTriggerForm';
-import ColumnChangeTriggerForm from '@/components/ColumnChangeTriggerForm';
-import PersonAssignmentTriggerForm from '@/components/PersonAssignmentTriggerForm';
-import CustomValueTriggerForm from '@/components/CustomValueTriggerForm';
-import FormSubmissionTriggerForm from '@/components/FormSubmissionTriggerForm';
-import ButtonClickTriggerForm from '@/components/ButtonClickTriggerForm';
+import { 
+  CalendarDays, 
+  ClipboardCheck, 
+  FileSpreadsheet,
+  UserPlus,
+  MousePointerClick,
+  LayoutGrid,
+  Clock,
+  Send,
+  FileInput
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const recipes = [
   {
-    title: "Date-Based Automation",
-    description: "Automatically add data to Google Sheets when a specific date is reached in Monday.com",
-    category: "Date Triggers",
-    component: DateTriggerForm
-  },
-  {
-    title: "Scheduled Data Export",
-    description: "Set up regular data exports from Monday.com to Google Sheets",
-    category: "Scheduled Tasks",
-    component: PeriodicExportForm
-  },
-  {
+    id: 'status-change',
     title: "Status Change Sync",
-    description: "Monitor status changes in Monday.com and sync with Google Sheets",
+    description: "When a status changes in Monday.com, automatically add a new row to your Google Sheet with specified values.",
     category: "Status Triggers",
-    component: StatusTriggerForm
+    icon: <ClipboardCheck className="w-5 h-5 text-[#00c875]" />
   },
   {
-    title: "New Item Sync",
-    description: "Automatically add new rows to Google Sheets for new Monday.com items",
-    category: "Item Triggers",
-    component: ItemCreationTriggerForm
+    id: 'date-trigger',
+    title: "Date-Based Sync",
+    description: "Add data to Google Sheets when a specific date is reached in Monday.com items.",
+    category: "Date Triggers",
+    icon: <CalendarDays className="w-5 h-5 text-[#00c875]" />
   },
   {
-    title: "Column Value Monitor",
-    description: "Track changes in specific Monday.com columns and sync to Sheets",
-    category: "Column Triggers",
-    component: ColumnChangeTriggerForm
+    id: 'group-move',
+    title: "Group Movement Sync",
+    description: "When items are moved to a specific group, automatically add their data to Google Sheets.",
+    category: "Group Triggers",
+    icon: <LayoutGrid className="w-5 h-5 text-[#00c875]" />
   },
   {
-    title: "Team Member Assignment",
-    description: "Sync person column changes from Monday.com to Sheets",
-    category: "Assignment Triggers",
-    component: PersonAssignmentTriggerForm
+    id: 'periodic-export',
+    title: "Scheduled Export",
+    description: "Automatically export Monday.com data to Google Sheets on a regular schedule.",
+    category: "Time Triggers",
+    icon: <Clock className="w-5 h-5 text-[#00c875]" />
   },
   {
-    title: "Custom Value Integration",
-    description: "Create custom triggers based on specific values in Monday.com",
-    category: "Custom Triggers",
-    component: CustomValueTriggerForm
-  },
-  {
+    id: 'form-submission',
     title: "Form Response Sync",
-    description: "Automatically sync Monday.com form submissions to Sheets",
+    description: "When a Monday.com form is submitted, automatically add the responses to Google Sheets.",
     category: "Form Triggers",
-    component: FormSubmissionTriggerForm
+    icon: <FileInput className="w-5 h-5 text-[#00c875]" />
   },
   {
-    title: "Button Action Sync",
-    description: "Trigger data sync when specific buttons are clicked",
+    id: 'person-assignment',
+    title: "Person Assignment Sync",
+    description: "When someone is assigned to an item, add relevant data to your Google Sheet.",
+    category: "Assignment Triggers",
+    icon: <UserPlus className="w-5 h-5 text-[#00c875]" />
+  },
+  {
+    id: 'button-click',
+    title: "Button Click Sync",
+    description: "Trigger a Google Sheets update when specific buttons are clicked in Monday.com.",
     category: "Button Triggers",
-    component: ButtonClickTriggerForm
+    icon: <MousePointerClick className="w-5 h-5 text-[#00c875]" />
+  },
+  {
+    id: 'column-change',
+    title: "Column Value Monitor",
+    description: "Monitor specific column changes and sync the updates to Google Sheets.",
+    category: "Column Triggers",
+    icon: <FileSpreadsheet className="w-5 h-5 text-[#00c875]" />
+  },
+  {
+    id: 'item-creation',
+    title: "New Item Sync",
+    description: "Automatically add new rows to Google Sheets when items are created in Monday.com.",
+    category: "Item Triggers",
+    icon: <Send className="w-5 h-5 text-[#00c875]" />
   }
 ];
 
 const RecipeGrid = () => {
+  const navigate = useNavigate();
+
+  const handleRecipeClick = (recipeId: string) => {
+    navigate(`/recipe/${recipeId}`);
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {recipes.map((recipe, index) => (
+      {recipes.map((recipe) => (
         <RecipeCard
-          key={index}
+          key={recipe.id}
           title={recipe.title}
           description={recipe.description}
           category={recipe.category}
-          Component={recipe.component}
+          icon={recipe.icon}
+          onClick={() => handleRecipeClick(recipe.id)}
         />
       ))}
     </div>

@@ -26,6 +26,7 @@ export default {
         monday: {
           blue: "#0073ea",
           lightBlue: "#e6f0ff",
+          green: "#00c875"
         },
         google: {
           green: "#34A853",
