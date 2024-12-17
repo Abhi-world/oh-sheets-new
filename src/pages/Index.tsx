@@ -11,48 +11,15 @@ import MondayBoards from '@/components/MondayBoards';
 
 const Index = () => {
   const navigate = useNavigate();
-  const [mondayConnected, setMondayConnected] = useState(false);
-  const [sheetsConnected, setSheetsConnected] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  // Temporarily set these to true for testing
+  const [mondayConnected, setMondayConnected] = useState(true);
+  const [sheetsConnected, setSheetsConnected] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
+  // Temporarily disable connection check
   useEffect(() => {
-    checkConnections();
+    console.log("Connection checks temporarily disabled for testing");
   }, []);
-
-  const checkConnections = async () => {
-    try {
-      console.log("Checking connections...");
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log("No user found");
-        setIsLoading(false);
-        return;
-      }
-
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('monday_api_key, google_sheets_credentials')
-        .eq('id', user.id)
-        .single();
-
-      if (error) {
-        console.error("Error fetching profile:", error);
-        toast.error("Error checking connections");
-        return;
-      }
-
-      console.log("Profile data:", profile);
-      
-      setMondayConnected(!!profile?.monday_api_key);
-      setSheetsConnected(!!profile?.google_sheets_credentials);
-    } catch (error) {
-      console.error('Error checking connections:', error);
-      toast.error("Error checking connections");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   if (isLoading) {
     return (
@@ -81,20 +48,13 @@ const Index = () => {
           />
         </div>
 
-        {mondayConnected && (
-          <div className="space-y-8">
-            <MondayBoards />
-            
-            {sheetsConnected && (
-              <>
-                <h2 className="text-2xl font-semibold text-gray-800">
-                  Available Integration Recipes
-                </h2>
-                <RecipeGrid />
-              </>
-            )}
-          </div>
-        )}
+        <div className="space-y-8">
+          <MondayBoards />
+          <h2 className="text-2xl font-semibold text-gray-800">
+            Available Integration Recipes
+          </h2>
+          <RecipeGrid />
+        </div>
       </div>
     </div>
   );
