@@ -1,5 +1,7 @@
 import React from 'react';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { useNavigate } from 'react-router-dom';
+import { CheckCircle2, XCircle } from 'lucide-react';
 
 interface ConnectionStatusProps {
   service: 'monday' | 'sheets';
@@ -7,20 +9,32 @@ interface ConnectionStatusProps {
 }
 
 const ConnectionStatus = ({ service, isConnected }: ConnectionStatusProps) => {
-  const serviceName = service === 'monday' ? 'Monday.com' : 'Google Sheets';
-  const icon = isConnected ? (
-    <CheckCircle className="w-5 h-5 text-google-green" />
-  ) : (
-    <XCircle className="w-5 h-5 text-google-red" />
-  );
+  const navigate = useNavigate();
+  
+  const handleClick = () => {
+    navigate(service === 'monday' ? '/connect-monday' : '/connect-sheets');
+  };
 
   return (
-    <div className="flex items-center gap-2 p-2 rounded-md bg-white shadow-sm">
-      {icon}
-      <span className="text-sm font-medium">
-        {serviceName} {isConnected ? 'Connected' : 'Not Connected'}
-      </span>
-    </div>
+    <Badge
+      variant="outline"
+      className={`
+        cursor-pointer px-4 py-2 text-sm font-medium
+        ${isConnected 
+          ? 'bg-white/95 text-navy border-google-green' 
+          : 'bg-white/80 text-navy hover:bg-white/90'}
+        transition-colors duration-200
+      `}
+      onClick={handleClick}
+    >
+      {isConnected ? (
+        <CheckCircle2 className="w-4 h-4 mr-2 text-google-green" />
+      ) : (
+        <XCircle className="w-4 h-4 mr-2 text-red-500" />
+      )}
+      {service === 'monday' ? 'Monday.com' : 'Google Sheets'}
+      {!isConnected && ' (Click to Connect)'}
+    </Badge>
   );
 };
 

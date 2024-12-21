@@ -1,8 +1,5 @@
 import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ArrowRight } from 'lucide-react';
 
 interface RecipeCardProps {
   title: string;
@@ -12,39 +9,21 @@ interface RecipeCardProps {
   onClick: () => void;
 }
 
-const RecipeCard: React.FC<RecipeCardProps> = ({
-  title,
-  description,
-  category,
-  icon,
-  onClick
-}) => {
+const RecipeCard = ({ title, description, category, icon, onClick }: RecipeCardProps) => {
   return (
-    <Card className="h-full flex flex-col hover:shadow-lg transition-shadow bg-white/95 backdrop-blur-sm border-transparent">
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#F1F0FB] rounded-lg">
-              {icon}
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-2 text-[#1A1F2C]">{title}</h3>
-              <Badge variant="secondary" className="bg-[#F1F0FB] text-[#6E59A5]">
-                {category}
-              </Badge>
-            </div>
-          </div>
+    <Card 
+      className="relative overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer bg-white/95 backdrop-blur-sm border-t-2 border-t-google-green"
+      onClick={onClick}
+    >
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-2">
+          {icon}
+          <h3 className="text-lg font-semibold text-navy">{title}</h3>
         </div>
+        <span className="text-xs text-navy/60">{category}</span>
       </CardHeader>
-      <CardContent className="flex-grow flex flex-col justify-between">
-        <p className="text-sm text-gray-600 mb-4">{description}</p>
-        <Button 
-          onClick={onClick}
-          className="w-full bg-gradient-to-r from-[#9b87f5] to-[#7E69AB] hover:opacity-90 text-white"
-        >
-          Use Template
-          <ArrowRight className="w-4 h-4 ml-2" />
-        </Button>
+      <CardContent>
+        <p className="text-sm text-navy leading-relaxed">{description}</p>
       </CardContent>
     </Card>
   );
