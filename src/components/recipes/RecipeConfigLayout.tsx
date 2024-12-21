@@ -2,14 +2,29 @@ import React from 'react';
 import { ArrowLeft, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useGoogleSheetsStatus } from '@/hooks/useGoogleSheetsStatus';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface RecipeConfigLayoutProps {
   children: React.ReactNode;
-  title?: string; // Added title prop as optional
+  title?: string;
 }
 
 const RecipeConfigLayout = ({ children, title }: RecipeConfigLayoutProps) => {
   const navigate = useNavigate();
+  const { isConnected, isLoading } = useGoogleSheetsStatus();
+
+  const handleConnectSheets = () => {
+    navigate('/connect-sheets');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#00c875] to-[#00a65a] text-white p-8">
+        <div className="text-center">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#00c875] to-[#00a65a] text-white">
@@ -39,9 +54,25 @@ const RecipeConfigLayout = ({ children, title }: RecipeConfigLayoutProps) => {
           {title && <h1 className="text-3xl font-semibold mb-4">{title}</h1>}
         </div>
 
-        <div className="space-y-8">
-          {children}
-        </div>
+        {!isConnected ? (
+          <Alert className="bg-white/10 border-none text-white mb-8">
+            <AlertDescription>
+              <div className="flex flex-col gap-4">
+                <p>You need to connect to Google Sheets first to use this automation.</p>
+                <Button 
+                  onClick={handleConnectSheets}
+                  className="bg-white text-green-600 hover:bg-white/90 w-fit"
+                >
+                  Connect Google Sheets
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <div className="space-y-8">
+            {children}
+          </div>
+        )}
 
         {/* Google Sheets icon */}
         <div className="fixed bottom-4 left-4 flex items-center gap-2 text-white/90">
