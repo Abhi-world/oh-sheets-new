@@ -1,23 +1,24 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import FormSubmissionTriggerForm from '@/components/FormSubmissionTriggerForm';
+import RecipeHeader from '../shared/RecipeHeader';
+import RecipeConfigLayout from '../RecipeConfigLayout';
 
 const FormSubmissionConfig = () => {
   return (
-    <div className="space-y-6">
-      <div className="prose">
-        <p className="text-gray-600">
-          Configure triggers that activate when specific forms are submitted in Monday.com. 
-          This allows you to automatically capture form responses in your Google Sheet.
-        </p>
+    <RecipeConfigLayout title="Form Submission Integration">
+      <div className="space-y-6">
+        <RecipeHeader 
+          description="Configure triggers that activate when specific forms are submitted in Monday.com. This allows you to automatically capture form responses in your Google Sheet."
+        />
+        
+        <Card>
+          <CardContent className="pt-6">
+            <FormSubmissionTriggerForm />
+          </CardContent>
+        </Card>
       </div>
-      
-      <Card>
-        <CardContent className="pt-6">
-          <FormSubmissionTriggerForm />
-        </CardContent>
-      </Card>
-    </div>
+    </RecipeConfigLayout>
   );
 };
 
