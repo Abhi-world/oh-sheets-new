@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 
 const MarketplaceHeader = () => {
   return (
-    <div className="relative bg-gradient-to-r from-[#00c875] to-[#00a65a] text-white py-12">
+    <div className="relative bg-gradient-to-r from-[#6E59A5] to-[#9b87f5] text-white py-12">
       {/* Back button */}
       <div className="absolute top-4 left-4">
         <Button variant="ghost" className="text-white hover:text-white/80">
@@ -27,13 +27,13 @@ const MarketplaceHeader = () => {
           Pre-built automations to sync data between Monday.com and Google Sheets
         </p>
         <div className="flex flex-wrap gap-2">
-          <div className="bg-white/20 px-4 py-1.5 rounded-full text-sm">
+          <div className="bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm">
             Easy setup
           </div>
-          <div className="bg-white/20 px-4 py-1.5 rounded-full text-sm">
+          <div className="bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm">
             No code required
           </div>
-          <div className="bg-white/20 px-4 py-1.5 rounded-full text-sm">
+          <div className="bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm">
             Real-time sync
           </div>
         </div>
