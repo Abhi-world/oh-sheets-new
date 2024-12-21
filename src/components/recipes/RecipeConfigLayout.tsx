@@ -23,8 +23,8 @@ const RecipeConfigLayout = ({ title, children }: RecipeConfigLayoutProps) => {
         Back to Templates
       </Button>
       
-      <Card className="w-full max-w-4xl mx-auto p-8 bg-white/95 backdrop-blur-sm shadow-xl">
-        <h2 className="text-2xl font-semibold mb-8 text-[#6E59A5]">{title}</h2>
+      <Card className="w-full max-w-4xl mx-auto p-8 bg-white/95 backdrop-blur-sm shadow-xl border-t-4 border-t-google-green">
+        <h2 className="text-2xl font-semibold mb-8 text-navy">{title}</h2>
         {children}
       </Card>
     </div>
