@@ -1,14 +1,13 @@
 import React from 'react';
-import { ArrowLeftCircle, HelpCircle } from 'lucide-react';
+import { ArrowLeft, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
 interface RecipeConfigLayoutProps {
   children: React.ReactNode;
-  title: string;
 }
 
-const RecipeConfigLayout = ({ children, title }: RecipeConfigLayoutProps) => {
+const RecipeConfigLayout = ({ children }: RecipeConfigLayoutProps) => {
   const navigate = useNavigate();
 
   return (
@@ -20,7 +19,7 @@ const RecipeConfigLayout = ({ children, title }: RecipeConfigLayoutProps) => {
           className="text-white hover:text-white/80"
           onClick={() => navigate('/')}
         >
-          <ArrowLeftCircle className="w-6 h-6" />
+          <ArrowLeft className="w-6 h-6" />
         </Button>
       </div>
       
@@ -33,14 +32,23 @@ const RecipeConfigLayout = ({ children, title }: RecipeConfigLayoutProps) => {
 
       <div className="max-w-3xl mx-auto px-4 py-12">
         <div className="mb-8">
-          <div className="bg-navy-800/20 text-sm text-white/90 px-4 py-2 rounded-lg mb-6">
+          <div className="bg-navy-800/20 text-sm text-white/90 px-4 py-2 rounded-lg mb-6 inline-block">
             This is a pre-built template
           </div>
-          <h1 className="text-2xl font-semibold mb-4">{title}</h1>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-6 text-gray-900">
+        <div className="space-y-8">
           {children}
+        </div>
+
+        {/* Google Sheets icon */}
+        <div className="fixed bottom-4 left-4 flex items-center gap-2 text-white/90">
+          <img 
+            src="/lovable-uploads/55c54574-060a-410d-8dd8-64cf691dc4bb.png" 
+            alt="Google Sheets" 
+            className="w-8 h-8"
+          />
+          <span>Google Sheets</span>
         </div>
       </div>
     </div>
