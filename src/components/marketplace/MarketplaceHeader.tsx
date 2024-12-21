@@ -2,7 +2,7 @@ import React from 'react';
 
 const MarketplaceHeader = () => {
   return (
-    <div className="py-12 px-4 text-center bg-gradient-to-r from-monday-blue to-monday-blue/90">
+    <div className="py-12 px-4 text-center bg-navy-light border-b border-google-green/20">
       <h1 className="text-4xl font-bold text-white mb-4">
         Monday.com to Google Sheets Integration
       </h1>
