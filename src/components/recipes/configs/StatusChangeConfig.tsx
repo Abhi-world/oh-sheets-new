@@ -3,36 +3,34 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import RecipeConfigLayout from '../RecipeConfigLayout';
+import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import { toast } from 'sonner';
 
 const StatusChangeConfig = () => {
   const [status, setStatus] = useState('');
-  const [spreadsheet, setSpreadsheet] = useState('');
-  const [sheet, setSheet] = useState('');
   const [values, setValues] = useState('');
-
-  // Mock spreadsheets data - this should be fetched from Google Sheets API
-  const mockSpreadsheets = [
-    { id: '1', name: 'Project Tracker' },
-    { id: '2', name: 'Sales Report' },
-    { id: '3', name: 'Task List' },
-  ];
-
-  // Mock sheets data - this should be fetched based on selected spreadsheet
-  const mockSheets = [
-    { id: '1', name: 'Sheet1' },
-    { id: '2', name: 'Sheet2' },
-    { id: '3', name: 'Sheet3' },
-  ];
+  const {
+    spreadsheets,
+    sheets,
+    selectedSpreadsheet,
+    selectedSheet,
+    setSelectedSpreadsheet,
+    setSelectedSheet,
+  } = useGoogleSheets();
 
   const handleCreateAutomation = () => {
-    if (!status || !spreadsheet || !sheet || !values) {
+    if (!status || !selectedSpreadsheet || !selectedSheet || !values) {
       toast.error('Please fill in all fields');
       return;
     }
     
+    console.log('Creating automation with:', {
+      status,
+      spreadsheet: selectedSpreadsheet,
+      sheet: selectedSheet,
+      values
+    });
     toast.success('Automation created successfully');
-    // Additional logic for creating the automation
   };
 
   return (
@@ -47,12 +45,12 @@ const StatusChangeConfig = () => {
             placeholder="Done"
           />
           {', '}add a row in{' '}
-          <Select value={spreadsheet} onValueChange={setSpreadsheet}>
+          <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
             <SelectTrigger className="w-40 inline-flex bg-transparent border-b border-t-0 border-x-0 rounded-none text-white">
               <SelectValue placeholder="Select spreadsheet" />
             </SelectTrigger>
             <SelectContent>
-              {mockSpreadsheets.map((s) => (
+              {spreadsheets.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
                   {s.name}
                 </SelectItem>
@@ -60,12 +58,12 @@ const StatusChangeConfig = () => {
             </SelectContent>
           </Select>
           {' / '}
-          <Select value={sheet} onValueChange={setSheet}>
+          <Select value={selectedSheet} onValueChange={setSelectedSheet}>
             <SelectTrigger className="w-32 inline-flex bg-transparent border-b border-t-0 border-x-0 rounded-none text-white">
               <SelectValue placeholder="Select sheet" />
             </SelectTrigger>
             <SelectContent>
-              {mockSheets.map((s) => (
+              {sheets.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
                   {s.name}
                 </SelectItem>
@@ -83,7 +81,7 @@ const StatusChangeConfig = () => {
 
         <Button
           onClick={handleCreateAutomation}
-          className="bg-[#0073ea] hover:bg-[#0073ea]/90 text-white px-8"
+          className="bg-white text-[#0073ea] hover:bg-white/90 px-8"
           size="lg"
         >
           Create automation
