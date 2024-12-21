@@ -30,7 +30,7 @@ const ConnectionStatus = ({ service, isConnected }: ConnectionStatusProps) => {
       {isConnected ? (
         <CheckCircle2 className="w-4 h-4 mr-2 text-google-green" />
       ) : (
-        <XCircle className="w-4 h-4 mr-2 text-red-500" />
+        <XCircle className="w-4 h-4 mr-2 text-monday-blue" />
       )}
       {service === 'monday' ? 'Monday.com' : 'Google Sheets'}
       {!isConnected && ' (Click to Connect)'}
