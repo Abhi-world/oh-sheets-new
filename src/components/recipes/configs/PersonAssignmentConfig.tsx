@@ -35,24 +35,24 @@ const PersonAssignmentConfig = () => {
   };
 
   return (
-    <RecipeConfigLayout title="Person Assignment Integration">
-      <div className="space-y-12">
-        <p className="text-2xl leading-relaxed">
+    <div className="space-y-12">
+      <div className="bg-navy-dark/40 p-6 rounded-lg border border-google-green/20">
+        <p className="text-xl leading-relaxed">
           When{' '}
           <Input
             value={person}
             onChange={(e) => setPerson(e.target.value)}
-            className="w-40 inline-block mx-1 bg-transparent border-b border-t-0 border-x-0 rounded-none text-white placeholder:text-white/60 focus-visible:ring-0 focus-visible:border-white"
+            className="w-40 inline-block mx-1 bg-navy-light border-google-green focus-visible:ring-google-green/50"
             placeholder="person"
           />
           {' '}is assigned, add a row in{' '}
           <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
-            <SelectTrigger className="w-40 inline-flex bg-transparent border-b border-t-0 border-x-0 rounded-none text-white">
+            <SelectTrigger className="w-40 inline-flex bg-navy-light border-google-green focus:ring-google-green/50">
               <SelectValue placeholder="Select spreadsheet" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-navy-light border border-google-green">
               {spreadsheets.map((s) => (
-                <SelectItem key={s.id} value={s.id}>
+                <SelectItem key={s.id} value={s.id} className="text-white">
                   {s.name}
                 </SelectItem>
               ))}
@@ -60,12 +60,12 @@ const PersonAssignmentConfig = () => {
           </Select>
           {' / '}
           <Select value={selectedSheet} onValueChange={setSelectedSheet}>
-            <SelectTrigger className="w-32 inline-flex bg-transparent border-b border-t-0 border-x-0 rounded-none text-white">
+            <SelectTrigger className="w-32 inline-flex bg-navy-light border-google-green focus:ring-google-green/50">
               <SelectValue placeholder="Select sheet" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-navy-light border border-google-green">
               {sheets.map((s) => (
-                <SelectItem key={s.id} value={s.id}>
+                <SelectItem key={s.id} value={s.id} className="text-white">
                   {s.name}
                 </SelectItem>
               ))}
@@ -75,20 +75,20 @@ const PersonAssignmentConfig = () => {
           <Input
             value={values}
             onChange={(e) => setValues(e.target.value)}
-            className="w-40 inline-block mx-1 bg-transparent border-b border-t-0 border-x-0 rounded-none text-white placeholder:text-white/60 focus-visible:ring-0 focus-visible:border-white"
+            className="w-40 inline-block mx-1 bg-navy-light border-google-green focus-visible:ring-google-green/50"
             placeholder="values"
           />
         </p>
-
-        <Button
-          onClick={handleCreateAutomation}
-          className="bg-[#0073ea] hover:bg-[#0073ea]/90 text-white px-8"
-          size="lg"
-        >
-          Create automation
-        </Button>
       </div>
-    </RecipeConfigLayout>
+
+      <Button
+        onClick={handleCreateAutomation}
+        className="w-full bg-navy hover:bg-navy-light border border-google-green text-white hover:bg-opacity-90 transition-colors py-6 text-lg font-medium rounded-lg shadow-lg"
+        size="lg"
+      >
+        Create automation
+      </Button>
+    </div>
   );
 };
 
