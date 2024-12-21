@@ -1,43 +1,22 @@
 import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
+import ColumnChangeTriggerForm from '@/components/ColumnChangeTriggerForm';
 
 const ColumnChangeConfig = () => {
   return (
     <div className="space-y-6">
-      <p className="text-lg">
-        When{' '}
-        <Input
-          type="text"
-          className="w-40 inline-block mx-1 underline"
-          placeholder="Column name"
-        />
-        {' '}changes, add row in{' '}
-        <Input
-          type="text"
-          className="w-40 inline-block mx-1 underline"
-          placeholder="Spreadsheet"
-        />
-        {' '}/{' '}
-        <Input
-          type="text"
-          className="w-40 inline-block mx-1 underline"
-          placeholder="Sheet"
-        />
-        {' '}with these{' '}
-        <Input
-          type="text"
-          className="w-40 inline-block mx-1 underline"
-          placeholder="values"
-        />
-      </p>
-
-      <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-        <Label className="text-sm text-gray-600">Preview</Label>
-        <p className="mt-2 text-sm">
-          When [Column name] changes, a new row will be added to [Spreadsheet]/[Sheet] with [values].
+      <div className="prose">
+        <p className="text-gray-600">
+          Set up triggers that activate when specific column values change in Monday.com. 
+          Track changes and updates automatically in your Google Sheet.
         </p>
       </div>
+      
+      <Card>
+        <CardContent className="pt-6">
+          <ColumnChangeTriggerForm />
+        </CardContent>
+      </Card>
     </div>
   );
 };

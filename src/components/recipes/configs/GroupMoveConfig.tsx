@@ -1,43 +1,27 @@
 import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 const GroupMoveConfig = () => {
   return (
     <div className="space-y-6">
-      <p className="text-lg">
-        When item moves to{' '}
-        <Input
-          type="text"
-          className="w-40 inline-block mx-1 underline"
-          placeholder="Group name"
-        />
-        , add row in{' '}
-        <Input
-          type="text"
-          className="w-40 inline-block mx-1 underline"
-          placeholder="Spreadsheet"
-        />
-        {' '}/{' '}
-        <Input
-          type="text"
-          className="w-40 inline-block mx-1 underline"
-          placeholder="Sheet"
-        />
-        {' '}with these{' '}
-        <Input
-          type="text"
-          className="w-40 inline-block mx-1 underline"
-          placeholder="values"
-        />
-      </p>
-
-      <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-        <Label className="text-sm text-gray-600">Preview</Label>
-        <p className="mt-2 text-sm">
-          When an item is moved to [Group], a new row will be added to [Spreadsheet]/[Sheet] with [values].
+      <div className="prose">
+        <p className="text-gray-600">
+          Set up an automation to trigger when items are moved between groups in your Monday.com board.
         </p>
       </div>
+      
+      <Card>
+        <CardContent className="pt-6">
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              This feature is coming soon. Stay tuned for updates!
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
     </div>
   );
 };
