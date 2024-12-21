@@ -5,6 +5,7 @@ import Index from '@/pages/Index';
 import ConnectMonday from '@/pages/ConnectMonday';
 import ConnectSheets from '@/pages/ConnectSheets';
 import MondayOAuth from '@/pages/MondayOAuth';
+import RecipeConfig from '@/components/recipes/RecipeConfig';
 import { useState } from 'react';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
           <Route path="/connect-monday" element={<ConnectMonday />} />
           <Route path="/connect-sheets" element={<ConnectSheets />} />
           <Route path="/oauth/monday" element={<MondayOAuth />} />
+          <Route path="/recipe/:recipeId" element={<RecipeConfig />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <Toaster />
