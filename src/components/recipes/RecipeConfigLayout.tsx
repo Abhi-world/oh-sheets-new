@@ -5,9 +5,10 @@ import { useNavigate } from 'react-router-dom';
 
 interface RecipeConfigLayoutProps {
   children: React.ReactNode;
+  title?: string; // Added title prop as optional
 }
 
-const RecipeConfigLayout = ({ children }: RecipeConfigLayoutProps) => {
+const RecipeConfigLayout = ({ children, title }: RecipeConfigLayoutProps) => {
   const navigate = useNavigate();
 
   return (
@@ -35,6 +36,7 @@ const RecipeConfigLayout = ({ children }: RecipeConfigLayoutProps) => {
           <div className="bg-navy-800/20 text-sm text-white/90 px-4 py-2 rounded-lg mb-6 inline-block">
             This is a pre-built template
           </div>
+          {title && <h1 className="text-3xl font-semibold mb-4">{title}</h1>}
         </div>
 
         <div className="space-y-8">
