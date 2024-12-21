@@ -34,23 +34,23 @@ const StatusChangeConfig = () => {
 
   return (
     <div className="space-y-8">
-      <div className="bg-[#F1F0FB] p-6 rounded-lg">
-        <p className="text-xl leading-relaxed text-[#1A1F2C]">
+      <div className="bg-navy-dark/40 p-6 rounded-lg border border-google-green/20">
+        <p className="text-xl leading-relaxed text-white">
           When status changes to{' '}
           <Input
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="w-32 inline-block mx-1 bg-white border-[#9b87f5] focus-visible:ring-[#7E69AB]"
+            className="w-32 inline-block mx-1 bg-navy-light border-google-green focus-visible:ring-google-green/50"
             placeholder="Done"
           />
           {', '}add a row in{' '}
           <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
-            <SelectTrigger className="w-40 inline-flex bg-white border-[#9b87f5] focus:ring-[#7E69AB]">
+            <SelectTrigger className="w-40 inline-flex bg-navy-light border-google-green focus:ring-google-green/50">
               <SelectValue placeholder="Select spreadsheet" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-navy-light border border-google-green">
               {spreadsheets.map((s) => (
-                <SelectItem key={s.id} value={s.id}>
+                <SelectItem key={s.id} value={s.id} className="text-white">
                   {s.name}
                 </SelectItem>
               ))}
@@ -58,12 +58,12 @@ const StatusChangeConfig = () => {
           </Select>
           {' / '}
           <Select value={selectedSheet} onValueChange={setSelectedSheet}>
-            <SelectTrigger className="w-32 inline-flex bg-white border-[#9b87f5] focus:ring-[#7E69AB]">
+            <SelectTrigger className="w-32 inline-flex bg-navy-light border-google-green focus:ring-google-green/50">
               <SelectValue placeholder="Select sheet" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-navy-light border border-google-green">
               {sheets.map((s) => (
-                <SelectItem key={s.id} value={s.id}>
+                <SelectItem key={s.id} value={s.id} className="text-white">
                   {s.name}
                 </SelectItem>
               ))}
@@ -73,7 +73,7 @@ const StatusChangeConfig = () => {
           <Input
             value={values}
             onChange={(e) => setValues(e.target.value)}
-            className="w-40 inline-block mx-1 bg-white border-[#9b87f5] focus-visible:ring-[#7E69AB]"
+            className="w-40 inline-block mx-1 bg-navy-light border-google-green focus-visible:ring-google-green/50"
             placeholder="values"
           />
         </p>
@@ -81,7 +81,7 @@ const StatusChangeConfig = () => {
 
       <Button
         onClick={handleCreateAutomation}
-        className="w-full bg-gradient-to-r from-[#9b87f5] to-[#7E69AB] hover:opacity-90 text-white py-6 text-lg font-medium rounded-lg shadow-lg"
+        className="w-full bg-navy hover:bg-navy-light border border-google-green text-white hover:bg-opacity-90 transition-colors py-6 text-lg font-medium rounded-lg shadow-lg"
         size="lg"
       >
         Create automation
