@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import RecipeConfigLayout from '../RecipeConfigLayout';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import { toast } from 'sonner';
 
@@ -34,19 +33,19 @@ const StatusChangeConfig = () => {
   };
 
   return (
-    <RecipeConfigLayout title="Status Change Integration">
-      <div className="space-y-12">
-        <p className="text-2xl leading-relaxed">
+    <div className="space-y-8">
+      <div className="bg-[#F1F0FB] p-6 rounded-lg">
+        <p className="text-xl leading-relaxed text-[#1A1F2C]">
           When status changes to{' '}
           <Input
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="w-32 inline-block mx-1 bg-transparent border-b border-t-0 border-x-0 rounded-none text-white placeholder:text-white/60 focus-visible:ring-0 focus-visible:border-white"
+            className="w-32 inline-block mx-1 bg-white border-[#9b87f5] focus-visible:ring-[#7E69AB]"
             placeholder="Done"
           />
           {', '}add a row in{' '}
           <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
-            <SelectTrigger className="w-40 inline-flex bg-transparent border-b border-t-0 border-x-0 rounded-none text-white">
+            <SelectTrigger className="w-40 inline-flex bg-white border-[#9b87f5] focus:ring-[#7E69AB]">
               <SelectValue placeholder="Select spreadsheet" />
             </SelectTrigger>
             <SelectContent>
@@ -59,7 +58,7 @@ const StatusChangeConfig = () => {
           </Select>
           {' / '}
           <Select value={selectedSheet} onValueChange={setSelectedSheet}>
-            <SelectTrigger className="w-32 inline-flex bg-transparent border-b border-t-0 border-x-0 rounded-none text-white">
+            <SelectTrigger className="w-32 inline-flex bg-white border-[#9b87f5] focus:ring-[#7E69AB]">
               <SelectValue placeholder="Select sheet" />
             </SelectTrigger>
             <SelectContent>
@@ -74,20 +73,20 @@ const StatusChangeConfig = () => {
           <Input
             value={values}
             onChange={(e) => setValues(e.target.value)}
-            className="w-40 inline-block mx-1 bg-transparent border-b border-t-0 border-x-0 rounded-none text-white placeholder:text-white/60 focus-visible:ring-0 focus-visible:border-white"
+            className="w-40 inline-block mx-1 bg-white border-[#9b87f5] focus-visible:ring-[#7E69AB]"
             placeholder="values"
           />
         </p>
-
-        <Button
-          onClick={handleCreateAutomation}
-          className="bg-white text-[#0073ea] hover:bg-white/90 px-8"
-          size="lg"
-        >
-          Create automation
-        </Button>
       </div>
-    </RecipeConfigLayout>
+
+      <Button
+        onClick={handleCreateAutomation}
+        className="w-full bg-gradient-to-r from-[#9b87f5] to-[#7E69AB] hover:opacity-90 text-white py-6 text-lg font-medium rounded-lg shadow-lg"
+        size="lg"
+      >
+        Create automation
+      </Button>
+    </div>
   );
 };
 
