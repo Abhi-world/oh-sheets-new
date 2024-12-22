@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import RecipeConfigLayout from '../RecipeConfigLayout';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import { toast } from 'sonner';
 
@@ -18,15 +16,6 @@ const ColumnChangeConfig = () => {
     setSelectedSpreadsheet,
     setSelectedSheet,
   } = useGoogleSheets();
-
-  const handleCreateAutomation = () => {
-    if (!columnName || !searchValues || !selectedSpreadsheet || !selectedSheet || !values) {
-      toast.error('Please fill in all fields');
-      return;
-    }
-    
-    toast.success('Automation created successfully');
-  };
 
   return (
     <div className="space-y-12">
@@ -81,14 +70,6 @@ const ColumnChangeConfig = () => {
           />
         </p>
       </div>
-
-      <Button
-        onClick={handleCreateAutomation}
-        className="w-full bg-navy hover:bg-navy-light border border-google-green text-white hover:bg-opacity-90 transition-colors py-6 text-lg font-medium rounded-lg shadow-lg"
-        size="lg"
-      >
-        Create automation
-      </Button>
     </div>
   );
 };
