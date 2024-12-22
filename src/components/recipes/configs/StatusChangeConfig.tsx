@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
-import { toast } from 'sonner';
 
 const StatusChangeConfig = () => {
   const [status, setStatus] = useState('');
@@ -16,21 +14,6 @@ const StatusChangeConfig = () => {
     setSelectedSpreadsheet,
     setSelectedSheet,
   } = useGoogleSheets();
-
-  const handleCreateAutomation = () => {
-    if (!status || !selectedSpreadsheet || !selectedSheet || !values) {
-      toast.error('Please fill in all fields');
-      return;
-    }
-    
-    console.log('Creating automation with:', {
-      status,
-      spreadsheet: selectedSpreadsheet,
-      sheet: selectedSheet,
-      values
-    });
-    toast.success('Automation created successfully');
-  };
 
   return (
     <div className="space-y-8">
@@ -78,14 +61,6 @@ const StatusChangeConfig = () => {
           />
         </p>
       </div>
-
-      <Button
-        onClick={handleCreateAutomation}
-        className="w-full bg-navy hover:bg-navy-light border border-google-green text-white hover:bg-opacity-90 transition-colors py-6 text-lg font-medium rounded-lg shadow-lg"
-        size="lg"
-      >
-        Create automation
-      </Button>
     </div>
   );
 };
