@@ -5,12 +5,7 @@ import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-
-interface ColumnMapping {
-  sourceColumn: string;
-  targetColumn: string;
-  dataType: string;
-}
+import { ColumnMappingData, convertToColumnMapping } from '@/types/trigger';
 
 const DateTriggerConfig = () => {
   const [triggerDate, setTriggerDate] = useState('');
@@ -18,7 +13,7 @@ const DateTriggerConfig = () => {
   const [isRelative, setIsRelative] = useState(false);
   const [relativeDays, setRelativeDays] = useState('');
   const [relativeDirection, setRelativeDirection] = useState<'before' | 'after'>('before');
-  const [columnMappings, setColumnMappings] = useState<ColumnMapping[]>([]);
+  const [columnMappings, setColumnMappings] = useState<ColumnMappingData[]>([]);
   
   const {
     spreadsheets,
@@ -45,7 +40,7 @@ const DateTriggerConfig = () => {
     ]);
   };
 
-  const updateColumnMapping = (index: number, field: keyof ColumnMapping, value: string) => {
+  const updateColumnMapping = (index: number, field: keyof ColumnMappingData, value: string) => {
     const newMappings = [...columnMappings];
     newMappings[index] = { ...newMappings[index], [field]: value };
     setColumnMappings(newMappings);
@@ -62,6 +57,9 @@ const DateTriggerConfig = () => {
         toast.error('Please sign in to save trigger configuration');
         return;
       }
+
+      // Convert ColumnMappingData[] to ColumnMapping[] for Supabase
+      const supabaseColumnMappings = columnMappings.map(convertToColumnMapping);
 
       // Create trigger
       const { data: trigger, error: triggerError } = await supabase
@@ -86,7 +84,7 @@ const DateTriggerConfig = () => {
           trigger_id: trigger.id,
           spreadsheet_id: selectedSpreadsheet,
           sheet_id: selectedSheet,
-          column_mappings: columnMappings,
+          column_mappings: supabaseColumnMappings,
         });
 
       if (syncError) throw syncError;
