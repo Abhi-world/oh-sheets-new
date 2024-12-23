@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { TriggerConfig, convertToColumnMapping } from '@/types/trigger';
+import { TriggerConfig } from '@/types/trigger';
 import { toast } from 'sonner';
 
 export const useTriggerConfig = () => {
@@ -14,18 +14,12 @@ export const useTriggerConfig = () => {
         throw new Error('User not authenticated');
       }
 
-      // Convert column mappings to the format expected by Supabase
-      const supabaseColumnMappings = config.columnMappings.map(convertToColumnMapping);
-
       const { data: trigger, error: triggerError } = await supabase
         .from('triggers')
         .insert({
           user_id: user.id,
           trigger_type: 'date',
           trigger_date: config.triggerDate,
-          trigger_time: config.triggerTime,
-          relative_days: config.relativeDays,
-          relative_direction: config.relativeDirection,
         })
         .select()
         .single();
@@ -38,7 +32,7 @@ export const useTriggerConfig = () => {
           trigger_id: trigger.id,
           spreadsheet_id: config.spreadsheetId,
           sheet_id: config.sheetId,
-          column_mappings: supabaseColumnMappings,
+          column_mappings: []
         });
 
       if (syncError) throw syncError;

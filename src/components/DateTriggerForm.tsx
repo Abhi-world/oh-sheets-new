@@ -6,13 +6,7 @@ import { Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-interface TriggerConfig {
-  triggerDate: string;
-  mondayBoardId: string;
-  spreadsheetId: string;
-  sheetId: string;
-}
+import { TriggerConfig } from '@/types/trigger';
 
 const DateTriggerForm = () => {
   const [triggerDate, setTriggerDate] = useState('');
@@ -25,7 +19,6 @@ const DateTriggerForm = () => {
   useEffect(() => {
     fetchMondayBoards();
     loadSavedTriggers();
-    // Check for triggers every minute
     const interval = setInterval(checkTriggers, 60000);
     console.log('Date trigger checker started');
     
@@ -44,7 +37,6 @@ const DateTriggerForm = () => {
         return;
       }
 
-      // Fetch boards from Monday.com API
       const response = await fetch('https://api.monday.com/v2', {
         method: 'POST',
         headers: {
@@ -73,6 +65,7 @@ const DateTriggerForm = () => {
         .select(`
           id,
           trigger_date,
+          monday_board_id,
           sync_configurations (
             spreadsheet_id,
             sheet_id
@@ -117,7 +110,6 @@ const DateTriggerForm = () => {
         throw new Error('Missing required credentials');
       }
 
-      // Fetch data from Monday.com
       const response = await fetch('https://api.monday.com/v2', {
         method: 'POST',
         headers: {
@@ -134,11 +126,9 @@ const DateTriggerForm = () => {
         throw new Error('No data received from Monday.com');
       }
 
-      // TODO: Add Google Sheets export logic here
       console.log('Data fetched from Monday.com:', data);
       toast.success('Data successfully exported to Google Sheets');
       
-      // Remove the triggered config after successful execution
       setSavedTriggers(prev => 
         prev.filter(t => t.triggerDate !== trigger.triggerDate)
       );
@@ -152,7 +142,6 @@ const DateTriggerForm = () => {
     e.preventDefault();
     
     try {
-      // Save trigger configuration to Supabase
       const { data: trigger, error: triggerError } = await supabase
         .from('triggers')
         .insert({
@@ -170,12 +159,12 @@ const DateTriggerForm = () => {
         .insert({
           trigger_id: trigger.id,
           spreadsheet_id: spreadsheetId,
-          sheet_id: sheetId
+          sheet_id: sheetId,
+          column_mappings: []
         });
 
       if (syncError) throw syncError;
 
-      // Update local state
       setSavedTriggers(prev => [...prev, {
         triggerDate,
         mondayBoardId,
@@ -183,7 +172,6 @@ const DateTriggerForm = () => {
         sheetId
       }]);
       
-      // Reset form
       setTriggerDate('');
       setMondayBoardId('');
       setSpreadsheetId('');

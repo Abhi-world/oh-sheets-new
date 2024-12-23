@@ -12,8 +12,24 @@ export interface MondayBoard {
   name: string;
 }
 
-export interface SyncConfig {
-  spreadsheetId: string;
-  sheetId: string;
-  trigger_id?: string;
+export interface ColumnMappingData {
+  sourceColumn: string;
+  targetColumn: string;
+  dataType: string;
 }
+
+export interface ColumnMapping {
+  source: string;
+  target: string;
+  type: string;
+}
+
+export const convertToColumnMapping = (data: ColumnMappingData): ColumnMapping => ({
+  source: data.sourceColumn,
+  target: data.targetColumn,
+  type: data.dataType
+});
+
+export const convertToJson = (mappings: ColumnMapping[]): Json => {
+  return mappings as Json;
+};
