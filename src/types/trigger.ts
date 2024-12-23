@@ -17,7 +17,7 @@ export interface TriggerConfig {
   relativeDirection?: 'before' | 'after';
   spreadsheetId: string;
   sheetId: string;
-  columnMappings: ColumnMapping[];
+  columnMappings: ColumnMappingData[]; // Changed from ColumnMapping[] to ColumnMappingData[]
 }
 
 // Helper function to convert ColumnMappingData to ColumnMapping
