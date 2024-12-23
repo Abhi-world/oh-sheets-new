@@ -12,16 +12,16 @@ export interface MondayBoard {
   name: string;
 }
 
-export interface ColumnMappingData {
-  sourceColumn: string;
-  targetColumn: string;
-  dataType: string;
-}
-
 export interface ColumnMapping {
   source: string;
   target: string;
   type: string;
+}
+
+export interface ColumnMappingData {
+  sourceColumn: string;
+  targetColumn: string;
+  dataType: string;
 }
 
 export const convertToColumnMapping = (data: ColumnMappingData): ColumnMapping => ({

@@ -20,6 +20,7 @@ export const useTriggerConfig = () => {
           user_id: user.id,
           trigger_type: 'date',
           trigger_date: config.triggerDate,
+          monday_board_id: config.mondayBoardId
         })
         .select()
         .single();

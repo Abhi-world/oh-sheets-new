@@ -124,52 +124,34 @@ export type Database = {
       }
       triggers: {
         Row: {
-          button_name: string | null
-          column_mapping: Json | null
-          condition: string | null
           created_at: string
           id: string
           is_active: boolean | null
-          relative_days: number | null
-          relative_direction: string | null
+          monday_board_id: string | null
           trigger_date: string | null
-          trigger_time: string | null
           trigger_type: string
           updated_at: string
           user_id: string
-          values: string[] | null
         }
         Insert: {
-          button_name?: string | null
-          column_mapping?: Json | null
-          condition?: string | null
           created_at?: string
           id?: string
           is_active?: boolean | null
-          relative_days?: number | null
-          relative_direction?: string | null
+          monday_board_id?: string | null
           trigger_date?: string | null
-          trigger_time?: string | null
           trigger_type: string
           updated_at?: string
           user_id: string
-          values?: string[] | null
         }
         Update: {
-          button_name?: string | null
-          column_mapping?: Json | null
-          condition?: string | null
           created_at?: string
           id?: string
           is_active?: boolean | null
-          relative_days?: number | null
-          relative_direction?: string | null
+          monday_board_id?: string | null
           trigger_date?: string | null
-          trigger_time?: string | null
           trigger_type?: string
           updated_at?: string
           user_id?: string
-          values?: string[] | null
         }
         Relationships: [
           {
