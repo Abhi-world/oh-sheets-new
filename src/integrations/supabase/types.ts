@@ -42,6 +42,44 @@ export type Database = {
         }
         Relationships: []
       }
+      sync_configurations: {
+        Row: {
+          column_mappings: Json
+          created_at: string
+          id: string
+          sheet_id: string
+          spreadsheet_id: string
+          trigger_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          column_mappings: Json
+          created_at?: string
+          id?: string
+          sheet_id: string
+          spreadsheet_id: string
+          trigger_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          column_mappings?: Json
+          created_at?: string
+          id?: string
+          sheet_id?: string
+          spreadsheet_id?: string
+          trigger_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_configurations_trigger_id_fkey"
+            columns: ["trigger_id"]
+            isOneToOne: false
+            referencedRelation: "triggers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sync_logs: {
         Row: {
           created_at: string
@@ -87,11 +125,15 @@ export type Database = {
       triggers: {
         Row: {
           button_name: string | null
+          column_mapping: Json | null
           condition: string | null
           created_at: string
           id: string
           is_active: boolean | null
+          relative_days: number | null
+          relative_direction: string | null
           trigger_date: string | null
+          trigger_time: string | null
           trigger_type: string
           updated_at: string
           user_id: string
@@ -99,11 +141,15 @@ export type Database = {
         }
         Insert: {
           button_name?: string | null
+          column_mapping?: Json | null
           condition?: string | null
           created_at?: string
           id?: string
           is_active?: boolean | null
+          relative_days?: number | null
+          relative_direction?: string | null
           trigger_date?: string | null
+          trigger_time?: string | null
           trigger_type: string
           updated_at?: string
           user_id: string
@@ -111,11 +157,15 @@ export type Database = {
         }
         Update: {
           button_name?: string | null
+          column_mapping?: Json | null
           condition?: string | null
           created_at?: string
           id?: string
           is_active?: boolean | null
+          relative_days?: number | null
+          relative_direction?: string | null
           trigger_date?: string | null
+          trigger_time?: string | null
           trigger_type?: string
           updated_at?: string
           user_id?: string
