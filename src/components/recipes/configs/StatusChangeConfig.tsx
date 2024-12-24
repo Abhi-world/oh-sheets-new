@@ -53,7 +53,9 @@ const StatusChangeConfig = () => {
               ))}
             </SelectContent>
           </Select>
-          {' '}with these <span className="text-white font-medium">values</span>{' '}
+          {' '}with these{' '}
+          <span className="text-white font-semibold bg-navy-light px-2 py-1 rounded">values</span>
+          {' '}
           <div className="inline-block w-40">
             <ValueSelector
               value={values}
