@@ -17,15 +17,15 @@ const StatusChangeConfig = () => {
   } = useGoogleSheets();
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       <div className="bg-navy-dark/40 p-6 rounded-lg border border-google-green/20">
         <p className="text-xl leading-relaxed text-white">
           When status changes to{' '}
           <Input
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="w-32 inline-block mx-1 bg-navy-light border-google-green focus-visible:ring-google-green/50"
-            placeholder="Done"
+            className="w-40 inline-block mx-1 bg-navy-light border-google-green focus-visible:ring-google-green/50"
+            placeholder="status"
           />
           {', '}add a row in{' '}
           <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
@@ -53,7 +53,7 @@ const StatusChangeConfig = () => {
               ))}
             </SelectContent>
           </Select>
-          {' '}with these{' '}
+          {' '}with these <span className="text-white">values</span>{' '}
           <div className="inline-block w-40">
             <ValueSelector
               value={values}
