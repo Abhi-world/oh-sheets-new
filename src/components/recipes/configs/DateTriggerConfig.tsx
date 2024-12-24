@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { ColumnMappingData, convertToColumnMapping } from '@/types/trigger';
+import { ColumnMappingData, convertToColumnMapping, convertToJson } from '@/types/trigger';
 import TriggerSettings from './date-trigger/TriggerSettings';
 import ColumnMappings from './date-trigger/ColumnMappings';
 
