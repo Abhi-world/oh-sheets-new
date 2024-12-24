@@ -13,31 +13,40 @@ export type Database = {
         Row: {
           created_at: string
           google_sheets_credentials: Json | null
-          id: string
+          id: string | null
+          is_paid: boolean | null
           monday_access_token: string | null
           monday_api_key: string | null
           monday_user_email: string | null
-          monday_user_id: string | null
+          monday_user_id: string
+          trial_end_date: string | null
+          trial_start_date: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           google_sheets_credentials?: Json | null
-          id: string
+          id?: string | null
+          is_paid?: boolean | null
           monday_access_token?: string | null
           monday_api_key?: string | null
           monday_user_email?: string | null
-          monday_user_id?: string | null
+          monday_user_id: string
+          trial_end_date?: string | null
+          trial_start_date?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           google_sheets_credentials?: Json | null
-          id?: string
+          id?: string | null
+          is_paid?: boolean | null
           monday_access_token?: string | null
           monday_api_key?: string | null
           monday_user_email?: string | null
-          monday_user_id?: string | null
+          monday_user_id?: string
+          trial_end_date?: string | null
+          trial_start_date?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -85,39 +94,39 @@ export type Database = {
           created_at: string
           error_message: string | null
           id: string
+          monday_user_id: string
           status: string
           trigger_id: string | null
-          user_id: string
         }
         Insert: {
           created_at?: string
           error_message?: string | null
           id?: string
+          monday_user_id: string
           status: string
           trigger_id?: string | null
-          user_id: string
         }
         Update: {
           created_at?: string
           error_message?: string | null
           id?: string
+          monday_user_id?: string
           status?: string
           trigger_id?: string | null
-          user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "sync_logs_monday_user_id_fkey"
+            columns: ["monday_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["monday_user_id"]
+          },
           {
             foreignKeyName: "sync_logs_trigger_id_fkey"
             columns: ["trigger_id"]
             isOneToOne: false
             referencedRelation: "triggers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sync_logs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -128,38 +137,38 @@ export type Database = {
           id: string
           is_active: boolean | null
           monday_board_id: string | null
+          monday_user_id: string
           trigger_date: string | null
           trigger_type: string
           updated_at: string
-          user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
           is_active?: boolean | null
           monday_board_id?: string | null
+          monday_user_id: string
           trigger_date?: string | null
           trigger_type: string
           updated_at?: string
-          user_id: string
         }
         Update: {
           created_at?: string
           id?: string
           is_active?: boolean | null
           monday_board_id?: string | null
+          monday_user_id?: string
           trigger_date?: string | null
           trigger_type?: string
           updated_at?: string
-          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "triggers_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "triggers_monday_user_id_fkey"
+            columns: ["monday_user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedColumns: ["monday_user_id"]
           },
         ]
       }
