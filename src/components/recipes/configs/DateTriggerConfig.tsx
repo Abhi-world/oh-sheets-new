@@ -54,7 +54,7 @@ const DateTriggerConfig = () => {
         return;
       }
 
-      // Convert ColumnMappingData[] to ColumnMapping[] for Supabase
+      // Convert ColumnMappingData[] to Json for Supabase
       const supabaseColumnMappings = columnMappings.map(convertToColumnMapping);
 
       // Create trigger
@@ -77,7 +77,7 @@ const DateTriggerConfig = () => {
           trigger_id: trigger.id,
           spreadsheet_id: selectedSpreadsheet,
           sheet_id: selectedSheet,
-          column_mappings: supabaseColumnMappings,
+          column_mappings: convertToJson(supabaseColumnMappings),
         });
 
       if (syncError) throw syncError;

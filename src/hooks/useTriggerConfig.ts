@@ -9,15 +9,19 @@ export const useTriggerConfig = () => {
   const saveTriggerConfig = async (config: TriggerConfig) => {
     setIsLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('monday_user_id')
+        .single();
+
+      if (!profile?.monday_user_id) {
         throw new Error('User not authenticated');
       }
 
       const { data: trigger, error: triggerError } = await supabase
         .from('triggers')
         .insert({
-          user_id: user.id,
+          monday_user_id: profile.monday_user_id,
           trigger_type: 'date',
           trigger_date: config.triggerDate,
           monday_board_id: config.mondayBoardId

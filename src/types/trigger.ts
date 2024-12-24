@@ -16,6 +16,7 @@ export interface ColumnMapping {
   source: string;
   target: string;
   type: string;
+  [key: string]: string; // Add index signature
 }
 
 export interface ColumnMappingData {
@@ -31,5 +32,5 @@ export const convertToColumnMapping = (data: ColumnMappingData): ColumnMapping =
 });
 
 export const convertToJson = (mappings: ColumnMapping[]): Json => {
-  return mappings as Json;
+  return mappings as unknown as Json;
 };

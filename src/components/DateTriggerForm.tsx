@@ -27,7 +27,7 @@ const DateTriggerForm = () => {
     try {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('monday_access_token')
+        .select('monday_access_token, monday_user_id')
         .single();
 
       if (!profile?.monday_access_token) {
@@ -89,12 +89,23 @@ const DateTriggerForm = () => {
     e.preventDefault();
     
     try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('monday_user_id')
+        .single();
+
+      if (!profile?.monday_user_id) {
+        toast.error('Please connect your Monday.com account first');
+        return;
+      }
+
       const { data: trigger, error: triggerError } = await supabase
         .from('triggers')
         .insert({
           trigger_type: 'date',
           trigger_date: triggerDate,
-          monday_board_id: mondayBoardId
+          monday_board_id: mondayBoardId,
+          monday_user_id: profile.monday_user_id
         })
         .select()
         .single();
