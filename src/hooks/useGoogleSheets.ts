@@ -12,6 +12,13 @@ interface SheetOption {
   name: string;
 }
 
+interface GoogleSheetsCredentials {
+  access_token: string;
+  refresh_token: string;
+  client_id: string;
+  client_secret: string;
+}
+
 export const useGoogleSheets = () => {
   const [spreadsheets, setSpreadsheets] = useState<SpreadsheetOption[]>([]);
   const [sheets, setSheets] = useState<SheetOption[]>([]);
@@ -42,10 +49,12 @@ export const useGoogleSheets = () => {
         return;
       }
 
+      const credentials = profile.google_sheets_credentials as GoogleSheetsCredentials;
+
       console.log('Fetching spreadsheets from Google Sheets API...');
       const response = await fetch('https://www.googleapis.com/drive/v3/files', {
         headers: {
-          'Authorization': `Bearer ${profile.google_sheets_credentials.access_token}`,
+          'Authorization': `Bearer ${credentials.access_token}`,
           'Accept': 'application/json',
         },
         method: 'GET',
@@ -98,9 +107,11 @@ export const useGoogleSheets = () => {
         return;
       }
 
+      const credentials = profile.google_sheets_credentials as GoogleSheetsCredentials;
+
       const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`, {
         headers: {
-          'Authorization': `Bearer ${profile.google_sheets_credentials.access_token}`,
+          'Authorization': `Bearer ${credentials.access_token}`,
           'Accept': 'application/json',
         },
         method: 'GET',
