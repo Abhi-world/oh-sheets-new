@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Json } from '@/integrations/supabase/types';
 
 interface SpreadsheetOption {
   id: string;
@@ -49,10 +50,10 @@ export const useGoogleSheets = () => {
         return;
       }
 
-      const credentials = profile.google_sheets_credentials as GoogleSheetsCredentials;
+      const credentials = profile.google_sheets_credentials as unknown as GoogleSheetsCredentials;
 
       console.log('Fetching spreadsheets from Google Sheets API...');
-      const response = await fetch('https://www.googleapis.com/drive/v3/files', {
+      const response = await fetch('https://www.googleapis.com/drive/v3/files?q=mimeType=\'application/vnd.google-apps.spreadsheet\'', {
         headers: {
           'Authorization': `Bearer ${credentials.access_token}`,
           'Accept': 'application/json',
@@ -65,14 +66,13 @@ export const useGoogleSheets = () => {
       }
 
       const data = await response.json();
-      const spreadsheetsList = data.files
-        .filter((file: any) => file.mimeType === 'application/vnd.google-apps.spreadsheet')
-        .map((file: any) => ({
-          id: file.id,
-          name: file.name,
-        }));
+      console.log('Fetched spreadsheets:', data);
+      
+      const spreadsheetsList = data.files.map((file: any) => ({
+        id: file.id,
+        name: file.name,
+      }));
 
-      console.log('Fetched spreadsheets:', spreadsheetsList);
       setSpreadsheets(spreadsheetsList);
     } catch (error) {
       console.error('Error fetching spreadsheets:', error);
@@ -107,7 +107,7 @@ export const useGoogleSheets = () => {
         return;
       }
 
-      const credentials = profile.google_sheets_credentials as GoogleSheetsCredentials;
+      const credentials = profile.google_sheets_credentials as unknown as GoogleSheetsCredentials;
 
       const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`, {
         headers: {
@@ -122,12 +122,14 @@ export const useGoogleSheets = () => {
       }
 
       const data = await response.json();
+      console.log('Fetched sheets data:', data);
+      
       const sheetsList = data.sheets.map((sheet: any) => ({
-        id: sheet.properties.sheetId,
+        id: sheet.properties.sheetId.toString(),
         name: sheet.properties.title,
       }));
 
-      console.log('Fetched sheets:', sheetsList);
+      console.log('Processed sheets list:', sheetsList);
       setSheets(sheetsList);
     } catch (error) {
       console.error('Error fetching sheets:', error);
