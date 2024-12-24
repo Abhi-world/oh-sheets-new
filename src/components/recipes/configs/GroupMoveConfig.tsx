@@ -53,7 +53,7 @@ const GroupMoveConfig = () => {
               ))}
             </SelectContent>
           </Select>
-          {' '}with these <span className="text-white">values</span>{' '}
+          {' '}with these <span className="text-white font-medium">values</span>{' '}
           <div className="inline-block w-40">
             <ValueSelector
               value={values}
