@@ -43,12 +43,12 @@ const ValueSelector = ({ value, onChange }: ValueSelectorProps) => {
           value={value}
           readOnly
           placeholder="Click to select values"
-          className="cursor-pointer hover:bg-gray-50"
+          className="cursor-pointer bg-navy-light border-google-green focus-visible:ring-google-green/50 text-white"
         />
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-navy-dark border border-google-green">
         <DialogHeader>
-          <DialogTitle>Select Board Columns</DialogTitle>
+          <DialogTitle className="text-white">Select Board Columns</DialogTitle>
         </DialogHeader>
         <ScrollArea className="max-h-[60vh] overflow-y-auto mt-4">
           <div className="space-y-2">
@@ -56,13 +56,13 @@ const ValueSelector = ({ value, onChange }: ValueSelectorProps) => {
               <Button
                 key={column.value}
                 variant="ghost"
-                className="w-full justify-start gap-2 text-left"
+                className="w-full justify-start gap-2 text-left hover:bg-navy-light"
                 onClick={() => handleSelect(column.value)}
               >
                 {selectedValues.includes(column.value) && (
-                  <Check className="h-4 w-4 text-green-500" />
+                  <Check className="h-4 w-4 text-google-green" />
                 )}
-                <span className={selectedValues.includes(column.value) ? 'text-green-500' : ''}>
+                <span className={selectedValues.includes(column.value) ? 'text-google-green' : 'text-white'}>
                   {column.label}
                 </span>
               </Button>
