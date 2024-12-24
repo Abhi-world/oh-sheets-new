@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
-import { useGoogleSheetsStatus } from '@/hooks/useGoogleSheetsStatus';
+import ValueSelector from '@/components/shared/ValueSelector';
 
 const ItemCreationConfig = () => {
   const [values, setValues] = useState('');
-  const { isConnected } = useGoogleSheetsStatus();
   const {
     spreadsheets,
     sheets,
@@ -47,12 +45,12 @@ const ItemCreationConfig = () => {
             </SelectContent>
           </Select>
           {' '}with these{' '}
-          <Input
-            value={values}
-            onChange={(e) => setValues(e.target.value)}
-            className="w-40 inline-block mx-1 bg-navy-light border-google-green focus-visible:ring-google-green/50"
-            placeholder="values"
-          />
+          <div className="inline-block w-40">
+            <ValueSelector
+              value={values}
+              onChange={setValues}
+            />
+          </div>
         </p>
       </div>
     </div>

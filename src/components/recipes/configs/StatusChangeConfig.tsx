@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
+import ValueSelector from '@/components/shared/ValueSelector';
 
 const StatusChangeConfig = () => {
   const [status, setStatus] = useState('');
@@ -53,12 +54,12 @@ const StatusChangeConfig = () => {
             </SelectContent>
           </Select>
           {' '}with these{' '}
-          <Input
-            value={values}
-            onChange={(e) => setValues(e.target.value)}
-            className="w-40 inline-block mx-1 bg-navy-light border-google-green focus-visible:ring-google-green/50"
-            placeholder="values"
-          />
+          <div className="inline-block w-40">
+            <ValueSelector
+              value={values}
+              onChange={setValues}
+            />
+          </div>
         </p>
       </div>
     </div>
