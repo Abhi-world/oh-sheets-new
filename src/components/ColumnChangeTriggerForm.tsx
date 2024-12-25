@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Trash2 } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 const formSchema = z.object({
   columnName: z.string().min(1, "Column name is required"),
@@ -38,7 +39,6 @@ export default function ColumnChangeTriggerForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Since our form schema ensures all fields are required, we can safely create the trigger
     const newTrigger: Trigger = {
       id: crypto.randomUUID(),
       columnName: values.columnName,
@@ -77,11 +77,15 @@ export default function ColumnChangeTriggerForm() {
             name="columnName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Column Name</FormLabel>
+                <FormLabel className="text-white">Column Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter column name" {...field} />
+                  <Input 
+                    placeholder="Enter column name" 
+                    {...field}
+                    className="bg-navy-light border-google-green focus:ring-google-green/50"
+                  />
                 </FormControl>
-                <FormDescription>
+                <FormDescription className="text-white/60">
                   The name of the column to monitor for changes
                 </FormDescription>
                 <FormMessage />
@@ -94,11 +98,15 @@ export default function ColumnChangeTriggerForm() {
             name="searchValues"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Search Values</FormLabel>
+                <FormLabel className="text-white">Search Values</FormLabel>
                 <FormControl>
-                  <Input placeholder="Value1, Value2, Value3" {...field} />
+                  <Input 
+                    placeholder="Value1, Value2, Value3" 
+                    {...field}
+                    className="bg-navy-light border-google-green focus:ring-google-green/50"
+                  />
                 </FormControl>
-                <FormDescription>
+                <FormDescription className="text-white/60">
                   Comma-separated values to search for in the spreadsheet
                 </FormDescription>
                 <FormMessage />
@@ -111,11 +119,15 @@ export default function ColumnChangeTriggerForm() {
             name="newValues"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>New Values</FormLabel>
+                <FormLabel className="text-white">New Values</FormLabel>
                 <FormControl>
-                  <Input placeholder="NewValue1, NewValue2, NewValue3" {...field} />
+                  <Input 
+                    placeholder="NewValue1, NewValue2, NewValue3" 
+                    {...field}
+                    className="bg-navy-light border-google-green focus:ring-google-green/50"
+                  />
                 </FormControl>
-                <FormDescription>
+                <FormDescription className="text-white/60">
                   Comma-separated values to update in the spreadsheet
                 </FormDescription>
                 <FormMessage />
@@ -127,10 +139,10 @@ export default function ColumnChangeTriggerForm() {
             control={form.control}
             name="isActive"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border border-google-green/30 p-4 bg-navy-light/50">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-base">Active</FormLabel>
-                  <FormDescription>
+                  <FormLabel className="text-white">Active</FormLabel>
+                  <FormDescription className="text-white/60">
                     Enable or disable this trigger
                   </FormDescription>
                 </div>
@@ -144,42 +156,54 @@ export default function ColumnChangeTriggerForm() {
             )}
           />
 
-          <Button type="submit">Create Trigger</Button>
+          <Button 
+            type="submit"
+            className="bg-google-green hover:bg-google-green/90 text-navy font-medium"
+          >
+            Create Trigger
+          </Button>
         </form>
       </Form>
 
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium">Active Triggers</h3>
-        {triggers.map((trigger) => (
-          <div
-            key={trigger.id}
-            className="flex items-center justify-between rounded-lg border p-4"
-          >
-            <div className="space-y-1">
-              <p className="font-medium">Column: {trigger.columnName}</p>
-              <p className="text-sm text-gray-500">
-                Search: {trigger.searchValues}
-              </p>
-              <p className="text-sm text-gray-500">
-                Update: {trigger.newValues}
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <Switch
-                checked={trigger.isActive}
-                onCheckedChange={() => toggleTrigger(trigger.id)}
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => deleteTrigger(trigger.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
+      {triggers.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-white">Active Triggers</h3>
+          {triggers.map((trigger) => (
+            <Card
+              key={trigger.id}
+              className="bg-navy-light/50 border-google-green/30"
+            >
+              <div className="p-4 flex items-center justify-between">
+                <div className="space-y-2">
+                  <p className="font-medium text-white">
+                    Column: <span className="text-google-green">{trigger.columnName}</span>
+                  </p>
+                  <p className="text-sm text-white/80">
+                    Search: <span className="bg-navy-dark/60 px-2 py-1 rounded text-google-green">{trigger.searchValues}</span>
+                  </p>
+                  <p className="text-sm text-white/80">
+                    Update: <span className="bg-navy-dark/60 px-2 py-1 rounded text-google-green">{trigger.newValues}</span>
+                  </p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <Switch
+                    checked={trigger.isActive}
+                    onCheckedChange={() => toggleTrigger(trigger.id)}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => deleteTrigger(trigger.id)}
+                    className="text-white hover:text-red-400 hover:bg-red-400/20"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
