@@ -21,19 +21,19 @@ const ColumnChangeConfig = () => {
 
   return (
     <div className="space-y-12">
-      <Card className="bg-navy-dark/40 p-6 rounded-lg border border-google-green/20">
+      <Card className="bg-recipe-navy/40 p-6 rounded-lg border-none">
         <p className="text-xl leading-relaxed text-white">
           When a column value changes in{' '}
           <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
             <SelectTrigger 
-              className="w-[180px] inline-flex bg-navy-light border-google-green focus:ring-google-green/50"
+              className="w-[180px] inline-flex bg-recipe-navy/90 border-none text-white focus:ring-white/20"
               onClick={() => fetchSpreadsheets()}
             >
               <SelectValue placeholder={isLoading ? "Loading..." : "Select spreadsheet"} />
             </SelectTrigger>
-            <SelectContent className="bg-navy-light border border-google-green">
+            <SelectContent className="bg-recipe-navy border-none">
               {spreadsheets.map((s) => (
-                <SelectItem key={s.id} value={s.id} className="text-white">
+                <SelectItem key={s.id} value={s.id} className="text-white hover:bg-white/10">
                   {s.name}
                 </SelectItem>
               ))}
@@ -42,20 +42,20 @@ const ColumnChangeConfig = () => {
           {' / '}
           <Select value={selectedSheet} onValueChange={setSelectedSheet}>
             <SelectTrigger 
-              className="w-[150px] inline-flex bg-navy-light border-google-green focus:ring-google-green/50"
+              className="w-[150px] inline-flex bg-recipe-navy/90 border-none text-white focus:ring-white/20"
             >
               <SelectValue placeholder={isLoading ? "Loading..." : "Select sheet"} />
             </SelectTrigger>
-            <SelectContent className="bg-navy-light border border-google-green">
+            <SelectContent className="bg-recipe-navy border-none">
               {sheets.map((s) => (
-                <SelectItem key={s.id} value={s.id} className="text-white">
+                <SelectItem key={s.id} value={s.id} className="text-white hover:bg-white/10">
                   {s.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           {' '}with these{' '}
-          <span className="text-white font-semibold bg-navy-light px-2 py-1 rounded">values</span>
+          <span className="text-white font-semibold bg-recipe-navy/90 px-2 py-1 rounded">values</span>
           {' '}
           <div className="inline-block w-[180px]">
             <ValueSelector

@@ -21,7 +21,14 @@ export default {
       colors: {
         navy: {
           DEFAULT: '#1A1F2C',
-          light: '#2A2F3C'
+          light: '#2A2F3C',
+          dark: '#222222'
+        },
+        recipe: {
+          green: '#228B22',
+          darkGreen: '#1B6B1B',
+          navy: '#222222',
+          blue: '#0073ea'
         },
         monday: {
           blue: "#0073ea",
