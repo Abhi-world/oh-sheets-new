@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ValueSelector from '@/components/shared/ValueSelector';
 import { Card } from '@/components/ui/card';
 
 const ColumnChangeConfig = () => {
+  const [values, setValues] = useState('');
+  const [newValues, setNewValues] = useState('');
+  
   const {
     spreadsheets,
     sheets,
@@ -13,6 +16,7 @@ const ColumnChangeConfig = () => {
     setSelectedSpreadsheet,
     setSelectedSheet,
     isLoading,
+    fetchSpreadsheets
   } = useGoogleSheets();
 
   return (
@@ -22,7 +26,7 @@ const ColumnChangeConfig = () => {
           When a column value changes in{' '}
           <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
             <SelectTrigger 
-              className="w-40 inline-flex bg-navy-light border-google-green focus:ring-google-green/50"
+              className="w-[180px] inline-flex bg-navy-light border-google-green focus:ring-google-green/50"
               onClick={() => fetchSpreadsheets()}
             >
               <SelectValue placeholder={isLoading ? "Loading..." : "Select spreadsheet"} />
@@ -37,7 +41,9 @@ const ColumnChangeConfig = () => {
           </Select>
           {' / '}
           <Select value={selectedSheet} onValueChange={setSelectedSheet}>
-            <SelectTrigger className="w-32 inline-flex bg-navy-light border-google-green focus:ring-google-green/50">
+            <SelectTrigger 
+              className="w-[150px] inline-flex bg-navy-light border-google-green focus:ring-google-green/50"
+            >
               <SelectValue placeholder={isLoading ? "Loading..." : "Select sheet"} />
             </SelectTrigger>
             <SelectContent className="bg-navy-light border border-google-green">
@@ -51,17 +57,19 @@ const ColumnChangeConfig = () => {
           {' '}with these{' '}
           <span className="text-white font-semibold bg-navy-light px-2 py-1 rounded">values</span>
           {' '}
-          <div className="inline-block w-40">
+          <div className="inline-block w-[180px]">
             <ValueSelector
               value={values}
               onChange={setValues}
+              placeholder="Enter values"
             />
           </div>
           {' '}update to{' '}
-          <div className="inline-block w-40">
+          <div className="inline-block w-[180px]">
             <ValueSelector
               value={newValues}
               onChange={setNewValues}
+              placeholder="Enter new values"
             />
           </div>
         </p>
