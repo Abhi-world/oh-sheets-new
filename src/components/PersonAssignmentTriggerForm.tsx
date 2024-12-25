@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
+import ValueSelector from './shared/ValueSelector';
 
 interface PersonTrigger {
   columnName: string;
@@ -68,11 +69,11 @@ const PersonAssignmentTriggerForm = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Values (comma-separated)</label>
-            <Input
+            <label className="text-sm font-medium">Values</label>
+            <ValueSelector
               value={values}
-              onChange={(e) => setValues(e.target.value)}
-              placeholder="Value1, Value2, Value3"
+              onChange={setValues}
+              placeholder="Select column types..."
             />
           </div>
 

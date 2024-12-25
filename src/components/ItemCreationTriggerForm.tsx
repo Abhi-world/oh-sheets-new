@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import ValueSelector from './shared/ValueSelector';
 
 interface ItemTrigger {
   values: string;
@@ -55,11 +55,11 @@ const ItemCreationTriggerForm = () => {
       <CardContent>
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Values (comma-separated)</label>
-            <Input
+            <label className="text-sm font-medium">Values</label>
+            <ValueSelector
               value={values}
-              onChange={(e) => setValues(e.target.value)}
-              placeholder="Value1, Value2, Value3"
+              onChange={setValues}
+              placeholder="Select column types..."
             />
           </div>
 

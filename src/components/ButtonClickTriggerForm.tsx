@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import TriggerFormLayout from './shared/TriggerFormLayout';
 import TriggerFormField from './shared/TriggerFormField';
 import TriggerList from './shared/TriggerList';
+import ValueSelector from './shared/ValueSelector';
 
 interface ButtonTrigger {
   buttonName: string;
@@ -66,12 +67,14 @@ const ButtonClickTriggerForm = () => {
         placeholder="Enter button name"
       />
 
-      <TriggerFormField
-        label="Values (comma-separated)"
-        value={values}
-        onChange={setValues}
-        placeholder="Value1, Value2, Value3"
-      />
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Values</label>
+        <ValueSelector
+          value={values}
+          onChange={setValues}
+          placeholder="Select column types..."
+        />
+      </div>
 
       <Button
         onClick={handleAddTrigger}
