@@ -5,7 +5,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -35,20 +34,16 @@ interface ValueSelectorProps {
 
 const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: ValueSelectorProps) => {
   const [open, setOpen] = useState(false);
-  const [selectedValues, setSelectedValues] = useState<string[]>(() => {
-    if (!value) return [];
-    return value.split(',').map(v => v.trim()).filter(Boolean);
-  });
+  const [selectedValues, setSelectedValues] = useState<string[]>(() => 
+    value ? value.split(',').map(v => v.trim()) : []
+  );
   const [customValue, setCustomValue] = useState('');
 
   const handleSelect = (currentValue: string) => {
-    console.log('Selecting value:', currentValue);
-    
     const newValues = selectedValues.includes(currentValue)
       ? selectedValues.filter(v => v !== currentValue)
       : [...selectedValues, currentValue];
     
-    console.log('New values:', newValues);
     setSelectedValues(newValues);
     onChange(newValues.join(', '));
   };
@@ -81,9 +76,6 @@ const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: Va
       <DialogContent className="bg-navy-dark border border-google-green/20">
         <DialogHeader>
           <DialogTitle className="text-white">Board columns</DialogTitle>
-          <DialogDescription className="text-gray-400">
-            Select one or more columns from the list below
-          </DialogDescription>
         </DialogHeader>
         <div className="flex items-center border border-navy-light rounded-md mb-4">
           <input
@@ -119,10 +111,7 @@ const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: Va
                 key={type.value}
                 value={type.value}
                 onSelect={() => handleSelect(type.label)}
-                className={cn(
-                  "text-white hover:bg-navy-light cursor-pointer",
-                  selectedValues.includes(type.label) && "bg-navy-light"
-                )}
+                className="text-white hover:bg-navy-light cursor-pointer"
               >
                 <Check
                   className={cn(
