@@ -16,6 +16,9 @@ const StatusChangeConfig = () => {
     isLoading,
   } = useGoogleSheets();
 
+  console.log('Spreadsheets:', spreadsheets); // Debug log
+  console.log('Sheets:', sheets); // Debug log
+
   return (
     <div className="space-y-12">
       <div className="bg-navy-dark/40 p-6 rounded-lg border border-google-green/20">
@@ -29,7 +32,7 @@ const StatusChangeConfig = () => {
               <SelectValue placeholder={isLoading ? "Loading..." : "Select spreadsheet"} />
             </SelectTrigger>
             <SelectContent className="bg-navy-light border border-google-green">
-              {spreadsheets.map((s) => (
+              {(spreadsheets || []).map((s) => (
                 <SelectItem key={s.id} value={s.id} className="text-white">
                   {s.name}
                 </SelectItem>
@@ -42,7 +45,7 @@ const StatusChangeConfig = () => {
               <SelectValue placeholder={isLoading ? "Loading..." : "Select sheet"} />
             </SelectTrigger>
             <SelectContent className="bg-navy-light border border-google-green">
-              {sheets.map((s) => (
+              {(sheets || []).map((s) => (
                 <SelectItem key={s.id} value={s.id} className="text-white">
                   {s.name}
                 </SelectItem>
