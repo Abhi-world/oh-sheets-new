@@ -112,7 +112,7 @@ const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: Va
             className="bg-navy-light text-white"
           />
           <CommandEmpty className="text-white py-6">No column type found.</CommandEmpty>
-          <CommandGroup className="max-h-60 overflow-auto">
+          <CommandGroup>
             {columnTypes.map((type) => (
               <CommandItem
                 key={type.value}
