@@ -1,21 +1,19 @@
-import React, { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Check, ChevronsUpDown, Plus } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from '@/components/ui/command';
+import React, { useState, useEffect } from 'react';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+
+interface ValueSelectorProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}
 
 const columnTypes = [
   { label: 'Budget', value: 'budget' },
@@ -26,45 +24,40 @@ const columnTypes = [
   { label: 'Priority', value: 'priority' },
 ];
 
-interface ValueSelectorProps {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-}
-
 const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: ValueSelectorProps) => {
   const [open, setOpen] = useState(false);
-  const [selectedValues, setSelectedValues] = useState<string[]>(() => {
-    if (!value) return [];
-    const trimmed = value.split(',').map(v => v.trim());
-    return trimmed.filter(Boolean);
-  });
+  const [selectedValues, setSelectedValues] = useState<string[]>([]);
   const [customValue, setCustomValue] = useState('');
 
-  const handleSelect = (currentValue: string) => {
-    const newValues = selectedValues.includes(currentValue)
-      ? selectedValues.filter(v => v !== currentValue)
-      : [...selectedValues, currentValue];
+  // Initialize selected values from prop
+  useEffect(() => {
+    if (value) {
+      const values = value.split(',').map(v => v.trim()).filter(Boolean);
+      setSelectedValues(values);
+    }
+  }, [value]);
+
+  const handleValueToggle = (valueToToggle: string) => {
+    const newValues = selectedValues.includes(valueToToggle)
+      ? selectedValues.filter(v => v !== valueToToggle)
+      : [...selectedValues, valueToToggle];
     
     setSelectedValues(newValues);
     onChange(newValues.join(', '));
   };
 
   const handleAddCustomValue = () => {
-    if (!customValue.trim()) return;
-    
-    const newValue = customValue.trim();
-    if (!selectedValues.includes(newValue)) {
-      const newValues = [...selectedValues, newValue];
+    if (customValue && !selectedValues.includes(customValue)) {
+      const newValues = [...selectedValues, customValue];
       setSelectedValues(newValues);
       onChange(newValues.join(', '));
+      setCustomValue('');
     }
-    setCustomValue('');
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
@@ -74,63 +67,63 @@ const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: Va
           {value || placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
-      </DialogTrigger>
-      <DialogContent className="bg-navy-dark border border-google-green/20">
-        <DialogHeader>
-          <DialogTitle className="text-white">Board columns</DialogTitle>
-        </DialogHeader>
-        <div className="flex items-center border border-navy-light rounded-md mb-4">
-          <input
-            type="text"
-            placeholder="Add custom value"
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0 bg-navy-dark border border-google-green/20">
+        <div className="flex items-center border-b border-navy-light p-2">
+          <Input
             value={customValue}
             onChange={(e) => setCustomValue(e.target.value)}
-            className="flex-1 bg-transparent border-none text-white px-3 py-2 focus:outline-none"
-            onKeyPress={(e) => {
+            placeholder="Add custom value"
+            className="flex-1 bg-transparent border-none text-white focus:ring-0"
+            onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
                 handleAddCustomValue();
               }
             }}
           />
-          <Button 
-            size="sm" 
-            className="mr-1.5 bg-recipe-blue hover:bg-recipe-blue/90"
+          <Button
+            size="sm"
+            className="ml-2 bg-recipe-blue hover:bg-recipe-blue/90"
             onClick={handleAddCustomValue}
           >
-            <Plus className="h-4 w-4" />
+            Add
           </Button>
         </div>
-        <Command className="bg-navy-dark">
-          <CommandInput 
-            placeholder="Search column types..." 
-            className="bg-navy-light text-white"
-          />
-          <CommandEmpty className="text-white py-6">No column type found.</CommandEmpty>
-          <CommandGroup>
-            {columnTypes.map((type) => (
-              <CommandItem
-                key={type.value}
-                value={type.value}
-                onSelect={() => handleSelect(type.label)}
+        <div className="max-h-60 overflow-auto">
+          {columnTypes.map((type) => (
+            <div
+              key={type.value}
+              className={cn(
+                "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-navy-light text-white",
+                selectedValues.includes(type.label) && "bg-navy-light"
+              )}
+              onClick={() => handleValueToggle(type.label)}
+            >
+              <Check
                 className={cn(
-                  "text-white hover:bg-navy-light cursor-pointer",
-                  selectedValues.includes(type.label) && "bg-navy-light"
+                  "mr-2 h-4 w-4",
+                  selectedValues.includes(type.label) ? "opacity-100" : "opacity-0"
                 )}
+              />
+              {type.label}
+            </div>
+          ))}
+          {selectedValues.map(value => (
+            !columnTypes.find(type => type.label === value) && (
+              <div
+                key={value}
+                className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-navy-light text-white bg-navy-light"
+                onClick={() => handleValueToggle(value)}
               >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    selectedValues.includes(type.label) ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                {type.label}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </Command>
-      </DialogContent>
-    </Dialog>
+                <Check className="mr-2 h-4 w-4" />
+                {value}
+              </div>
+            )
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 };
 
