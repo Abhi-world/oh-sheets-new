@@ -35,7 +35,7 @@ interface ValueSelectorProps {
 const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: ValueSelectorProps) => {
   const [open, setOpen] = useState(false);
   const [selectedValues, setSelectedValues] = useState<string[]>(() => 
-    value ? value.split(',').map(v => v.trim()) : []
+    value ? value.split(',').map(v => v.trim()).filter(Boolean) : []
   );
   const [customValue, setCustomValue] = useState('');
 
@@ -80,7 +80,7 @@ const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: Va
         <div className="flex items-center border border-navy-light rounded-md mb-4">
           <input
             type="text"
-            placeholder="Add text"
+            placeholder="Add custom value"
             value={customValue}
             onChange={(e) => setCustomValue(e.target.value)}
             className="flex-1 bg-transparent border-none text-white px-3 py-2 focus:outline-none"
@@ -111,7 +111,10 @@ const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: Va
                 key={type.value}
                 value={type.value}
                 onSelect={() => handleSelect(type.label)}
-                className="text-white hover:bg-navy-light cursor-pointer"
+                className={cn(
+                  "text-white hover:bg-navy-light cursor-pointer",
+                  selectedValues.includes(type.label) && "bg-navy-light"
+                )}
               >
                 <Check
                   className={cn(
