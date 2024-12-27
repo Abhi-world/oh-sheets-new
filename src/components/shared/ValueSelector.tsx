@@ -35,19 +35,34 @@ interface ValueSelectorProps {
 
 const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: ValueSelectorProps) => {
   const [open, setOpen] = useState(false);
-  const [selectedValues, setSelectedValues] = useState<string[]>(
-    value ? value.split(',').map(v => v.trim()).filter(Boolean) : []
-  );
+  const [selectedValues, setSelectedValues] = useState<string[]>(() => {
+    // Safely initialize selected values from the input value
+    if (!value) return [];
+    return value.split(',').map(v => v.trim()).filter(Boolean);
+  });
+  const [customValue, setCustomValue] = useState('');
+
+  console.log('Current selected values:', selectedValues); // Debug log
 
   const handleSelect = (currentValue: string) => {
-    console.log('Selecting value:', currentValue);
+    console.log('Selecting value:', currentValue); // Debug log
+    
     const newValues = selectedValues.includes(currentValue)
       ? selectedValues.filter(v => v !== currentValue)
       : [...selectedValues, currentValue];
     
-    console.log('New values:', newValues);
+    console.log('New values:', newValues); // Debug log
     setSelectedValues(newValues);
     onChange(newValues.join(', '));
+  };
+
+  const handleAddCustomValue = () => {
+    if (!customValue.trim()) return;
+    
+    const newValues = [...selectedValues, customValue.trim()];
+    setSelectedValues(newValues);
+    onChange(newValues.join(', '));
+    setCustomValue('');
   };
 
   return (
@@ -75,11 +90,20 @@ const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: Va
             <input
               type="text"
               placeholder="Add text"
+              value={customValue}
+              onChange={(e) => setCustomValue(e.target.value)}
               className="flex-1 bg-transparent border-none text-white px-3 py-2 focus:outline-none"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddCustomValue();
+                }
+              }}
             />
             <Button 
               size="sm" 
               className="mr-1.5 bg-recipe-blue hover:bg-recipe-blue/90"
+              onClick={handleAddCustomValue}
             >
               <Plus className="h-4 w-4" />
             </Button>
