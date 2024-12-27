@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -35,13 +36,17 @@ interface ValueSelectorProps {
 
 const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: ValueSelectorProps) => {
   const [open, setOpen] = useState(false);
-  const [selectedValues, setSelectedValues] = useState<string[]>(value ? value.split(',').map(v => v.trim()) : []);
+  const [selectedValues, setSelectedValues] = useState<string[]>(
+    value ? value.split(',').map(v => v.trim()).filter(Boolean) : []
+  );
 
   const handleSelect = (currentValue: string) => {
+    console.log('Selecting value:', currentValue);
     const newValues = selectedValues.includes(currentValue)
       ? selectedValues.filter(v => v !== currentValue)
       : [...selectedValues, currentValue];
     
+    console.log('New values:', newValues);
     setSelectedValues(newValues);
     onChange(newValues.join(', '));
   };
@@ -62,9 +67,15 @@ const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: Va
       <DialogContent className="bg-navy-dark border border-google-green/20">
         <DialogHeader>
           <DialogTitle className="text-white">Select Column Types</DialogTitle>
+          <DialogDescription className="text-gray-400">
+            Choose one or more column types from the list below.
+          </DialogDescription>
         </DialogHeader>
         <Command className="bg-navy-dark">
-          <CommandInput placeholder="Search column types..." className="bg-navy-light text-white" />
+          <CommandInput 
+            placeholder="Search column types..." 
+            className="bg-navy-light text-white"
+          />
           <CommandEmpty className="text-white">No column type found.</CommandEmpty>
           <CommandGroup className="max-h-60 overflow-auto">
             {columnTypes.map((type) => (
