@@ -36,22 +36,21 @@ interface ValueSelectorProps {
 const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: ValueSelectorProps) => {
   const [open, setOpen] = useState(false);
   const [selectedValues, setSelectedValues] = useState<string[]>(() => {
-    // Safely initialize selected values from the input value
     if (!value) return [];
     return value.split(',').map(v => v.trim()).filter(Boolean);
   });
   const [customValue, setCustomValue] = useState('');
 
-  console.log('Current selected values:', selectedValues); // Debug log
+  console.log('Current selected values:', selectedValues);
 
   const handleSelect = (currentValue: string) => {
-    console.log('Selecting value:', currentValue); // Debug log
+    console.log('Selecting value:', currentValue);
     
     const newValues = selectedValues.includes(currentValue)
       ? selectedValues.filter(v => v !== currentValue)
       : [...selectedValues, currentValue];
     
-    console.log('New values:', newValues); // Debug log
+    console.log('New values:', newValues);
     setSelectedValues(newValues);
     onChange(newValues.join(', '));
   };
@@ -85,36 +84,34 @@ const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: Va
             Select one or more columns from the list below
           </DialogDescription>
         </DialogHeader>
-        <div className="relative">
-          <div className="flex items-center border border-navy-light rounded-md mb-4">
-            <input
-              type="text"
-              placeholder="Add text"
-              value={customValue}
-              onChange={(e) => setCustomValue(e.target.value)}
-              className="flex-1 bg-transparent border-none text-white px-3 py-2 focus:outline-none"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleAddCustomValue();
-                }
-              }}
-            />
-            <Button 
-              size="sm" 
-              className="mr-1.5 bg-recipe-blue hover:bg-recipe-blue/90"
-              onClick={handleAddCustomValue}
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
+        <div className="flex items-center border border-navy-light rounded-md mb-4">
+          <input
+            type="text"
+            placeholder="Add text"
+            value={customValue}
+            onChange={(e) => setCustomValue(e.target.value)}
+            className="flex-1 bg-transparent border-none text-white px-3 py-2 focus:outline-none"
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAddCustomValue();
+              }
+            }}
+          />
+          <Button 
+            size="sm" 
+            className="mr-1.5 bg-recipe-blue hover:bg-recipe-blue/90"
+            onClick={handleAddCustomValue}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
         </div>
         <Command className="bg-navy-dark">
           <CommandInput 
             placeholder="Search column types..." 
             className="bg-navy-light text-white"
           />
-          <CommandEmpty className="text-white">No column type found.</CommandEmpty>
+          <CommandEmpty className="text-white py-6">No column type found.</CommandEmpty>
           <CommandGroup className="max-h-60 overflow-auto">
             {columnTypes.map((type) => (
               <CommandItem
@@ -122,7 +119,7 @@ const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: Va
                 value={type.value}
                 onSelect={() => handleSelect(type.label)}
                 className={cn(
-                  "text-white hover:bg-navy-light",
+                  "text-white hover:bg-navy-light cursor-pointer",
                   selectedValues.includes(type.label) && "bg-navy-light"
                 )}
               >
