@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -8,7 +7,7 @@ import {
   DialogTrigger,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   Command,
@@ -17,14 +16,14 @@ import {
   CommandInput,
   CommandItem,
 } from '@/components/ui/command';
+import { Button } from '@/components/ui/button';
 
 const columnTypes = [
-  { label: 'Status', value: 'status' },
-  { label: 'Text', value: 'text' },
-  { label: 'Numbers', value: 'number' },
-  { label: 'Timeline', value: 'timeline' },
-  { label: 'Date', value: 'date' },
-  { label: 'People', value: 'people' },
+  { label: 'Budget', value: 'budget' },
+  { label: 'Due date', value: 'due_date' },
+  { label: 'Item ID', value: 'item_id' },
+  { label: 'Name', value: 'name' },
+  { label: 'Owner', value: 'owner' },
   { label: 'Priority', value: 'priority' },
 ];
 
@@ -66,11 +65,26 @@ const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: Va
       </DialogTrigger>
       <DialogContent className="bg-navy-dark border border-google-green/20">
         <DialogHeader>
-          <DialogTitle className="text-white">Select Column Types</DialogTitle>
+          <DialogTitle className="text-white">Board columns</DialogTitle>
           <DialogDescription className="text-gray-400">
-            Choose one or more column types from the list below.
+            Select one or more columns from the list below
           </DialogDescription>
         </DialogHeader>
+        <div className="relative">
+          <div className="flex items-center border border-navy-light rounded-md mb-4">
+            <input
+              type="text"
+              placeholder="Add text"
+              className="flex-1 bg-transparent border-none text-white px-3 py-2 focus:outline-none"
+            />
+            <Button 
+              size="sm" 
+              className="mr-1.5 bg-recipe-blue hover:bg-recipe-blue/90"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
         <Command className="bg-navy-dark">
           <CommandInput 
             placeholder="Search column types..." 
