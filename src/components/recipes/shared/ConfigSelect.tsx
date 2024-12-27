@@ -1,7 +1,9 @@
 import React from 'react';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ConfigSelectProps {
+  label: string;
   value: string;
   onValueChange: (value: string) => void;
   placeholder?: string;
@@ -9,21 +11,23 @@ interface ConfigSelectProps {
   className?: string;
 }
 
-const ConfigSelect = ({ value, onValueChange, placeholder, options, className }: ConfigSelectProps) => {
+const ConfigSelect = ({ label, value, onValueChange, placeholder, options, className }: ConfigSelectProps) => {
   return (
-    <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger className={`w-40 inline-flex bg-transparent border-b-2 border-white/50 rounded-none text-white ${className}`}>
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        {options.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
-        <SelectItem value="new">+ Add a new column</SelectItem>
-      </SelectContent>
-    </Select>
+    <div className="space-y-2">
+      <Label className="text-white">{label}</Label>
+      <Select value={value} onValueChange={onValueChange}>
+        <SelectTrigger className={`bg-transparent border-b-2 border-white/50 rounded-none text-white ${className}`}>
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 };
 

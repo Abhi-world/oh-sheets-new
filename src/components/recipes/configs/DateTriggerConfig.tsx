@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import RecipeConfigShell from '../shared/RecipeConfigShell';
 import ConfigInput from '../shared/ConfigInput';
 import ConfigSelect from '../shared/ConfigSelect';
@@ -7,6 +7,9 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 const DateTriggerConfig = () => {
+  const [triggerDate, setTriggerDate] = useState('');
+  const [selectedBoard, setSelectedBoard] = useState('');
+  
   const {
     spreadsheets,
     sheets,
@@ -45,14 +48,15 @@ const DateTriggerConfig = () => {
         <ConfigInput
           label="Trigger Date"
           type="date"
+          value={triggerDate}
+          onChange={(e) => setTriggerDate(e.target.value)}
           placeholder="Select trigger date"
-          onChange={() => {}}
         />
 
         <ConfigSelect
           label="Monday.com Board"
-          value=""
-          onChange={() => {}}
+          value={selectedBoard}
+          onValueChange={setSelectedBoard}
           options={[
             { value: 'board1', label: 'Main Board' },
             { value: 'board2', label: 'Development Board' },
@@ -66,7 +70,7 @@ const DateTriggerConfig = () => {
             <ConfigSelect
               label="Spreadsheet"
               value={selectedSpreadsheet}
-              onChange={setSelectedSpreadsheet}
+              onValueChange={setSelectedSpreadsheet}
               options={spreadsheets.map(s => ({ value: s.id, label: s.name }))}
               placeholder="Select spreadsheet"
             />
@@ -74,7 +78,7 @@ const DateTriggerConfig = () => {
             <ConfigSelect
               label="Sheet"
               value={selectedSheet}
-              onChange={setSelectedSheet}
+              onValueChange={setSelectedSheet}
               options={sheets.map(s => ({ value: s.id, label: s.name }))}
               placeholder="Select sheet"
             />

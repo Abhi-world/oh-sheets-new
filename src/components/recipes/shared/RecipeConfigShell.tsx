@@ -5,9 +5,12 @@ import { useNavigate } from 'react-router-dom';
 
 interface RecipeConfigShellProps {
   children: React.ReactNode;
+  title: string;
+  description: string;
+  onSave?: () => void;
 }
 
-const RecipeConfigShell = ({ children }: RecipeConfigShellProps) => {
+const RecipeConfigShell = ({ children, title, description, onSave }: RecipeConfigShellProps) => {
   const navigate = useNavigate();
 
   return (
@@ -27,7 +30,11 @@ const RecipeConfigShell = ({ children }: RecipeConfigShellProps) => {
       </div>
 
       {/* Main content */}
-      <div className="max-w-3xl mx-auto space-y-12">
+      <div className="max-w-3xl mx-auto space-y-6">
+        <div className="space-y-2">
+          <h1 className="text-2xl font-semibold">{title}</h1>
+          <p className="text-white/80">{description}</p>
+        </div>
         {children}
       </div>
 
