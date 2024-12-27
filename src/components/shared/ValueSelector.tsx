@@ -34,9 +34,11 @@ interface ValueSelectorProps {
 
 const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: ValueSelectorProps) => {
   const [open, setOpen] = useState(false);
-  const [selectedValues, setSelectedValues] = useState<string[]>(() => 
-    value ? value.split(',').map(v => v.trim()).filter(Boolean) : []
-  );
+  const [selectedValues, setSelectedValues] = useState<string[]>(() => {
+    if (!value) return [];
+    const trimmed = value.split(',').map(v => v.trim());
+    return trimmed.filter(Boolean);
+  });
   const [customValue, setCustomValue] = useState('');
 
   const handleSelect = (currentValue: string) => {
