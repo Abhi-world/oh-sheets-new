@@ -41,8 +41,6 @@ const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: Va
   });
   const [customValue, setCustomValue] = useState('');
 
-  console.log('Current selected values:', selectedValues);
-
   const handleSelect = (currentValue: string) => {
     console.log('Selecting value:', currentValue);
     
@@ -58,9 +56,12 @@ const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: Va
   const handleAddCustomValue = () => {
     if (!customValue.trim()) return;
     
-    const newValues = [...selectedValues, customValue.trim()];
-    setSelectedValues(newValues);
-    onChange(newValues.join(', '));
+    const newValue = customValue.trim();
+    if (!selectedValues.includes(newValue)) {
+      const newValues = [...selectedValues, newValue];
+      setSelectedValues(newValues);
+      onChange(newValues.join(', '));
+    }
     setCustomValue('');
   };
 
