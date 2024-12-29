@@ -8,10 +8,9 @@ const Index = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#7B61FF] via-[#9B87F5] to-[#7E69AB] relative overflow-hidden">
-      {/* Decorative elements */}
-      <div className="absolute inset-0 bg-[url('/lovable-uploads/c931c08e-78b7-41b7-9722-c2db9e3875e9.png')] opacity-10 bg-cover bg-center" />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-transparent" />
+    <div className="min-h-screen bg-gradient-to-br from-[#7B61FF] via-[#9B87F5] to-[#7E69AB] relative">
+      {/* Background image with reduced opacity */}
+      <div className="absolute inset-0 bg-[url('/lovable-uploads/c931c08e-78b7-41b7-9722-c2db9e3875e9.png')] opacity-5 bg-cover bg-center mix-blend-overlay" />
       
       <MarketplaceHeader />
       
