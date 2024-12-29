@@ -65,10 +65,12 @@ const InstallationFlow = () => {
                   <img src="/lovable-uploads/aa37e716-a0c4-493f-9f04-9cc9c85c931a.png" alt="Google Sheets" className="w-12 h-12" />
                 </div>
                 <div className="text-center">
-                  <h1 className="text-5xl font-bold bg-gradient-to-r from-[#228B22] to-[#0052CC] bg-clip-text text-transparent drop-shadow-lg">
-                    Oh Sheets
-                  </h1>
-                  <p className="text-lg text-white/90 mt-2">
+                  <div className="inline-block bg-white/95 backdrop-blur-sm rounded-xl px-6 py-3 shadow-xl">
+                    <h1 className="text-5xl font-bold bg-gradient-to-r from-[#228B22] to-[#0052CC] bg-clip-text text-transparent">
+                      Oh Sheets
+                    </h1>
+                  </div>
+                  <p className="text-lg text-white mt-4 max-w-lg mx-auto">
                     Seamlessly sync your Monday.com data with Google Sheets using our automated integration templates
                   </p>
                 </div>
