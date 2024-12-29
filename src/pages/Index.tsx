@@ -18,9 +18,49 @@ const Index = () => {
         }}
       />
       
-      <MarketplaceHeader />
+      <div className="relative z-10">
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
+            <div className="flex flex-col items-center space-y-6">
+              {/* Logo and title section */}
+              <div className="flex items-center space-x-3 mb-2">
+                <img 
+                  src="/lovable-uploads/5e7a0614-eebd-4595-9634-40b17d9029c2.png" 
+                  alt="Monday.com" 
+                  className="w-12 h-12"
+                />
+                <span className="text-white opacity-80">to</span>
+                <img 
+                  src="/lovable-uploads/aa37e716-a0c4-493f-9f04-9cc9c85c931a.png" 
+                  alt="Google Sheets" 
+                  className="w-12 h-12"
+                />
+              </div>
+
+              {/* Title with enhanced styling */}
+              <div className="text-center">
+                <div className="inline-block bg-white/95 backdrop-blur-sm rounded-xl px-6 py-3 shadow-xl">
+                  <h1 className="text-5xl font-bold bg-gradient-to-r from-[#228B22] to-[#0052CC] bg-clip-text text-transparent">
+                    Oh Sheets
+                  </h1>
+                </div>
+                <p className="text-lg text-white mt-4 max-w-lg mx-auto">
+                  Seamlessly sync your Monday.com data with Google Sheets using our automated integration templates
+                </p>
+              </div>
+
+              {/* Decorative elements */}
+              <div className="flex items-center space-x-2 mt-6">
+                <div className="w-2 h-2 rounded-full bg-[#228B22] opacity-80"></div>
+                <div className="w-24 h-1 bg-[#228B22] rounded-full opacity-80"></div>
+                <div className="w-2 h-2 rounded-full bg-[#228B22] opacity-80"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       
-      {/* Updated container with reduced spacing and decorative elements */}
+      {/* Container with reduced spacing and decorative elements */}
       <div className="container mx-auto px-4 -mt-6 relative z-10">
         {/* Decorative circles */}
         <div className="absolute left-4 -top-8 w-20 h-20 bg-white/5 rounded-full blur-xl" />
