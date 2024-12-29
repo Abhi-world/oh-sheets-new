@@ -1,18 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RadioGroup } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, X } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { mockWorkspaces, mockBoards } from '@/utils/mockData';
 
 const InstallationFlow = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [workspaceType, setWorkspaceType] = useState('all');
-  const [workspaces, setWorkspaces] = useState<any[]>([]);
-  const [boards, setBoards] = useState<any[]>([]);
   const [selectedWorkspace, setSelectedWorkspace] = useState('');
   const [selectedBoard, setSelectedBoard] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -24,162 +22,20 @@ const InstallationFlow = () => {
     { title: 'Post', description: 'or edit updates on your behalf' }
   ];
 
-  useEffect(() => {
-    fetchWorkspaces();
-  }, []);
-
-  useEffect(() => {
-    if (selectedWorkspace) {
-      fetchBoards(selectedWorkspace);
-    }
-  }, [selectedWorkspace]);
-
-  const fetchWorkspaces = async () => {
-    try {
-      setIsLoading(true);
-      console.log('Fetching user profile...');
-      
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('monday_access_token')
-        .maybeSingle();
-
-      if (profileError) {
-        console.error('Error fetching profile:', profileError);
-        toast.error('Failed to fetch user profile');
-        return;
-      }
-
-      if (!profile?.monday_access_token) {
-        console.log('No access token found');
-        toast.error('Please connect your Monday.com account first');
-        navigate('/connect-monday');
-        return;
-      }
-
-      console.log('Fetching workspaces from Monday.com...');
-      const response = await fetch('https://api.monday.com/v2', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': profile.monday_access_token
-        },
-        body: JSON.stringify({
-          query: `
-            query {
-              workspaces {
-                id
-                name
-              }
-            }
-          `
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch workspaces');
-      }
-
-      const result = await response.json();
-      if (result.data?.workspaces) {
-        console.log('Workspaces fetched:', result.data.workspaces);
-        setWorkspaces(result.data.workspaces);
-      }
-    } catch (error) {
-      console.error('Error fetching workspaces:', error);
-      toast.error('Failed to fetch workspaces');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchBoards = async (workspaceId: string) => {
-    try {
-      setIsLoading(true);
-      console.log('Fetching boards for workspace:', workspaceId);
-      
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('monday_access_token')
-        .maybeSingle();
-
-      if (profileError || !profile?.monday_access_token) {
-        console.error('Error fetching profile or no access token:', profileError);
-        toast.error('Failed to fetch user profile');
-        return;
-      }
-
-      const response = await fetch('https://api.monday.com/v2', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': profile.monday_access_token
-        },
-        body: JSON.stringify({
-          query: `
-            query {
-              boards (workspace_ids: [${workspaceId}]) {
-                id
-                name
-              }
-            }
-          `
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch boards');
-      }
-
-      const result = await response.json();
-      if (result.data?.boards) {
-        console.log('Boards fetched:', result.data.boards);
-        setBoards(result.data.boards);
-      }
-    } catch (error) {
-      console.error('Error fetching boards:', error);
-      toast.error('Failed to fetch boards');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleInstall = async () => {
     try {
       setIsLoading(true);
-      console.log('Starting installation process...');
+      console.log('Mock installation process...');
+      console.log('Selected workspace:', selectedWorkspace);
+      console.log('Selected board:', selectedBoard);
       
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('monday_user_id')
-        .maybeSingle();
-
-      if (profileError || !profile?.monday_user_id) {
-        console.error('Error fetching profile or no user ID:', profileError);
-        toast.error('User not authenticated');
-        return;
-      }
-
-      console.log('Saving installation details...');
-      const { error: installError } = await supabase
-        .from('triggers')
-        .insert({
-          monday_user_id: profile.monday_user_id,
-          monday_board_id: selectedBoard,
-          trigger_type: 'installation',
-          is_active: true
-        });
-
-      if (installError) {
-        console.error('Installation error:', installError);
-        throw installError;
-      }
-
-      console.log('Installation successful');
-      toast.success('App installed successfully!');
+      // Simulate installation delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast.success('App installed successfully! (Mock)');
       navigate('/');
     } catch (error) {
-      console.error('Error installing app:', error);
+      console.error('Error in mock installation:', error);
       toast.error('Failed to install app');
     } finally {
       setIsLoading(false);
@@ -261,7 +117,7 @@ const InstallationFlow = () => {
                             <SelectValue placeholder="Choose workspace" />
                           </SelectTrigger>
                           <SelectContent>
-                            {workspaces.map((workspace) => (
+                            {mockWorkspaces.map((workspace) => (
                               <SelectItem key={workspace.id} value={workspace.id}>
                                 {workspace.name}
                               </SelectItem>
@@ -312,7 +168,7 @@ const InstallationFlow = () => {
                   <SelectValue placeholder="Choose a workspace" />
                 </SelectTrigger>
                 <SelectContent>
-                  {workspaces.map((workspace) => (
+                  {mockWorkspaces.map((workspace) => (
                     <SelectItem key={workspace.id} value={workspace.id}>
                       {workspace.name}
                     </SelectItem>
@@ -325,7 +181,7 @@ const InstallationFlow = () => {
                   <SelectValue placeholder="Choose a board" />
                 </SelectTrigger>
                 <SelectContent>
-                  {boards.map((board) => (
+                  {mockBoards.map((board) => (
                     <SelectItem key={board.id} value={board.id}>
                       {board.name}
                     </SelectItem>
