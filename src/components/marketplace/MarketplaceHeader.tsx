@@ -9,9 +9,6 @@ const MarketplaceHeader = () => {
         {/* Header content with enhanced styling */}
         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
           <div className="flex flex-col items-center space-y-6">
-            {/* App name */}
-            <h1 className="text-3xl font-bold text-white tracking-tight">Oh Sheets</h1>
-            
             {/* Logo and title section */}
             <div className="flex items-center space-x-3 mb-2">
               <img 
@@ -32,6 +29,11 @@ const MarketplaceHeader = () => {
               Monday.com to Google Sheets
               <span className="block text-3xl mt-2">Integration</span>
             </h2>
+
+            {/* App name */}
+            <h1 className="text-5xl font-bold text-white tracking-tight bg-gradient-to-r from-[#0F9D58] to-[#1A73E8] bg-clip-text text-transparent">
+              Oh Sheets
+            </h1>
 
             {/* Description with improved readability */}
             <p className="text-xl text-white/90 max-w-2xl mx-auto leading-relaxed text-center">
