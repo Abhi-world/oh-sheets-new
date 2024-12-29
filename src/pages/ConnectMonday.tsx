@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
 const ConnectMonday = () => {
@@ -46,19 +47,23 @@ const ConnectMonday = () => {
   }, []);
 
   return (
-    <div className="max-w-md mx-auto p-6">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold mb-4">Connect Monday.com</h2>
-        <p className="text-gray-600 mb-6">
-          Click below to securely connect your Monday.com account. No manual API token needed!
-        </p>
-        <Button 
-          onClick={handleOAuthConnect}
-          className="w-full bg-[#ff3d57] hover:bg-[#ff3d57]/90"
-        >
-          Connect Monday.com
-        </Button>
-      </div>
+    <div className="max-w-xl mx-auto p-6">
+      <Card className="border-0 shadow-none">
+        <CardHeader className="text-center space-y-2">
+          <CardTitle className="text-2xl font-bold">Connect Monday.com</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <p className="text-gray-600 text-center">
+            Click below to securely connect your Monday.com account. No manual API token needed!
+          </p>
+          <Button 
+            onClick={handleOAuthConnect}
+            className="w-full bg-[#ff3d57] hover:bg-[#ff3d57]/90 text-white py-6 text-lg font-medium"
+          >
+            Connect Monday.com
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 };
