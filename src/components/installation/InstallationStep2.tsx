@@ -31,7 +31,7 @@ const InstallationStep2 = ({
         </div>
       </div>
 
-      <Card className="border-2 border-gray-100 shadow-sm">
+      <Card className="border-2 border-gray-100/50 shadow-lg backdrop-blur-sm bg-white/80">
         <CardContent className="p-6 space-y-6">
           <div className="space-y-4">
             <label className="block text-sm font-medium text-gray-700">Main workspace</label>
@@ -68,7 +68,7 @@ const InstallationStep2 = ({
       </Card>
 
       <Button 
-        className="w-full h-12 text-base bg-monday-blue hover:bg-monday-blue/90" 
+        className="w-full h-12 text-base bg-monday-blue hover:bg-monday-blue/90 shadow-lg" 
         onClick={onInstall}
         disabled={!selectedWorkspace || !selectedBoard || isLoading}
       >
