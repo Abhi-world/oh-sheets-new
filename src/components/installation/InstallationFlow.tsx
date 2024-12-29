@@ -145,7 +145,7 @@ const InstallationFlow = () => {
               </Card>
 
               <Button 
-                className="w-full h-12 text-base bg-white hover:bg-white/90 text-purple-600 shadow-lg font-semibold" 
+                className="w-full h-12 text-base bg-[#0F9D58] hover:bg-[#0F9D58]/90 text-white shadow-lg font-semibold" 
                 onClick={() => setStep(2)}
                 disabled={workspaceType === 'specific' && !selectedWorkspace || isLoading}
               >
