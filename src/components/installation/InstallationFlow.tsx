@@ -21,7 +21,7 @@ const InstallationFlow = () => {
     { title: 'Read', description: 'all of your boards data' },
     { title: 'Send', description: 'notifications on your behalf' },
     { title: 'Read', description: 'updates and replies that you can see' },
-    { title: 'Post', description: 'or edit updates on your behalf' }
+    { title: 'Post', description: 'edit updates on your behalf' }
   ];
 
   const handleInstall = async () => {
@@ -44,11 +44,15 @@ const InstallationFlow = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden bg-[#6366F1]">
       {/* Decorative elements */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px)] bg-[size:40px] pointer-events-none" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px] pointer-events-none" />
-      <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-blue-100/20 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('/lovable-uploads/5e7a0614-eebd-4595-9634-40b17d9029c2.png')] bg-no-repeat bg-center opacity-10 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/50 via-purple-500/30 to-pink-500/40" />
+      
+      {/* Floating shapes */}
+      <div className="absolute top-20 left-20 w-32 h-32 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse opacity-70" />
+      <div className="absolute bottom-20 right-20 w-32 h-32 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse opacity-70" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30" />
       
       {/* Content */}
       <div className="relative p-6">
@@ -62,10 +66,10 @@ const InstallationFlow = () => {
             <div className="space-y-6">
               <div className="flex items-center gap-4 mb-8">
                 <img src="/lovable-uploads/aa37e716-a0c4-493f-9f04-9cc9c85c931a.png" alt="Google Sheets" className="w-12 h-12" />
-                <h1 className="text-3xl font-semibold text-gray-900">Install Google Sheets Automations</h1>
+                <h1 className="text-3xl font-semibold text-white">Install Google Sheets Automations</h1>
               </div>
               
-              <Card className="border-2 border-gray-100/50 shadow-lg backdrop-blur-sm bg-white/80">
+              <Card className="border-0 shadow-2xl backdrop-blur-sm bg-white/90">
                 <CardContent className="p-6">
                   <p className="text-gray-600 mb-6">
                     Note: This app will be available to all users in your account.
@@ -130,8 +134,8 @@ const InstallationFlow = () => {
                     <h2 className="text-lg font-medium text-gray-900 mb-4">On monday.com, Google Sheets Automations will be able to:</h2>
                     <div className="space-y-3">
                       {permissions.map((permission, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <span className="font-medium text-gray-900">{permission.title}</span>
+                        <div key={index} className="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-transparent p-2 rounded-lg">
+                          <span className="font-medium text-purple-900">{permission.title}</span>
                           <span className="text-gray-600">{permission.description}</span>
                         </div>
                       ))}
@@ -141,7 +145,7 @@ const InstallationFlow = () => {
               </Card>
 
               <Button 
-                className="w-full h-12 text-base bg-monday-blue hover:bg-monday-blue/90 shadow-lg" 
+                className="w-full h-12 text-base bg-white hover:bg-white/90 text-purple-600 shadow-lg font-semibold" 
                 onClick={() => setStep(2)}
                 disabled={workspaceType === 'specific' && !selectedWorkspace || isLoading}
               >

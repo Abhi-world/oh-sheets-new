@@ -26,17 +26,17 @@ const InstallationStep2 = ({
       <div className="flex items-center gap-4 mb-8">
         <img src="/lovable-uploads/aa37e716-a0c4-493f-9f04-9cc9c85c931a.png" alt="Google Sheets" className="w-12 h-12" />
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">Let's get started</h1>
-          <p className="text-lg text-gray-600 mt-2">Choose where to add the app</p>
+          <h1 className="text-3xl font-semibold text-white">Let's get started</h1>
+          <p className="text-lg text-white/80 mt-2">Choose where to add the app</p>
         </div>
       </div>
 
-      <Card className="border-2 border-gray-100/50 shadow-lg backdrop-blur-sm bg-white/80">
+      <Card className="border-0 shadow-2xl backdrop-blur-sm bg-white/90">
         <CardContent className="p-6 space-y-6">
           <div className="space-y-4">
             <label className="block text-sm font-medium text-gray-700">Main workspace</label>
             <Select value={selectedWorkspace} onValueChange={onWorkspaceChange}>
-              <SelectTrigger className="w-full h-12 text-base">
+              <SelectTrigger className="w-full h-12 text-base bg-white">
                 <SelectValue placeholder="Choose a workspace" />
               </SelectTrigger>
               <SelectContent>
@@ -52,7 +52,7 @@ const InstallationStep2 = ({
           <div className="space-y-4">
             <label className="block text-sm font-medium text-gray-700">Choose a board</label>
             <Select value={selectedBoard} onValueChange={onBoardChange}>
-              <SelectTrigger className="w-full h-12 text-base">
+              <SelectTrigger className="w-full h-12 text-base bg-white">
                 <SelectValue placeholder="Choose a board" />
               </SelectTrigger>
               <SelectContent>
@@ -68,7 +68,7 @@ const InstallationStep2 = ({
       </Card>
 
       <Button 
-        className="w-full h-12 text-base bg-monday-blue hover:bg-monday-blue/90 shadow-lg" 
+        className="w-full h-12 text-base bg-white hover:bg-white/90 text-purple-600 shadow-lg font-semibold" 
         onClick={onInstall}
         disabled={!selectedWorkspace || !selectedBoard || isLoading}
       >
@@ -76,7 +76,7 @@ const InstallationStep2 = ({
       </Button>
 
       <div className="flex items-center justify-center">
-        <span className="text-sm text-gray-500">14 days trial left</span>
+        <span className="text-sm text-white/80">14 days trial left</span>
       </div>
     </div>
   );
