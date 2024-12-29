@@ -94,7 +94,7 @@ const RecipeGrid = () => {
           title={recipe.title}
           description={recipe.description}
           category={recipe.category}
-          icon={recipe.icon}
+          icon={React.cloneElement(recipe.icon, { className: 'w-5 h-5 text-[#0F9D58]' })}
           onClick={() => handleRecipeClick(recipe.id)}
         />
       ))}

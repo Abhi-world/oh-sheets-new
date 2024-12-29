@@ -13,20 +13,20 @@ interface RecipeCardProps {
 const RecipeCard = ({ title, description, category, icon, onClick }: RecipeCardProps) => {
   return (
     <Card 
-      className="relative overflow-hidden transition-all duration-300 hover:shadow-lg bg-navy-light backdrop-blur-sm border-t-2 border-t-google-green"
+      className="relative overflow-hidden transition-all duration-300 hover:shadow-xl bg-white/90 backdrop-blur-sm border-0 group hover:-translate-y-1"
     >
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
           {icon}
-          <h3 className="text-lg font-semibold text-white">{title}</h3>
+          <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
         </div>
-        <span className="text-xs text-white/60">{category}</span>
+        <span className="text-xs text-gray-500">{category}</span>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-white/80 leading-relaxed">{description}</p>
+        <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
         <Button 
           onClick={onClick}
-          className="w-full bg-navy hover:bg-navy-light border border-google-green text-white hover:bg-opacity-90 transition-colors"
+          className="w-full bg-[#0F9D58] hover:bg-[#0F9D58]/90 text-white transition-colors shadow-md"
         >
           Use Template
         </Button>
