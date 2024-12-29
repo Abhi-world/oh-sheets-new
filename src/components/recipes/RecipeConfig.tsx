@@ -13,7 +13,7 @@ import ColumnChangeConfig from './configs/ColumnChangeConfig';
 import ItemCreationConfig from './configs/ItemCreationConfig';
 import { toast } from 'sonner';
 
-const recipeConfigs = {
+const recipeConfigs: Record<string, { component: React.ComponentType, title: string }> = {
   'status-change': {
     component: StatusChangeConfig,
     title: 'Status Change Integration'
@@ -56,11 +56,14 @@ const RecipeConfig = () => {
   const { recipeId } = useParams();
   const navigate = useNavigate();
 
-  if (!recipeId || !recipeConfigs[recipeId as keyof typeof recipeConfigs]) {
+  console.log('Current recipeId:', recipeId); // Debug log
+
+  if (!recipeId || !recipeConfigs[recipeId]) {
+    console.log('Recipe not found for ID:', recipeId); // Debug log
     return <div>Recipe not found</div>;
   }
 
-  const config = recipeConfigs[recipeId as keyof typeof recipeConfigs];
+  const config = recipeConfigs[recipeId];
   const ConfigComponent = config.component;
 
   const handleCreateAutomation = () => {
@@ -75,7 +78,7 @@ const RecipeConfig = () => {
       <div className="mt-8 flex justify-end">
         <Button 
           size="lg"
-          className="bg-[#0073ea] hover:bg-[#0073ea]/90 text-white"
+          className="bg-[#0F9D58] hover:bg-[#0F9D58]/90 text-white"
           onClick={handleCreateAutomation}
         >
           Create Automation
