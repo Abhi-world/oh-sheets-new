@@ -1,14 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { RadioGroup } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, X } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const InstallationFlow = () => {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [workspaceType, setWorkspaceType] = useState('all');
+  const [workspaces, setWorkspaces] = useState<any[]>([]);
+  const [boards, setBoards] = useState<any[]>([]);
   const [selectedWorkspace, setSelectedWorkspace] = useState('');
   const [selectedBoard, setSelectedBoard] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const permissions = [
     { title: 'Read', description: 'all of your boards data' },
@@ -17,20 +24,147 @@ const InstallationFlow = () => {
     { title: 'Post', description: 'or edit updates on your behalf' }
   ];
 
-  const handleInstall = () => {
-    // Handle installation logic here
-    console.log('Installing app with:', { workspaceType, selectedWorkspace, selectedBoard });
+  useEffect(() => {
+    fetchWorkspaces();
+  }, []);
+
+  useEffect(() => {
+    if (selectedWorkspace) {
+      fetchBoards(selectedWorkspace);
+    }
+  }, [selectedWorkspace]);
+
+  const fetchWorkspaces = async () => {
+    try {
+      setIsLoading(true);
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('monday_access_token')
+        .single();
+
+      if (!profile?.monday_access_token) {
+        toast.error('Please connect your Monday.com account first');
+        return;
+      }
+
+      const response = await fetch('https://api.monday.com/v2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': profile.monday_access_token
+        },
+        body: JSON.stringify({
+          query: `
+            query {
+              workspaces {
+                id
+                name
+              }
+            }
+          `
+        })
+      });
+
+      const result = await response.json();
+      if (result.data?.workspaces) {
+        setWorkspaces(result.data.workspaces);
+      }
+    } catch (error) {
+      console.error('Error fetching workspaces:', error);
+      toast.error('Failed to fetch workspaces');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchBoards = async (workspaceId: string) => {
+    try {
+      setIsLoading(true);
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('monday_access_token')
+        .single();
+
+      const response = await fetch('https://api.monday.com/v2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': profile?.monday_access_token || ''
+        },
+        body: JSON.stringify({
+          query: `
+            query {
+              boards (workspace_ids: [${workspaceId}]) {
+                id
+                name
+              }
+            }
+          `
+        })
+      });
+
+      const result = await response.json();
+      if (result.data?.boards) {
+        setBoards(result.data.boards);
+      }
+    } catch (error) {
+      console.error('Error fetching boards:', error);
+      toast.error('Failed to fetch boards');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleInstall = async () => {
+    try {
+      setIsLoading(true);
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('monday_user_id')
+        .single();
+
+      if (!profile?.monday_user_id) {
+        toast.error('User not authenticated');
+        return;
+      }
+
+      // Save installation details
+      const { error } = await supabase
+        .from('triggers')
+        .insert({
+          monday_user_id: profile.monday_user_id,
+          monday_board_id: selectedBoard,
+          trigger_type: 'installation',
+          is_active: true
+        });
+
+      if (error) throw error;
+
+      toast.success('App installed successfully!');
+      navigate('/');
+    } catch (error) {
+      console.error('Error installing app:', error);
+      toast.error('Failed to install app');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    navigate('/');
   };
 
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="mx-auto max-w-2xl">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <button onClick={() => setStep(step > 1 ? step - 1 : 1)} className="p-2">
+          <button 
+            onClick={() => step > 1 ? setStep(step - 1) : navigate('/')} 
+            className="p-2"
+          >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <button className="p-2">
+          <button onClick={handleClose} className="p-2">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -91,9 +225,11 @@ const InstallationFlow = () => {
                             <SelectValue placeholder="Choose workspace" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="main">Main workspace</SelectItem>
-                            <SelectItem value="development">Development</SelectItem>
-                            <SelectItem value="marketing">Marketing</SelectItem>
+                            {workspaces.map((workspace) => (
+                              <SelectItem key={workspace.id} value={workspace.id}>
+                                {workspace.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       )}
@@ -118,9 +254,9 @@ const InstallationFlow = () => {
             <Button 
               className="w-full mt-8" 
               onClick={() => setStep(2)}
-              disabled={workspaceType === 'specific' && !selectedWorkspace}
+              disabled={workspaceType === 'specific' && !selectedWorkspace || isLoading}
             >
-              Install
+              {isLoading ? 'Loading...' : 'Install'}
             </Button>
           </div>
         )}
@@ -140,8 +276,11 @@ const InstallationFlow = () => {
                   <SelectValue placeholder="Choose a workspace" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="main">Main workspace</SelectItem>
-                  <SelectItem value="development">Development</SelectItem>
+                  {workspaces.map((workspace) => (
+                    <SelectItem key={workspace.id} value={workspace.id}>
+                      {workspace.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
@@ -150,8 +289,11 @@ const InstallationFlow = () => {
                   <SelectValue placeholder="Choose a board" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="gadgets">Gadgets product</SelectItem>
-                  <SelectItem value="marketing">Marketing tasks</SelectItem>
+                  {boards.map((board) => (
+                    <SelectItem key={board.id} value={board.id}>
+                      {board.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -159,9 +301,9 @@ const InstallationFlow = () => {
             <Button 
               className="w-full mt-8" 
               onClick={handleInstall}
-              disabled={!selectedWorkspace || !selectedBoard}
+              disabled={!selectedWorkspace || !selectedBoard || isLoading}
             >
-              Add app
+              {isLoading ? 'Installing...' : 'Add app'}
             </Button>
           </div>
         )}
