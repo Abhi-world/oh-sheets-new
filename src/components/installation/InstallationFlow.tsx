@@ -64,9 +64,15 @@ const InstallationFlow = () => {
 
           {step === 1 && (
             <div className="space-y-6">
-              <div className="flex items-center gap-4 mb-8">
-                <img src="/lovable-uploads/aa37e716-a0c4-493f-9f04-9cc9c85c931a.png" alt="Google Sheets" className="w-12 h-12" />
-                <h1 className="text-3xl font-semibold text-white">Install Google Sheets Automations</h1>
+              <div className="flex flex-col items-center gap-4 mb-8">
+                <div className="flex items-center gap-4">
+                  <img src="/lovable-uploads/5e7a0614-eebd-4595-9634-40b17d9029c2.png" alt="Monday.com" className="w-12 h-12" />
+                  <span className="text-white opacity-80">to</span>
+                  <img src="/lovable-uploads/aa37e716-a0c4-493f-9f04-9cc9c85c931a.png" alt="Google Sheets" className="w-12 h-12" />
+                </div>
+                <h1 className="text-5xl font-bold bg-gradient-to-r from-[#228B22] to-[#0052CC] bg-clip-text text-transparent">
+                  Oh Sheets
+                </h1>
               </div>
               
               <Card className="border-0 shadow-2xl backdrop-blur-sm bg-white/90">
