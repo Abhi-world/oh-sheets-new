@@ -30,8 +30,8 @@ const MarketplaceHeader = () => {
               <span className="block text-3xl mt-2">Integration</span>
             </h2>
 
-            {/* App name */}
-            <h1 className="text-5xl font-bold text-white tracking-tight bg-gradient-to-r from-[#0F9D58] to-[#1A73E8] bg-clip-text text-transparent">
+            {/* App name with darker gradient colors */}
+            <h1 className="text-5xl font-bold text-white tracking-tight bg-gradient-to-r from-[#228B22] to-[#0052CC] bg-clip-text text-transparent">
               Oh Sheets
             </h1>
 
@@ -42,9 +42,9 @@ const MarketplaceHeader = () => {
 
             {/* Decorative elements */}
             <div className="flex items-center space-x-2 mt-6">
-              <div className="w-2 h-2 rounded-full bg-[#0F9D58] opacity-80"></div>
-              <div className="w-24 h-1 bg-[#0F9D58] rounded-full opacity-80"></div>
-              <div className="w-2 h-2 rounded-full bg-[#0F9D58] opacity-80"></div>
+              <div className="w-2 h-2 rounded-full bg-[#228B22] opacity-80"></div>
+              <div className="w-24 h-1 bg-[#228B22] rounded-full opacity-80"></div>
+              <div className="w-2 h-2 rounded-full bg-[#228B22] opacity-80"></div>
             </div>
           </div>
         </div>
