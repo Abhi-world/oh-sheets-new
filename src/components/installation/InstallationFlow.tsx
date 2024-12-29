@@ -44,15 +44,9 @@ const InstallationFlow = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#6366F1]">
-      {/* Decorative elements */}
-      <div className="absolute inset-0 bg-[url('/lovable-uploads/5e7a0614-eebd-4595-9634-40b17d9029c2.png')] bg-no-repeat bg-center opacity-10 pointer-events-none" />
+    <div className="min-h-screen relative bg-[#6366F1]">
+      {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/50 via-purple-500/30 to-pink-500/40" />
-      
-      {/* Floating shapes */}
-      <div className="absolute top-20 left-20 w-32 h-32 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse opacity-70" />
-      <div className="absolute bottom-20 right-20 w-32 h-32 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse opacity-70" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30" />
       
       {/* Content */}
       <div className="relative p-6">
