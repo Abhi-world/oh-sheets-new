@@ -37,16 +37,27 @@ const InstallationFlow = () => {
   const fetchWorkspaces = async () => {
     try {
       setIsLoading(true);
-      const { data: profile } = await supabase
+      console.log('Fetching user profile...');
+      
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('monday_access_token')
-        .single();
+        .maybeSingle();
 
-      if (!profile?.monday_access_token) {
-        toast.error('Please connect your Monday.com account first');
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        toast.error('Failed to fetch user profile');
         return;
       }
 
+      if (!profile?.monday_access_token) {
+        console.log('No access token found');
+        toast.error('Please connect your Monday.com account first');
+        navigate('/connect-monday');
+        return;
+      }
+
+      console.log('Fetching workspaces from Monday.com...');
       const response = await fetch('https://api.monday.com/v2', {
         method: 'POST',
         headers: {
@@ -65,8 +76,13 @@ const InstallationFlow = () => {
         })
       });
 
+      if (!response.ok) {
+        throw new Error('Failed to fetch workspaces');
+      }
+
       const result = await response.json();
       if (result.data?.workspaces) {
+        console.log('Workspaces fetched:', result.data.workspaces);
         setWorkspaces(result.data.workspaces);
       }
     } catch (error) {
@@ -80,16 +96,24 @@ const InstallationFlow = () => {
   const fetchBoards = async (workspaceId: string) => {
     try {
       setIsLoading(true);
-      const { data: profile } = await supabase
+      console.log('Fetching boards for workspace:', workspaceId);
+      
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('monday_access_token')
-        .single();
+        .maybeSingle();
+
+      if (profileError || !profile?.monday_access_token) {
+        console.error('Error fetching profile or no access token:', profileError);
+        toast.error('Failed to fetch user profile');
+        return;
+      }
 
       const response = await fetch('https://api.monday.com/v2', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': profile?.monday_access_token || ''
+          'Authorization': profile.monday_access_token
         },
         body: JSON.stringify({
           query: `
@@ -103,8 +127,13 @@ const InstallationFlow = () => {
         })
       });
 
+      if (!response.ok) {
+        throw new Error('Failed to fetch boards');
+      }
+
       const result = await response.json();
       if (result.data?.boards) {
+        console.log('Boards fetched:', result.data.boards);
         setBoards(result.data.boards);
       }
     } catch (error) {
@@ -118,18 +147,21 @@ const InstallationFlow = () => {
   const handleInstall = async () => {
     try {
       setIsLoading(true);
-      const { data: profile } = await supabase
+      console.log('Starting installation process...');
+      
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('monday_user_id')
-        .single();
+        .maybeSingle();
 
-      if (!profile?.monday_user_id) {
+      if (profileError || !profile?.monday_user_id) {
+        console.error('Error fetching profile or no user ID:', profileError);
         toast.error('User not authenticated');
         return;
       }
 
-      // Save installation details
-      const { error } = await supabase
+      console.log('Saving installation details...');
+      const { error: installError } = await supabase
         .from('triggers')
         .insert({
           monday_user_id: profile.monday_user_id,
@@ -138,8 +170,12 @@ const InstallationFlow = () => {
           is_active: true
         });
 
-      if (error) throw error;
+      if (installError) {
+        console.error('Installation error:', installError);
+        throw installError;
+      }
 
+      console.log('Installation successful');
       toast.success('App installed successfully!');
       navigate('/');
     } catch (error) {
