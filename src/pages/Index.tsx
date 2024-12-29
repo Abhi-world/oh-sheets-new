@@ -9,8 +9,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#7B61FF] via-[#9B87F5] to-[#7E69AB] relative">
-      {/* Background image with reduced opacity */}
-      <div className="absolute inset-0 bg-[url('/lovable-uploads/c931c08e-78b7-41b7-9722-c2db9e3875e9.png')] opacity-5 bg-cover bg-center mix-blend-overlay" />
+      {/* Clean background pattern */}
+      <div 
+        className="absolute inset-0 opacity-10"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)',
+          backgroundSize: '32px 32px'
+        }}
+      />
       
       <MarketplaceHeader />
       
