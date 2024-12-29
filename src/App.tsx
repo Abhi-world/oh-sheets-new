@@ -4,6 +4,7 @@ import ConnectMonday from '@/pages/ConnectMonday';
 import ConnectSheets from '@/pages/ConnectSheets';
 import MondayOAuth from '@/pages/MondayOAuth';
 import RecipeConfig from '@/components/recipes/RecipeConfig';
+import InstallationFlow from '@/components/installation/InstallationFlow';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/connect-sheets" element={<ConnectSheets />} />
         <Route path="/monday-oauth" element={<MondayOAuth />} />
         <Route path="/recipe/:recipeId" element={<RecipeConfig />} />
+        <Route path="/install" element={<InstallationFlow />} />
       </Routes>
     </Router>
   );
