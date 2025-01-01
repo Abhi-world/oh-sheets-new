@@ -7,6 +7,7 @@ import ValueSelector from '@/components/shared/ValueSelector';
 
 const ItemCreationConfig = () => {
   const [selectedBoard, setSelectedBoard] = useState('');
+  const [selectedColumn, setSelectedColumn] = useState('status');
   const [values, setValues] = useState('');
   const { isConnected } = useGoogleSheetsStatus();
   const {
@@ -17,6 +18,17 @@ const ItemCreationConfig = () => {
     setSelectedSpreadsheet,
     setSelectedSheet,
   } = useGoogleSheets();
+
+  // Mock columns for testing
+  const mockColumns = [
+    { id: 'status', title: 'Status' },
+    { id: 'priority', title: 'Priority' },
+    { id: 'text', title: 'Text' },
+    { id: 'person', title: 'Person' },
+    { id: 'date', title: 'Date' },
+    { id: 'numbers', title: 'Numbers' },
+    { id: 'dropdown', title: 'Dropdown' }
+  ];
 
   return (
     <div className="space-y-12">
@@ -59,6 +71,9 @@ const ItemCreationConfig = () => {
               value={values}
               onChange={setValues}
               placeholder="Enter values"
+              columns={mockColumns}
+              selectedColumn={selectedColumn}
+              onColumnSelect={setSelectedColumn}
             />
           </div>
         </p>

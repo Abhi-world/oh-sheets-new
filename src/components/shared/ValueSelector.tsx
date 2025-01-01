@@ -17,7 +17,7 @@ const ValueSelector = ({
   onChange,
   placeholder = "Select values...",
   columns = [],
-  selectedColumn,
+  selectedColumn = "default",
   onColumnSelect
 }: ValueSelectorProps) => {
   const [open, setOpen] = useState(false);
