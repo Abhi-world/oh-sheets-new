@@ -40,15 +40,15 @@ const DateTriggerConfig = () => {
   return (
     <div className="space-y-8">
       <div className="bg-white p-6 rounded-lg border border-gray-200">
-        <p className="text-xl leading-relaxed text-gray-800">
-          When date{' '}
+        <p className="text-xl leading-relaxed text-gray-800 flex items-center gap-2 flex-wrap">
+          When date
           <input
             type="date"
             value={triggerDate}
             onChange={(e) => setTriggerDate(e.target.value)}
-            className="inline-block w-auto px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-google-green focus:border-transparent"
+            className="inline-block px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-google-green focus:border-transparent"
           />
-          {' '}is reached in{' '}
+          is reached in
           <ConfigSelect
             label=""
             value={selectedBoard}
@@ -60,7 +60,7 @@ const DateTriggerConfig = () => {
             placeholder="Select board"
             className="inline-block w-[200px]"
           />
-          {', add a row in '}
+          , add a row in
           <ConfigSelect
             label=""
             value={selectedSpreadsheet}
@@ -69,7 +69,7 @@ const DateTriggerConfig = () => {
             placeholder="Select spreadsheet"
             className="inline-block w-[200px]"
           />
-          {' / '}
+          /
           <ConfigSelect
             label=""
             value={selectedSheet}
@@ -78,7 +78,7 @@ const DateTriggerConfig = () => {
             placeholder="Select sheet"
             className="inline-block w-[200px]"
           />
-          {' with these values'}
+          with these values
         </p>
 
         {/* Information box */}
