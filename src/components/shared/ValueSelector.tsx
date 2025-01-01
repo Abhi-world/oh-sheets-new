@@ -24,6 +24,9 @@ const ValueSelector = ({
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
   const { columnValues } = useMondayColumns(selectedColumn);
 
+  // Find the selected column's title
+  const selectedColumnTitle = columns.find(col => col.id === selectedColumn)?.title || '';
+
   useEffect(() => {
     if (value) {
       const values = value.split(',').map(v => v.trim()).filter(Boolean);
@@ -48,6 +51,9 @@ const ValueSelector = ({
     }
   };
 
+  // Display text that shows either the selected values or the column type
+  const displayText = value || selectedColumnTitle || placeholder;
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -57,7 +63,7 @@ const ValueSelector = ({
           aria-expanded={open}
           className="w-full justify-between bg-navy-light border-google-green focus:ring-google-green/50 text-white"
         >
-          {value || placeholder}
+          {displayText}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
