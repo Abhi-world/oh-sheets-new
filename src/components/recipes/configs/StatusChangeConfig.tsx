@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import BoardSelector from './status-change/BoardSelector';
 import SpreadsheetSelector from './status-change/SpreadsheetSelector';
 import SheetSelector from './status-change/SheetSelector';
+import { InfoCircle } from 'lucide-react';
 
 const StatusChangeConfig = () => {
   const [values, setValues] = useState('');
@@ -71,6 +72,21 @@ const StatusChangeConfig = () => {
             />
           </div>
         </p>
+
+        {/* New information box */}
+        <div className="mt-4 bg-navy-light/30 p-4 rounded-lg border border-google-green/20">
+          <div className="flex items-start gap-3">
+            <InfoCircle className="w-5 h-5 text-google-green mt-1 flex-shrink-0" />
+            <div className="space-y-2">
+              <p className="text-white/90">
+                This automation will trigger whenever the selected column changes to <strong>any value</strong> in Monday.com, not just the predefined ones.
+              </p>
+              <p className="text-white/80 text-sm">
+                The values shown above are common examples, but you can add custom values or leave them empty. The automation will still work with any value change in the selected column.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
