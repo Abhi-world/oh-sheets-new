@@ -8,34 +8,52 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ValueSelectorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  columns?: Array<{
+    id: string;
+    title: string;
+    type: string;
+    settings?: {
+      labels?: { [key: string]: string };
+    };
+  }>;
+  selectedColumn?: string;
+  onColumnSelect?: (columnId: string) => void;
 }
 
-const columnTypes = [
-  { label: 'Budget', value: 'budget' },
-  { label: 'Due date', value: 'due_date' },
-  { label: 'Item ID', value: 'item_id' },
-  { label: 'Name', value: 'name' },
-  { label: 'Owner', value: 'owner' },
-  { label: 'Priority', value: 'priority' },
-];
-
-const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: ValueSelectorProps) => {
+const ValueSelector = ({ 
+  value, 
+  onChange, 
+  placeholder = "Select values...",
+  columns = [],
+  selectedColumn,
+  onColumnSelect
+}: ValueSelectorProps) => {
   const [open, setOpen] = useState(false);
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
   const [customValue, setCustomValue] = useState('');
+  const [availableValues, setAvailableValues] = useState<string[]>([]);
 
-  // Initialize selected values from prop
   useEffect(() => {
     if (value) {
       const values = value.split(',').map(v => v.trim()).filter(Boolean);
       setSelectedValues(values);
     }
   }, [value]);
+
+  useEffect(() => {
+    if (selectedColumn && columns) {
+      const column = columns.find(col => col.id === selectedColumn);
+      if (column?.settings?.labels) {
+        setAvailableValues(Object.values(column.settings.labels));
+      }
+    }
+  }, [selectedColumn, columns]);
 
   const handleValueToggle = (valueToToggle: string) => {
     const newValues = selectedValues.includes(valueToToggle)
@@ -69,6 +87,23 @@ const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: Va
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0 bg-navy-dark border border-google-green/20">
+        {columns && columns.length > 0 && (
+          <div className="p-2 border-b border-navy-light">
+            <Select value={selectedColumn} onValueChange={onColumnSelect}>
+              <SelectTrigger className="w-full bg-transparent border-none text-white">
+                <SelectValue placeholder="Select column" />
+              </SelectTrigger>
+              <SelectContent>
+                {columns.map(column => (
+                  <SelectItem key={column.id} value={column.id}>
+                    {column.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+        
         <div className="flex items-center border-b border-navy-light p-2">
           <Input
             value={customValue}
@@ -91,26 +126,26 @@ const ValueSelector = ({ value, onChange, placeholder = "Select values..." }: Va
           </Button>
         </div>
         <div className="max-h-60 overflow-auto">
-          {columnTypes.map((type) => (
+          {availableValues.map((value) => (
             <div
-              key={type.value}
+              key={value}
               className={cn(
                 "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-navy-light text-white",
-                selectedValues.includes(type.label) && "bg-navy-light"
+                selectedValues.includes(value) && "bg-navy-light"
               )}
-              onClick={() => handleValueToggle(type.label)}
+              onClick={() => handleValueToggle(value)}
             >
               <Check
                 className={cn(
                   "mr-2 h-4 w-4",
-                  selectedValues.includes(type.label) ? "opacity-100" : "opacity-0"
+                  selectedValues.includes(value) ? "opacity-100" : "opacity-0"
                 )}
               />
-              {type.label}
+              {value}
             </div>
           ))}
           {selectedValues.map(value => (
-            !columnTypes.find(type => type.label === value) && (
+            !availableValues.includes(value) && (
               <div
                 key={value}
                 className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-navy-light text-white bg-navy-light"

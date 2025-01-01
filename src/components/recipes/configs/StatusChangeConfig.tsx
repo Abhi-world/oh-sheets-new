@@ -1,10 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import ValueSelector from '@/components/shared/ValueSelector';
+import { getMondayApiKey } from '@/utils/monday';
+
+interface ColumnValue {
+  id: string;
+  title: string;
+  type: string;
+  settings?: {
+    labels?: { [key: string]: string };
+  };
+}
 
 const StatusChangeConfig = () => {
   const [values, setValues] = useState('');
+  const [columns, setColumns] = useState<ColumnValue[]>([]);
+  const [selectedColumn, setSelectedColumn] = useState<string>('');
   const {
     spreadsheets,
     sheets,
@@ -16,8 +28,59 @@ const StatusChangeConfig = () => {
     isLoading,
   } = useGoogleSheets();
 
-  console.log('Spreadsheets:', spreadsheets); // Debug log
-  console.log('Sheets:', sheets); // Debug log
+  const fetchBoardColumns = async (boardId: string) => {
+    try {
+      const apiKey = await getMondayApiKey();
+      if (!apiKey) {
+        console.error('Monday.com API key not found');
+        return;
+      }
+
+      const query = `
+        query {
+          boards(ids: [${boardId}]) {
+            columns {
+              id
+              title
+              type
+              settings_str
+            }
+          }
+        }
+      `;
+
+      const response = await fetch('https://api.monday.com/v2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': apiKey
+        },
+        body: JSON.stringify({ query })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch board columns');
+      }
+
+      const data = await response.json();
+      console.log('Monday.com board columns:', data);
+      
+      if (data.data?.boards?.[0]?.columns) {
+        const statusColumns = data.data.boards[0].columns.filter(
+          (col: ColumnValue) => col.type === 'status' || col.type === 'color'
+        );
+        setColumns(statusColumns);
+      }
+    } catch (error) {
+      console.error('Error fetching board columns:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedSpreadsheet) {
+      fetchBoardColumns(selectedSpreadsheet);
+    }
+  }, [selectedSpreadsheet]);
 
   return (
     <div className="space-y-12">
@@ -29,7 +92,7 @@ const StatusChangeConfig = () => {
               className="w-40 inline-flex bg-navy-light border-google-green focus:ring-google-green/50"
               onClick={() => fetchSpreadsheets()}
             >
-              <SelectValue placeholder={isLoading ? "Loading..." : "Select spreadsheet"} />
+              <SelectValue placeholder={isLoading ? "Loading..." : "Select board"} />
             </SelectTrigger>
             <SelectContent className="bg-navy-light border border-google-green">
               {(spreadsheets || []).map((s) => (
@@ -59,6 +122,9 @@ const StatusChangeConfig = () => {
             <ValueSelector
               value={values}
               onChange={setValues}
+              columns={columns}
+              selectedColumn={selectedColumn}
+              onColumnSelect={setSelectedColumn}
             />
           </div>
         </p>
