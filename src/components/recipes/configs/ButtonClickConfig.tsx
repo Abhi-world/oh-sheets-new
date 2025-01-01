@@ -3,10 +3,13 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import { useGoogleSheetsStatus } from '@/hooks/useGoogleSheetsStatus';
+import BoardSelector from './status-change/BoardSelector';
+import ValueSelector from '@/components/shared/ValueSelector';
 
 const ButtonClickConfig = () => {
   const [buttonName, setButtonName] = useState('');
   const [values, setValues] = useState('');
+  const [selectedBoard, setSelectedBoard] = useState('');
   const { isConnected } = useGoogleSheetsStatus();
   const {
     spreadsheets,
@@ -28,7 +31,12 @@ const ButtonClickConfig = () => {
             className="w-40 inline-block mx-1 bg-navy-light border-google-green focus-visible:ring-google-green/50"
             placeholder="button name"
           />
-          {' '}is clicked, add a row in{' '}
+          {' '}is clicked in{' '}
+          <BoardSelector
+            selectedBoard={selectedBoard}
+            onBoardSelect={setSelectedBoard}
+          />
+          {', '}add a row in{' '}
           <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
             <SelectTrigger className="w-40 inline-flex bg-navy-light border-google-green focus:ring-google-green/50">
               <SelectValue placeholder="Select spreadsheet" />
@@ -55,12 +63,13 @@ const ButtonClickConfig = () => {
             </SelectContent>
           </Select>
           {' '}with these{' '}
-          <Input
-            value={values}
-            onChange={(e) => setValues(e.target.value)}
-            className="w-40 inline-block mx-1 bg-navy-light border-google-green focus-visible:ring-google-green/50"
-            placeholder="values"
-          />
+          <div className="inline-block w-[180px]">
+            <ValueSelector
+              value={values}
+              onChange={setValues}
+              placeholder="Enter values"
+            />
+          </div>
         </p>
       </div>
     </div>
