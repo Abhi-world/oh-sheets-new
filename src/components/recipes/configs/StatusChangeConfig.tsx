@@ -39,11 +39,14 @@ const StatusChangeConfig = () => {
     setColumns(mockColumns);
   }, [selectedBoard]);
 
+  // Find the selected column's title
+  const selectedColumnTitle = columns.find(col => col.id === selectedColumn)?.title || selectedColumn;
+
   return (
     <div className="space-y-12">
       <div className="bg-navy-dark/40 p-6 rounded-lg border border-google-green/20">
         <p className="text-xl leading-relaxed text-white">
-          When a status changes in{' '}
+          When <strong className="text-google-green">{selectedColumnTitle}</strong> changes in{' '}
           <BoardSelector
             selectedBoard={selectedBoard}
             onBoardSelect={setSelectedBoard}
@@ -58,8 +61,12 @@ const StatusChangeConfig = () => {
             selectedSheet={selectedSheet}
             onSheetSelect={setSelectedSheet}
           />
-          {' '}with these{' '}
-          <span className="text-white font-semibold bg-navy-light px-2 py-1 rounded">values</span>
+          {values && (
+            <>
+              {' '}with these{' '}
+              <span className="text-white font-semibold bg-navy-light px-2 py-1 rounded">values</span>
+            </>
+          )}
           {' '}
           <div className="inline-block w-[180px]">
             <ValueSelector
@@ -68,7 +75,7 @@ const StatusChangeConfig = () => {
               columns={columns}
               selectedColumn={selectedColumn}
               onColumnSelect={setSelectedColumn}
-              placeholder="Select values"
+              placeholder="Select values (optional)"
             />
           </div>
         </p>
@@ -79,7 +86,7 @@ const StatusChangeConfig = () => {
             <Info className="w-5 h-5 text-google-green mt-1 flex-shrink-0" />
             <div className="space-y-2">
               <p className="text-white/90">
-                This automation will trigger whenever the selected column changes to <strong>any value</strong> in Monday.com, not just the predefined ones.
+                This automation will trigger whenever <strong>{selectedColumnTitle}</strong> changes to <strong>any value</strong> in Monday.com, not just the predefined ones.
               </p>
               <p className="text-white/80 text-sm">
                 The values shown above are common examples, but you can add custom values or leave them empty. The automation will still work with any value change in the selected column.
