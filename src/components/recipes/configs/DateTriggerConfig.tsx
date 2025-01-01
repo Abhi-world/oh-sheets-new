@@ -3,7 +3,6 @@ import { Calendar } from 'lucide-react';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import ValueSelector from '@/components/shared/ValueSelector';
 import ConfigSelect from '../shared/ConfigSelect';
 
 const DateTriggerConfig = () => {
@@ -39,7 +38,7 @@ const DateTriggerConfig = () => {
   };
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8">
       <div className="bg-white p-6 rounded-lg border border-gray-200">
         <p className="text-xl leading-relaxed text-gray-800">
           When date{' '}
@@ -86,7 +85,7 @@ const DateTriggerConfig = () => {
         <div className="mt-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
           <div className="flex items-start gap-3">
             <Calendar className="w-5 h-5 text-google-green mt-1 flex-shrink-0" />
-            <div className="space-y-2">
+            <div>
               <p className="text-gray-600">
                 This automation will trigger when the specified date is reached, adding a new row to your selected Google Sheet.
               </p>
