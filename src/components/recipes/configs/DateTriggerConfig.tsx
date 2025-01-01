@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Calendar } from 'lucide-react';
 import RecipeConfigShell from '../shared/RecipeConfigShell';
 import ConfigInput from '../shared/ConfigInput';
 import ConfigSelect from '../shared/ConfigSelect';
@@ -27,21 +28,22 @@ const DateTriggerConfig = () => {
         .single();
 
       if (!profile?.monday_user_id) {
-        toast.error('Please connect your Monday.com account first');
+        toast.error("Please connect your Monday.com account first");
         return;
       }
 
-      toast.success('Configuration saved successfully');
+      toast.success("Configuration saved successfully");
     } catch (error) {
       console.error('Error saving configuration:', error);
-      toast.error('Failed to save configuration');
+      toast.error("Failed to save configuration");
     }
   };
 
   return (
     <RecipeConfigShell
-      title="Date-Based Sync Configuration"
-      description="Configure when and how to sync data based on dates from Monday.com to Google Sheets"
+      title="Date-Based Sync"
+      description="When date is reached, add a row in Google Sheets with these values"
+      icon={<Calendar className="w-5 h-5 text-google-green" />}
       onSave={handleSave}
     >
       <div className="space-y-6">
@@ -65,7 +67,7 @@ const DateTriggerConfig = () => {
         />
 
         <div className="space-y-4">
-          <h3 className="text-lg font-medium text-white">Google Sheets Configuration</h3>
+          <h3 className="text-lg font-medium">Google Sheets Configuration</h3>
           <div className="grid grid-cols-2 gap-4">
             <ConfigSelect
               label="Spreadsheet"

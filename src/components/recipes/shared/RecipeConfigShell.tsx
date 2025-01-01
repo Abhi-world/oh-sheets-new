@@ -1,45 +1,59 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeftCircle, HelpCircle } from 'lucide-react';
+import { ArrowLeftCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface RecipeConfigShellProps {
   children: React.ReactNode;
   title: string;
   description: string;
+  icon?: React.ReactNode;
   onSave?: () => void;
 }
 
-const RecipeConfigShell = ({ children, title, description, onSave }: RecipeConfigShellProps) => {
+const RecipeConfigShell = ({ children, title, description, icon, onSave }: RecipeConfigShellProps) => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#00c875] to-[#00a65a] text-white p-8">
+    <div className="min-h-screen bg-white p-8">
       {/* Back button */}
       <Button 
         variant="ghost" 
-        className="absolute top-4 left-4 text-white hover:text-white/80"
+        className="mb-6 text-gray-600 hover:text-gray-800"
         onClick={() => navigate('/')}
       >
-        <ArrowLeftCircle className="w-6 h-6" />
+        <ArrowLeftCircle className="w-5 h-5 mr-2" />
+        Back to Templates
       </Button>
 
-      {/* Pre-built template banner */}
-      <div className="bg-navy-800/20 text-sm text-white/90 px-4 py-2 rounded-lg mb-6 inline-flex items-center gap-2">
-        <span>This is a pre-built template</span>
-      </div>
-
       {/* Main content */}
-      <div className="max-w-3xl mx-auto space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold">{title}</h1>
-          <p className="text-white/80">{description}</p>
+      <div className="max-w-3xl mx-auto">
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-2">
+            {icon}
+            <h1 className="text-2xl font-semibold text-gray-800">{title}</h1>
+          </div>
+          <p className="text-gray-600">{description}</p>
         </div>
-        {children}
+
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          {children}
+        </div>
+
+        {onSave && (
+          <div className="mt-6 flex justify-end">
+            <Button 
+              onClick={onSave}
+              className="bg-google-green hover:bg-google-green/90 text-white"
+            >
+              Create Automation
+            </Button>
+          </div>
+        )}
       </div>
 
-      {/* Google Sheets icon and Help button */}
-      <div className="fixed bottom-4 left-4 flex items-center gap-2 text-white/90">
+      {/* Google Sheets icon */}
+      <div className="fixed bottom-4 left-4 flex items-center gap-2 text-gray-600">
         <img 
           src="/lovable-uploads/55c54574-060a-410d-8dd8-64cf691dc4bb.png" 
           alt="Google Sheets" 
@@ -47,14 +61,6 @@ const RecipeConfigShell = ({ children, title, description, onSave }: RecipeConfi
         />
         <span>Google Sheets</span>
       </div>
-
-      <Button
-        variant="ghost"
-        size="icon"
-        className="fixed bottom-4 right-4 text-white hover:bg-white/20"
-      >
-        <HelpCircle className="w-6 h-6" />
-      </Button>
     </div>
   );
 };

@@ -14,9 +14,9 @@ interface ConfigSelectProps {
 const ConfigSelect = ({ label, value, onValueChange, placeholder, options, className }: ConfigSelectProps) => {
   return (
     <div className="space-y-2">
-      <Label className="text-white">{label}</Label>
+      <Label className="text-gray-700">{label}</Label>
       <Select value={value} onValueChange={onValueChange}>
-        <SelectTrigger className={`bg-transparent border-b-2 border-white/50 rounded-none text-white ${className}`}>
+        <SelectTrigger className={`border-gray-200 focus:border-google-green focus:ring-google-green ${className}`}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>

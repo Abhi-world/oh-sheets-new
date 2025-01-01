@@ -14,12 +14,12 @@ interface ConfigInputProps {
 const ConfigInput = ({ label, value, onChange, placeholder, type = "text", className }: ConfigInputProps) => {
   return (
     <div className="space-y-2">
-      <Label className="text-white">{label}</Label>
+      <Label className="text-gray-700">{label}</Label>
       <Input 
         type={type}
         value={value}
         onChange={onChange}
-        className={`bg-transparent border-b-2 border-white/50 rounded-none text-white px-0 ${className}`}
+        className={`border-gray-200 focus:border-google-green focus:ring-google-green ${className}`}
         placeholder={placeholder}
       />
     </div>
