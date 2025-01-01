@@ -19,15 +19,15 @@ const ItemCreationConfig = () => {
     setSelectedSheet,
   } = useGoogleSheets();
 
-  // Mock columns for testing
+  // Mock columns for testing with required 'type' property
   const mockColumns = [
-    { id: 'status', title: 'Status' },
-    { id: 'priority', title: 'Priority' },
-    { id: 'text', title: 'Text' },
-    { id: 'person', title: 'Person' },
-    { id: 'date', title: 'Date' },
-    { id: 'numbers', title: 'Numbers' },
-    { id: 'dropdown', title: 'Dropdown' }
+    { id: 'status', title: 'Status', type: 'status' },
+    { id: 'priority', title: 'Priority', type: 'color' },
+    { id: 'text', title: 'Text', type: 'text' },
+    { id: 'person', title: 'person', type: 'person' },
+    { id: 'date', title: 'Date', type: 'date' },
+    { id: 'numbers', title: 'Numbers', type: 'number' },
+    { id: 'dropdown', title: 'Dropdown', type: 'dropdown' }
   ];
 
   return (
