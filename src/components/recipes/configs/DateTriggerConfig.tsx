@@ -49,7 +49,7 @@ const DateTriggerConfig = () => {
 
   return (
     <div className="space-y-8">
-      <p className="text-xl leading-relaxed text-gray-800 flex items-center gap-2 flex-wrap">
+      <div className="text-xl leading-relaxed text-gray-800 flex items-center gap-2 flex-wrap">
         When{' '}
         <DateColumnSelect
           selectedColumn={selectedDateColumn}
@@ -118,7 +118,7 @@ const DateTriggerConfig = () => {
             </div>
           </PopoverContent>
         </Popover>
-      </p>
+      </div>
 
       {/* Information box */}
       <div className="mt-4 bg-gray-50 p-4 rounded-lg border border-gray-200">

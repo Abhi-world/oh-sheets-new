@@ -41,10 +41,10 @@ const DateColumnSelect = ({
   ];
 
   return (
-    <div className="space-y-4">
+    <span className="inline-flex items-center">
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" className="w-full justify-start text-left font-normal">
+          <Button variant="outline" className="inline-flex justify-start text-left font-normal">
             <Calendar className="mr-2 h-4 w-4" />
             {selectedColumn ? dateColumns.find(c => c.id === selectedColumn)?.label : 'Select date column'}
           </Button>
@@ -72,19 +72,19 @@ const DateColumnSelect = ({
         </PopoverContent>
       </Popover>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">
+      <div className="ml-2 space-x-2">
+        <label className="inline-flex items-center">
           <input
             type="checkbox"
             checked={isRelative}
             onChange={(e) => onIsRelativeChange(e.target.checked)}
             className="mr-2"
           />
-          Use relative timing
+          <span>Use relative timing</span>
         </label>
 
         {isRelative ? (
-          <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-2">
             <Input
               type="number"
               value={relativeDays}
@@ -101,9 +101,9 @@ const DateColumnSelect = ({
                 <SelectItem value="after">after</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </span>
         ) : (
-          <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-2">
             <Clock className="h-4 w-4" />
             <Input
               type="time"
@@ -111,10 +111,10 @@ const DateColumnSelect = ({
               onChange={(e) => onTimeSelect(e.target.value)}
               className="w-[120px]"
             />
-          </div>
+          </span>
         )}
       </div>
-    </div>
+    </span>
   );
 };
 
