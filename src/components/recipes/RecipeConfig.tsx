@@ -13,7 +13,14 @@ import ColumnChangeConfig from './configs/ColumnChangeConfig';
 import ItemCreationConfig from './configs/ItemCreationConfig';
 import { toast } from 'sonner';
 
-const recipeConfigs: Record<string, { component: React.ComponentType, title: string }> = {
+interface ConfigComponentProps {
+  onConfigValid: (isValid: boolean) => void;
+}
+
+const recipeConfigs: Record<string, { 
+  component: React.ComponentType<ConfigComponentProps>, 
+  title: string 
+}> = {
   'status-change': {
     component: StatusChangeConfig,
     title: 'Status Change Integration'
