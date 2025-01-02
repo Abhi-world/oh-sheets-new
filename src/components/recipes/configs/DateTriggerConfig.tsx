@@ -1,12 +1,15 @@
 import React from 'react';
-import RecipeConfigLayout from '../RecipeConfigLayout';
 import DateTriggerContent from './date-trigger/DateTriggerContent';
 
-const DateTriggerConfig = () => {
+interface DateTriggerConfigProps {
+  onConfigValid?: (isValid: boolean) => void;
+}
+
+const DateTriggerConfig = ({ onConfigValid }: DateTriggerConfigProps) => {
   return (
-    <RecipeConfigLayout title="Date-Based Integration">
-      <DateTriggerContent />
-    </RecipeConfigLayout>
+    <div>
+      <DateTriggerContent onConfigValid={onConfigValid} />
+    </div>
   );
 };
 

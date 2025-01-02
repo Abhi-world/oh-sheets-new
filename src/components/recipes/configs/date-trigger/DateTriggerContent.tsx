@@ -1,32 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import DateTriggerSentence from './DateTriggerSentence';
 import { Calendar } from 'lucide-react';
 
-const DateTriggerContent = () => {
+interface DateTriggerContentProps {
+  onConfigValid?: (isValid: boolean) => void;
+}
+
+const DateTriggerContent = ({ onConfigValid }: DateTriggerContentProps) => {
   return (
     <div className="space-y-6">
       {/* Main content */}
       <div className="bg-[#222222] backdrop-blur-sm rounded-lg p-8">
-        <DateTriggerSentence />
+        <DateTriggerSentence onConfigValid={onConfigValid} />
       </div>
 
       {/* Info banner */}
-      <div className="bg-[#2A2F3C] backdrop-blur-sm rounded-lg p-4 flex items-start gap-3">
-        <Calendar className="w-6 h-6 text-gray-100 mt-1 flex-shrink-0" />
-        <div className="space-y-2 text-gray-100">
-          <p>
-            This automation will trigger when the specified date arrives, adding a new row
-            to your selected Google Sheet with the chosen values.
-          </p>
-          <p>
-            The values shown above are common examples, but you can add custom values or leave them
-            empty. The automation will still work with any value change in the selected column.
-          </p>
+      <div className="bg-[#222222]/50 backdrop-blur-sm rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <Calendar className="w-6 h-6 text-white mt-1" />
+          <div>
+            <h3 className="text-white font-medium mb-1">
+              How does this automation work?
+            </h3>
+            <p className="text-white/80 text-sm leading-relaxed">
+              This automation will monitor the selected date column in your Monday.com board. 
+              When the specified date condition is met (either on the exact date or the offset you set), 
+              it will automatically create a new row in your chosen Google Sheet with the values you selected.
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Google Sheets branding */}
-      <div className="fixed bottom-4 left-4 flex items-center gap-2 text-white/90">
+      <div className="fixed bottom-4 left-4 flex items-center gap-2 text-white/80">
         <img 
           src="/lovable-uploads/55c54574-060a-410d-8dd8-64cf691dc4bb.png" 
           alt="Google Sheets" 
