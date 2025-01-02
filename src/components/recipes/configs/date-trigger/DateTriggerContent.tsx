@@ -6,14 +6,14 @@ const DateTriggerContent = () => {
   return (
     <div className="space-y-6">
       {/* Main content */}
-      <div className="bg-gray-600/40 backdrop-blur-sm rounded-lg p-8">
+      <div className="bg-[#222222]/90 backdrop-blur-sm rounded-lg p-8">
         <DateTriggerSentence />
       </div>
 
       {/* Info banner */}
-      <div className="bg-gray-600/30 backdrop-blur-sm rounded-lg p-4 flex items-start gap-3">
-        <Calendar className="w-6 h-6 text-gray-200 mt-1 flex-shrink-0" />
-        <div className="space-y-2 text-gray-200">
+      <div className="bg-[#222222]/80 backdrop-blur-sm rounded-lg p-4 flex items-start gap-3">
+        <Calendar className="w-6 h-6 text-gray-100 mt-1 flex-shrink-0" />
+        <div className="space-y-2 text-gray-100">
           <p>
             This automation will trigger when the specified date arrives, adding a new row
             to your selected Google Sheet with the chosen values.
