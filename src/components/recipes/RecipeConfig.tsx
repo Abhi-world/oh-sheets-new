@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import RecipeConfigLayout from './RecipeConfigLayout';
@@ -55,11 +55,9 @@ const recipeConfigs: Record<string, { component: React.ComponentType, title: str
 const RecipeConfig = () => {
   const { recipeId } = useParams();
   const navigate = useNavigate();
-
-  console.log('Current recipeId:', recipeId); // Debug log
+  const [isConfigValid, setIsConfigValid] = useState(false);
 
   if (!recipeId || !recipeConfigs[recipeId]) {
-    console.log('Recipe not found for ID:', recipeId); // Debug log
     return <div>Recipe not found</div>;
   }
 
@@ -67,19 +65,26 @@ const RecipeConfig = () => {
   const ConfigComponent = config.component;
 
   const handleCreateAutomation = () => {
+    if (!isConfigValid) {
+      toast.error('Please complete all required fields');
+      return;
+    }
+    
     // TODO: Implement automation creation
+    console.log('Creating automation with current configuration');
     toast.success('Automation created successfully');
     navigate('/');
   };
 
   return (
     <RecipeConfigLayout title={config.title}>
-      <ConfigComponent />
+      <ConfigComponent onConfigValid={setIsConfigValid} />
       <div className="mt-8 flex justify-end">
         <Button 
           size="lg"
           className="bg-[#0F9D58] hover:bg-[#0F9D58]/90 text-white"
           onClick={handleCreateAutomation}
+          disabled={!isConfigValid}
         >
           Create Automation
         </Button>
