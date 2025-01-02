@@ -12,10 +12,7 @@ import ButtonClickConfig from './configs/ButtonClickConfig';
 import ColumnChangeConfig from './configs/ColumnChangeConfig';
 import ItemCreationConfig from './configs/ItemCreationConfig';
 import { toast } from 'sonner';
-
-interface ConfigComponentProps {
-  onConfigValid: (isValid: boolean) => void;
-}
+import { ConfigComponentProps } from '@/types/recipe';
 
 const recipeConfigs: Record<string, { 
   component: React.ComponentType<ConfigComponentProps>, 

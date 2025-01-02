@@ -1,11 +1,8 @@
 import React from 'react';
 import DateTriggerContent from './date-trigger/DateTriggerContent';
+import { ConfigComponentProps } from '@/types/recipe';
 
-interface DateTriggerConfigProps {
-  onConfigValid?: (isValid: boolean) => void;
-}
-
-const DateTriggerConfig = ({ onConfigValid }: DateTriggerConfigProps) => {
+const DateTriggerConfig = ({ onConfigValid }: ConfigComponentProps) => {
   return (
     <div>
       <DateTriggerContent onConfigValid={onConfigValid} />
