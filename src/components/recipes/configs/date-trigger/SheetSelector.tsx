@@ -33,21 +33,23 @@ const SheetSelector = ({
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-[300px] bg-[#1F2937] border-none text-white">
-          <div className="p-2">
+          <div className="p-4">
             <Input
               placeholder="Search spreadsheets..."
-              className="mb-2 bg-transparent border-white/20"
+              className="mb-4 bg-transparent border-white/20 text-white placeholder:text-white/50"
             />
-            {spreadsheets.map(sheet => (
-              <Button
-                key={sheet.id}
-                variant="ghost"
-                className="w-full justify-start text-white hover:bg-white/10"
-                onClick={() => onSpreadsheetSelect(sheet.id)}
-              >
-                {sheet.name}
-              </Button>
-            ))}
+            <div className="space-y-1 max-h-[200px] overflow-y-auto">
+              {spreadsheets.map(sheet => (
+                <Button
+                  key={sheet.id}
+                  variant="ghost"
+                  className="w-full justify-start text-white hover:bg-white/10"
+                  onClick={() => onSpreadsheetSelect(sheet.id)}
+                >
+                  {sheet.name}
+                </Button>
+              ))}
+            </div>
           </div>
         </PopoverContent>
       </Popover>
@@ -59,21 +61,23 @@ const SheetSelector = ({
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-[300px] bg-[#1F2937] border-none text-white">
-          <div className="p-2">
+          <div className="p-4">
             <Input
               placeholder="Search sheets..."
-              className="mb-2 bg-transparent border-white/20"
+              className="mb-4 bg-transparent border-white/20 text-white placeholder:text-white/50"
             />
-            {sheets.map(sheet => (
-              <Button
-                key={sheet.id}
-                variant="ghost"
-                className="w-full justify-start text-white hover:bg-white/10"
-                onClick={() => onSheetSelect(sheet.id)}
-              >
-                {sheet.name}
-              </Button>
-            ))}
+            <div className="space-y-1 max-h-[200px] overflow-y-auto">
+              {sheets.map(sheet => (
+                <Button
+                  key={sheet.id}
+                  variant="ghost"
+                  className="w-full justify-start text-white hover:bg-white/10"
+                  onClick={() => onSheetSelect(sheet.id)}
+                >
+                  {sheet.name}
+                </Button>
+              ))}
+            </div>
           </div>
         </PopoverContent>
       </Popover>

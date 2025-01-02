@@ -8,6 +8,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 const DateTriggerConfig = () => {
   const [selectedDateColumn, setSelectedDateColumn] = useState('');
@@ -41,11 +43,15 @@ const DateTriggerConfig = () => {
     { value: 'priority', label: 'Priority' }
   ];
 
+  const handleAddNewDateColumn = () => {
+    toast.info('Adding new date column - Feature coming soon');
+  };
+
   return (
-    <div className="text-2xl leading-relaxed text-gray-800">
+    <div className="text-2xl leading-relaxed text-white">
       <Popover>
         <PopoverTrigger asChild>
-          <button className="text-gray-800 underline decoration-dotted hover:decoration-solid">
+          <button className="text-white underline decoration-dotted hover:decoration-solid">
             When
           </button>
         </PopoverTrigger>
@@ -98,7 +104,7 @@ const DateTriggerConfig = () => {
       {' '}
       <Popover>
         <PopoverTrigger asChild>
-          <button className="text-gray-800 underline decoration-dotted hover:decoration-solid">
+          <button className="text-white underline decoration-dotted hover:decoration-solid">
             {selectedDateColumn ? dateColumns.find(c => c.id === selectedDateColumn)?.label : 'date'}
           </button>
         </PopoverTrigger>
@@ -115,6 +121,13 @@ const DateTriggerConfig = () => {
                   {column.label}
                 </button>
               ))}
+              <button
+                className="w-full text-left px-2 py-1 hover:bg-white/10 rounded text-blue-400 flex items-center gap-2"
+                onClick={handleAddNewDateColumn}
+              >
+                <Plus className="w-4 h-4" />
+                Add a new column
+              </button>
             </div>
           </div>
         </PopoverContent>
@@ -131,29 +144,42 @@ const DateTriggerConfig = () => {
       {' '}with these{' '}
       <Popover>
         <PopoverTrigger asChild>
-          <button className="text-gray-800 underline decoration-dotted hover:decoration-solid">
+          <button className="text-white underline decoration-dotted hover:decoration-solid">
             values
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-[300px] bg-[#1F2937] border-none text-white">
-          <div className="p-4 space-y-2">
-            {mondayColumns.map(column => (
-              <div key={column.value} className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={selectedValues.includes(column.value)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedValues([...selectedValues, column.value]);
-                    } else {
-                      setSelectedValues(selectedValues.filter(v => v !== column.value));
-                    }
-                  }}
-                  className="text-blue-500"
-                />
-                <span>{column.label}</span>
-              </div>
-            ))}
+          <div className="p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3>Select values to sync</h3>
+              <Button 
+                size="sm"
+                variant="outline"
+                className="border-white/20 hover:bg-white/10"
+                onClick={() => toast.info('Adding custom value - Feature coming soon')}
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="space-y-2">
+              {mondayColumns.map(column => (
+                <div key={column.value} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedValues.includes(column.value)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedValues([...selectedValues, column.value]);
+                      } else {
+                        setSelectedValues(selectedValues.filter(v => v !== column.value));
+                      }
+                    }}
+                    className="text-blue-500"
+                  />
+                  <span>{column.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </PopoverContent>
       </Popover>
@@ -161,9 +187,9 @@ const DateTriggerConfig = () => {
       {/* Information box */}
       <div className="mt-8 bg-white/10 backdrop-blur-sm p-4 rounded-lg">
         <div className="flex items-start gap-3">
-          <Calendar className="w-5 h-5 text-gray-800 mt-1 flex-shrink-0" />
+          <Calendar className="w-5 h-5 text-white mt-1 flex-shrink-0" />
           <div>
-            <p className="text-gray-700 text-base">
+            <p className="text-white/90 text-base">
               This automation will trigger when the specified date arrives, adding a new row to your selected Google Sheet with the chosen values.
             </p>
           </div>
