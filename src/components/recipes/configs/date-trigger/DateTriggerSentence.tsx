@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import SheetSelector from '../date-trigger/SheetSelector';
+import SheetSelector from './SheetSelector';
 import { toast } from 'sonner';
+import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 
 const DateTriggerSentence = () => {
   const [selectedTime, setSelectedTime] = useState('08:00');
@@ -12,6 +13,20 @@ const DateTriggerSentence = () => {
   const [relativeDirection, setRelativeDirection] = useState<'before' | 'after'>('before');
   const [selectedDateColumn, setSelectedDateColumn] = useState('');
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
+
+  const {
+    spreadsheets,
+    sheets,
+    selectedSpreadsheet,
+    selectedSheet,
+    setSelectedSpreadsheet,
+    setSelectedSheet,
+    fetchSpreadsheets,
+  } = useGoogleSheets();
+
+  useEffect(() => {
+    fetchSpreadsheets();
+  }, [fetchSpreadsheets]);
 
   const dateColumns = [
     { id: 'due_date', label: 'Due date' },
@@ -116,7 +131,14 @@ const DateTriggerSentence = () => {
         </Popover>
         {' '}arrives, add a row in{' '}
         <span className="inline-block">
-          <SheetSelector />
+          <SheetSelector
+            spreadsheets={spreadsheets}
+            sheets={sheets}
+            selectedSpreadsheet={selectedSpreadsheet}
+            selectedSheet={selectedSheet}
+            onSpreadsheetSelect={setSelectedSpreadsheet}
+            onSheetSelect={setSelectedSheet}
+          />
         </span>
         {' '}with these{' '}
         <Popover>
