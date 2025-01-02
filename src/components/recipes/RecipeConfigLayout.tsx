@@ -13,7 +13,7 @@ const RecipeConfigLayout = ({ title, children }: RecipeConfigLayoutProps) => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#7B61FF] via-[#9B87F5] to-[#7E69AB] text-white p-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#7B61FF] via-[#9B87F5] to-[#7E69AB] p-8">
       <Button 
         variant="ghost" 
         className="mb-6 text-white hover:bg-white/10"
@@ -28,7 +28,7 @@ const RecipeConfigLayout = ({ title, children }: RecipeConfigLayoutProps) => {
         <span>This is a pre-built template</span>
       </div>
 
-      <Card className="w-full max-w-4xl mx-auto p-8 bg-white/90 backdrop-blur-sm shadow-xl border-none">
+      <Card className="w-full max-w-4xl mx-auto p-8 bg-white shadow-xl border-none">
         <h2 className="text-2xl font-semibold mb-8 text-gray-800">{title}</h2>
         {children}
       </Card>

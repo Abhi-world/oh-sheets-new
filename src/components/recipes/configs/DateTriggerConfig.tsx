@@ -2,15 +2,12 @@ import React, { useState } from 'react';
 import { Calendar } from 'lucide-react';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
 import SheetSelector from './date-trigger/SheetSelector';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const DateTriggerConfig = () => {
   const [selectedDateColumn, setSelectedDateColumn] = useState('');
@@ -45,11 +42,63 @@ const DateTriggerConfig = () => {
   ];
 
   return (
-    <div className="text-2xl leading-relaxed text-white">
-      When{' '}
+    <div className="text-2xl leading-relaxed text-gray-800">
       <Popover>
         <PopoverTrigger asChild>
-          <button className="text-white underline decoration-dotted hover:decoration-solid">
+          <button className="text-gray-800 underline decoration-dotted hover:decoration-solid">
+            When
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[300px] bg-[#1F2937] border-none text-white p-4">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <input
+                type="radio"
+                checked={!isRelative}
+                onChange={() => setIsRelative(false)}
+                className="text-blue-500"
+              />
+              <span>When date arrives at</span>
+              <input
+                type="time"
+                value={selectedTime}
+                onChange={(e) => setSelectedTime(e.target.value)}
+                className="w-24 bg-transparent border border-white/20 rounded px-2 py-1"
+                disabled={isRelative}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="radio"
+                checked={isRelative}
+                onChange={() => setIsRelative(true)}
+                className="text-blue-500"
+              />
+              <input
+                type="number"
+                value={relativeDays}
+                onChange={(e) => setRelativeDays(Number(e.target.value))}
+                className="w-16 bg-transparent border border-white/20 rounded px-2 py-1"
+                disabled={!isRelative}
+              />
+              <span>days</span>
+              <select
+                value={relativeDirection}
+                onChange={(e) => setRelativeDirection(e.target.value as 'before' | 'after')}
+                className="bg-transparent border border-white/20 rounded px-2 py-1"
+                disabled={!isRelative}
+              >
+                <option value="before">before</option>
+                <option value="after">after</option>
+              </select>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+      {' '}
+      <Popover>
+        <PopoverTrigger asChild>
+          <button className="text-gray-800 underline decoration-dotted hover:decoration-solid">
             {selectedDateColumn ? dateColumns.find(c => c.id === selectedDateColumn)?.label : 'date'}
           </button>
         </PopoverTrigger>
@@ -58,14 +107,13 @@ const DateTriggerConfig = () => {
             <h3 className="mb-4">Select a date column</h3>
             <div className="space-y-2">
               {dateColumns.map(column => (
-                <Button
+                <button
                   key={column.id}
-                  variant="ghost"
-                  className="w-full justify-start text-white hover:bg-white/10"
+                  className="w-full text-left px-2 py-1 hover:bg-white/10 rounded"
                   onClick={() => setSelectedDateColumn(column.id)}
                 >
                   {column.label}
-                </Button>
+                </button>
               ))}
             </div>
           </div>
@@ -83,12 +131,12 @@ const DateTriggerConfig = () => {
       {' '}with these{' '}
       <Popover>
         <PopoverTrigger asChild>
-          <button className="text-white underline decoration-dotted hover:decoration-solid">
+          <button className="text-gray-800 underline decoration-dotted hover:decoration-solid">
             values
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-[300px] bg-[#1F2937] border-none text-white">
-          <div className="p-2 space-y-2">
+          <div className="p-4 space-y-2">
             {mondayColumns.map(column => (
               <div key={column.value} className="flex items-center gap-2">
                 <input
@@ -106,15 +154,6 @@ const DateTriggerConfig = () => {
                 <span>{column.label}</span>
               </div>
             ))}
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-blue-400 hover:text-blue-300 hover:bg-blue-400/10"
-              onClick={() => {
-                toast.info('Add new column functionality coming soon');
-              }}
-            >
-              + Add a new column
-            </Button>
           </div>
         </PopoverContent>
       </Popover>
@@ -122,25 +161,13 @@ const DateTriggerConfig = () => {
       {/* Information box */}
       <div className="mt-8 bg-white/10 backdrop-blur-sm p-4 rounded-lg">
         <div className="flex items-start gap-3">
-          <Calendar className="w-5 h-5 text-white mt-1 flex-shrink-0" />
+          <Calendar className="w-5 h-5 text-gray-800 mt-1 flex-shrink-0" />
           <div>
-            <p className="text-white/90">
+            <p className="text-gray-700 text-base">
               This automation will trigger when the specified date arrives, adding a new row to your selected Google Sheet with the chosen values.
             </p>
           </div>
         </div>
-      </div>
-
-      <div className="mt-8 flex justify-end">
-        <Button 
-          size="lg"
-          className="bg-[#0F9D58] hover:bg-[#0F9D58]/90 text-white"
-          onClick={() => {
-            toast.success('Automation created successfully');
-          }}
-        >
-          Create Automation
-        </Button>
       </div>
     </div>
   );
