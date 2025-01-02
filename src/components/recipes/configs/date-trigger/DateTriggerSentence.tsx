@@ -7,7 +7,11 @@ import { toast } from 'sonner';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import DateSelector from './DateSelector';
 
-const DateTriggerSentence = () => {
+interface DateTriggerSentenceProps {
+  onConfigValid?: (isValid: boolean) => void;
+}
+
+const DateTriggerSentence = ({ onConfigValid }: DateTriggerSentenceProps) => {
   const [selectedTime, setSelectedTime] = useState('08:00');
   const [isRelative, setIsRelative] = useState(false);
   const [relativeDays, setRelativeDays] = useState(1);
@@ -24,6 +28,12 @@ const DateTriggerSentence = () => {
     setSelectedSheet,
     fetchSpreadsheets,
   } = useGoogleSheets();
+
+  useEffect(() => {
+    // Basic validation - check if essential fields are filled
+    const isValid = selectedDateColumn && selectedSpreadsheet && selectedSheet && selectedValues.length > 0;
+    onConfigValid?.(isValid);
+  }, [selectedDateColumn, selectedSpreadsheet, selectedSheet, selectedValues, onConfigValid]);
 
   useEffect(() => {
     fetchSpreadsheets();
