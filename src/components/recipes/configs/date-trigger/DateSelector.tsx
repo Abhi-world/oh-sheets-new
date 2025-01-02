@@ -1,15 +1,8 @@
 import React from 'react';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface DateSelectorProps {
-  selectedColumn: string;
-  onColumnSelect: (column: string) => void;
   selectedTime: string;
   onTimeSelect: (time: string) => void;
   isRelative: boolean;
@@ -21,8 +14,6 @@ interface DateSelectorProps {
 }
 
 const DateSelector = ({
-  selectedColumn,
-  onColumnSelect,
   selectedTime,
   onTimeSelect,
   isRelative,
@@ -32,33 +23,27 @@ const DateSelector = ({
   relativeDirection,
   onRelativeDirectionChange
 }: DateSelectorProps) => {
-  const dateColumns = [
-    { id: 'due_date', label: 'Due date' },
-    { id: 'timeline_start', label: 'Timeline start date' },
-    { id: 'timeline_end', label: 'Timeline end date' }
-  ];
-
   return (
-    <div className="p-4">
-      <h3 className="mb-4">When to notify on this date?</h3>
+    <div className="p-4 bg-[#1F2937] text-white rounded-lg">
+      <h3 className="mb-4 text-white/90">When to notify on this date?</h3>
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <input
             type="radio"
             checked={!isRelative}
             onChange={() => onIsRelativeChange(false)}
             className="text-blue-500"
           />
-          <span>When date arrives at</span>
+          <span className="text-white/90">When date arrives at</span>
           <Input
             type="time"
             value={selectedTime}
             onChange={(e) => onTimeSelect(e.target.value)}
-            className="w-24 bg-transparent border-white/20"
+            className="w-24 bg-[#374151] border-white/10 text-white"
             disabled={isRelative}
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <input
             type="radio"
             checked={isRelative}
@@ -69,16 +54,16 @@ const DateSelector = ({
             type="number"
             value={relativeDays}
             onChange={(e) => onRelativeDaysChange(Number(e.target.value))}
-            className="w-16 bg-transparent border-white/20"
+            className="w-16 bg-[#374151] border-white/10 text-white"
             disabled={!isRelative}
           />
-          <span>days</span>
+          <span className="text-white/90">days</span>
           <Select 
             value={relativeDirection}
             onValueChange={(value: 'before' | 'after') => onRelativeDirectionChange(value)}
             disabled={!isRelative}
           >
-            <SelectTrigger className="w-24 bg-transparent border-white/20">
+            <SelectTrigger className="w-24 bg-[#374151] border-white/10 text-white">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -86,12 +71,12 @@ const DateSelector = ({
               <SelectItem value="after">after</SelectItem>
             </SelectContent>
           </Select>
-          <span>date arrives, at</span>
+          <span className="text-white/90">date arrives, at</span>
           <Input
             type="time"
             value={selectedTime}
             onChange={(e) => onTimeSelect(e.target.value)}
-            className="w-24 bg-transparent border-white/20"
+            className="w-24 bg-[#374151] border-white/10 text-white"
             disabled={!isRelative}
           />
         </div>

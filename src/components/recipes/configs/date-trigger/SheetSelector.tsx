@@ -28,7 +28,7 @@ const SheetSelector = ({
     <span className="inline-flex items-center gap-2">
       <Popover>
         <PopoverTrigger asChild>
-          <button className="text-white underline decoration-dotted hover:decoration-solid">
+          <button className="text-gray-800 underline decoration-dotted hover:decoration-solid">
             {selectedSpreadsheet ? spreadsheets.find(s => s.id === selectedSpreadsheet)?.name : 'spreadsheet'}
           </button>
         </PopoverTrigger>
@@ -36,7 +36,7 @@ const SheetSelector = ({
           <div className="p-4">
             <Input
               placeholder="Search spreadsheets..."
-              className="mb-4 bg-transparent border-white/20 text-white placeholder:text-white/50"
+              className="mb-4 bg-[#374151] border-white/10 text-white placeholder:text-white/50"
             />
             <div className="space-y-1 max-h-[200px] overflow-y-auto">
               {spreadsheets.map(sheet => (
@@ -56,7 +56,7 @@ const SheetSelector = ({
       {' / '}
       <Popover>
         <PopoverTrigger asChild>
-          <button className="text-white underline decoration-dotted hover:decoration-solid">
+          <button className="text-gray-800 underline decoration-dotted hover:decoration-solid">
             {selectedSheet ? sheets.find(s => s.id === selectedSheet)?.name : 'sheet'}
           </button>
         </PopoverTrigger>
@@ -64,7 +64,7 @@ const SheetSelector = ({
           <div className="p-4">
             <Input
               placeholder="Search sheets..."
-              className="mb-4 bg-transparent border-white/20 text-white placeholder:text-white/50"
+              className="mb-4 bg-[#374151] border-white/10 text-white placeholder:text-white/50"
             />
             <div className="space-y-1 max-h-[200px] overflow-y-auto">
               {sheets.map(sheet => (
