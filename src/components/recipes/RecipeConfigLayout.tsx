@@ -40,16 +40,8 @@ const RecipeConfigLayout = ({ title, children }: RecipeConfigLayoutProps) => {
 
           {children}
           
-          {/* Footer with Google Sheets branding and help button */}
-          <div className="mt-8 flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <img 
-                src="/lovable-uploads/68adb195-310b-4fb6-8cce-a0d4e2ab7a4b.png" 
-                alt="Google Sheets" 
-                className="w-6 h-6"
-              />
-              <span className="text-gray-600">Google Sheets</span>
-            </div>
+          {/* Footer with help button only */}
+          <div className="mt-8 flex justify-end">
             <Button
               variant="ghost"
               size="icon"
