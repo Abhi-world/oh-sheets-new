@@ -44,10 +44,10 @@ const DateTriggerSentence = () => {
   ];
 
   return (
-    <div className="text-white/90 text-xl leading-relaxed">
+    <div className="text-gray-200 text-xl leading-relaxed">
       <Popover>
         <PopoverTrigger asChild>
-          <button className="text-white/90 hover:text-white underline decoration-dotted hover:decoration-solid">
+          <button className="text-gray-200 hover:text-white underline decoration-dotted hover:decoration-solid">
             When
           </button>
         </PopoverTrigger>
@@ -100,7 +100,7 @@ const DateTriggerSentence = () => {
       {' '}
       <Popover>
         <PopoverTrigger asChild>
-          <button className="text-white/90 hover:text-white underline decoration-dotted hover:decoration-solid">
+          <button className="text-gray-200 hover:text-white underline decoration-dotted hover:decoration-solid">
             {selectedDateColumn ? dateColumns.find(c => c.id === selectedDateColumn)?.label : 'date'}
           </button>
         </PopoverTrigger>
@@ -140,7 +140,7 @@ const DateTriggerSentence = () => {
       {' '}with these{' '}
       <Popover>
         <PopoverTrigger asChild>
-          <button className="text-white/90 hover:text-white underline decoration-dotted hover:decoration-solid">
+          <button className="text-gray-200 hover:text-white underline decoration-dotted hover:decoration-solid">
             values
           </button>
         </PopoverTrigger>
