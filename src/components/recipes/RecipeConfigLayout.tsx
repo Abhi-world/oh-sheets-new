@@ -28,9 +28,11 @@ const RecipeConfigLayout = ({ title, children }: RecipeConfigLayoutProps) => {
         <span>This is a pre-built template</span>
       </div>
 
-      <Card className="w-full max-w-4xl mx-auto p-8 bg-white shadow-xl border-none">
-        <h2 className="text-2xl font-semibold mb-8 text-gray-800">{title}</h2>
-        {children}
+      <Card className="w-full max-w-4xl mx-auto bg-white shadow-xl border-none">
+        <div className="p-8">
+          <h2 className="text-2xl font-semibold mb-8 text-gray-800">{title}</h2>
+          {children}
+        </div>
       </Card>
 
       {/* Google Sheets icon and Help button */}
