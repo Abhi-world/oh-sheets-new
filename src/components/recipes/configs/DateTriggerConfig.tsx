@@ -66,19 +66,7 @@ const DateTriggerConfig = () => {
             relativeDirection={relativeDirection}
             onRelativeDirectionChange={setRelativeDirection}
           />
-          in
-          <ConfigSelect
-            label=""
-            value={selectedBoard}
-            onValueChange={setSelectedBoard}
-            options={[
-              { value: 'board1', label: 'Main Board' },
-              { value: 'board2', label: 'Development Board' },
-            ]}
-            placeholder="Select board"
-            className="inline-block w-[200px]"
-          />
-          , add a row in
+          arrives, add a row in
           <ConfigSelect
             label=""
             value={selectedSpreadsheet}
@@ -125,7 +113,6 @@ const DateTriggerConfig = () => {
                   variant="outline"
                   className="w-full mt-2 text-blue-500"
                   onClick={() => {
-                    // TODO: Implement add new column functionality
                     toast.info('Add new column functionality coming soon');
                   }}
                 >
@@ -142,7 +129,7 @@ const DateTriggerConfig = () => {
             <Calendar className="w-5 h-5 text-google-green mt-1 flex-shrink-0" />
             <div>
               <p className="text-gray-600">
-                This automation will trigger when the specified date column reaches the configured time, adding a new row to your selected Google Sheet with the chosen values.
+                This automation will trigger when the specified date arrives, adding a new row to your selected Google Sheet with the chosen values.
               </p>
             </div>
           </div>
