@@ -25,10 +25,10 @@ const SheetSelector = ({
   onSheetSelect
 }: SheetSelectorProps) => {
   return (
-    <span className="inline-flex items-center gap-2">
+    <span className="inline-flex items-center">
       <Popover>
         <PopoverTrigger asChild>
-          <button className="text-gray-800 underline decoration-dotted hover:decoration-solid">
+          <button className="text-white underline decoration-dotted hover:decoration-solid">
             {selectedSpreadsheet ? spreadsheets.find(s => s.id === selectedSpreadsheet)?.name : 'spreadsheet'}
           </button>
         </PopoverTrigger>
@@ -56,7 +56,7 @@ const SheetSelector = ({
       {' / '}
       <Popover>
         <PopoverTrigger asChild>
-          <button className="text-gray-800 underline decoration-dotted hover:decoration-solid">
+          <button className="text-white underline decoration-dotted hover:decoration-solid">
             {selectedSheet ? sheets.find(s => s.id === selectedSheet)?.name : 'sheet'}
           </button>
         </PopoverTrigger>
