@@ -5,6 +5,7 @@ import { Plus } from 'lucide-react';
 import SheetSelector from './SheetSelector';
 import { toast } from 'sonner';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
+import DateSelector from './DateSelector';
 
 const DateTriggerSentence = () => {
   const [selectedTime, setSelectedTime] = useState('08:00');
@@ -44,63 +45,30 @@ const DateTriggerSentence = () => {
   ];
 
   return (
-    <div className="text-gray-100 text-xl leading-relaxed">
+    <div className="text-white/90 text-xl leading-relaxed">
       <Popover>
         <PopoverTrigger asChild>
-          <button className="text-gray-100 hover:text-white underline decoration-dotted hover:decoration-solid">
+          <button className="text-white/90 hover:text-white underline decoration-dotted hover:decoration-solid">
             When
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-[300px] bg-[#1F2937] border-none text-white">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <input
-                type="radio"
-                checked={!isRelative}
-                onChange={() => setIsRelative(false)}
-                className="text-blue-500"
-              />
-              <span>When date arrives at</span>
-              <input
-                type="time"
-                value={selectedTime}
-                onChange={(e) => setSelectedTime(e.target.value)}
-                className="w-24 bg-[#374151] border border-white/10 rounded px-2 py-1 text-white"
-                disabled={isRelative}
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="radio"
-                checked={isRelative}
-                onChange={() => setIsRelative(true)}
-                className="text-blue-500"
-              />
-              <input
-                type="number"
-                value={relativeDays}
-                onChange={(e) => setRelativeDays(Number(e.target.value))}
-                className="w-16 bg-[#374151] border border-white/10 rounded px-2 py-1 text-white"
-                disabled={!isRelative}
-              />
-              <span>days</span>
-              <select
-                value={relativeDirection}
-                onChange={(e) => setRelativeDirection(e.target.value as 'before' | 'after')}
-                className="bg-[#374151] border border-white/10 rounded px-2 py-1 text-white"
-                disabled={!isRelative}
-              >
-                <option value="before">before</option>
-                <option value="after">after</option>
-              </select>
-            </div>
-          </div>
+        <PopoverContent className="w-[400px] p-0 bg-transparent border-none shadow-none">
+          <DateSelector
+            selectedTime={selectedTime}
+            onTimeSelect={setSelectedTime}
+            isRelative={isRelative}
+            onIsRelativeChange={setIsRelative}
+            relativeDays={relativeDays}
+            onRelativeDaysChange={setRelativeDays}
+            relativeDirection={relativeDirection}
+            onRelativeDirectionChange={setRelativeDirection}
+          />
         </PopoverContent>
       </Popover>
       {' '}
       <Popover>
         <PopoverTrigger asChild>
-          <button className="text-gray-100 hover:text-white underline decoration-dotted hover:decoration-solid">
+          <button className="text-white/90 hover:text-white underline decoration-dotted hover:decoration-solid">
             {selectedDateColumn ? dateColumns.find(c => c.id === selectedDateColumn)?.label : 'date'}
           </button>
         </PopoverTrigger>
@@ -140,7 +108,7 @@ const DateTriggerSentence = () => {
       {' '}with these{' '}
       <Popover>
         <PopoverTrigger asChild>
-          <button className="text-gray-100 hover:text-white underline decoration-dotted hover:decoration-solid">
+          <button className="text-white/90 hover:text-white underline decoration-dotted hover:decoration-solid">
             values
           </button>
         </PopoverTrigger>

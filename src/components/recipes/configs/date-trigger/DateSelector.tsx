@@ -32,7 +32,7 @@ const DateSelector = ({
             type="radio"
             checked={!isRelative}
             onChange={() => onIsRelativeChange(false)}
-            className="text-blue-500"
+            className="text-blue-500 w-4 h-4"
           />
           <span className="text-white/90">When date arrives at</span>
           <Input
@@ -48,7 +48,7 @@ const DateSelector = ({
             type="radio"
             checked={isRelative}
             onChange={() => onIsRelativeChange(true)}
-            className="text-blue-500"
+            className="text-blue-500 w-4 h-4"
           />
           <Input
             type="number"
@@ -66,7 +66,7 @@ const DateSelector = ({
             <SelectTrigger className="w-24 bg-[#374151] border-white/10 text-white">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-[#374151] border-white/10">
               <SelectItem value="before">before</SelectItem>
               <SelectItem value="after">after</SelectItem>
             </SelectContent>
