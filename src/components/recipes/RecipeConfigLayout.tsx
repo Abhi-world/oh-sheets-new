@@ -35,14 +35,13 @@ const RecipeConfigLayout = ({ title, children }: RecipeConfigLayoutProps) => {
         </div>
       </Card>
 
-      {/* Google Sheets icon and Help button */}
+      {/* Google Sheets logo */}
       <div className="fixed bottom-4 left-4 flex items-center gap-2 text-white/90">
         <img 
-          src="/lovable-uploads/55c54574-060a-410d-8dd8-64cf691dc4bb.png" 
+          src="/lovable-uploads/68adb195-310b-4fb6-8cce-a0d4e2ab7a4b.png" 
           alt="Google Sheets" 
           className="w-8 h-8"
         />
-        <span>Google Sheets</span>
       </div>
 
       <Button
