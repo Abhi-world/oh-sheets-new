@@ -32,27 +32,27 @@ const RecipeConfigLayout = ({ title, children }: RecipeConfigLayoutProps) => {
         <div className="p-8">
           <h2 className="text-2xl font-semibold mb-8 text-gray-800">{title}</h2>
           {children}
+          
+          {/* Footer with Google Sheets logo and Create Automation button */}
+          <div className="mt-8 flex items-center justify-between">
+            <div className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-lg">
+              <img 
+                src="/lovable-uploads/68adb195-310b-4fb6-8cce-a0d4e2ab7a4b.png" 
+                alt="Google Sheets" 
+                className="w-6 h-6"
+              />
+              <span className="text-gray-600 font-medium">Google Sheets</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-recipe-green/90 rounded-full bg-recipe-green"
+            >
+              <HelpCircle className="w-6 h-6" />
+            </Button>
+          </div>
         </div>
       </Card>
-
-      {/* Google Sheets logo with improved visibility */}
-      <div className="fixed bottom-4 left-4 flex items-center gap-2">
-        <div className="bg-white/95 backdrop-blur-sm p-2 rounded-lg shadow-lg">
-          <img 
-            src="/lovable-uploads/68adb195-310b-4fb6-8cce-a0d4e2ab7a4b.png" 
-            alt="Google Sheets" 
-            className="w-8 h-8"
-          />
-        </div>
-      </div>
-
-      <Button
-        variant="ghost"
-        size="icon"
-        className="fixed bottom-4 right-4 text-white hover:bg-white/10 rounded-full bg-[#0F9D58] hover:bg-[#0F9D58]/90"
-      >
-        <HelpCircle className="w-6 h-6" />
-      </Button>
     </div>
   );
 };
