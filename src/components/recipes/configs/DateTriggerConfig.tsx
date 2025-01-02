@@ -4,10 +4,22 @@ import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import ConfigSelect from '../shared/ConfigSelect';
+import DateColumnSelect from './date-trigger/DateColumnSelect';
+import { Button } from '@/components/ui/button';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 const DateTriggerConfig = () => {
-  const [triggerDate, setTriggerDate] = useState('');
+  const [selectedDateColumn, setSelectedDateColumn] = useState('');
+  const [selectedTime, setSelectedTime] = useState('08:00');
+  const [isRelative, setIsRelative] = useState(false);
+  const [relativeDays, setRelativeDays] = useState(1);
+  const [relativeDirection, setRelativeDirection] = useState<'before' | 'after'>('before');
   const [selectedBoard, setSelectedBoard] = useState('');
+  const [selectedValues, setSelectedValues] = useState<string[]>([]);
   
   const {
     spreadsheets,
@@ -18,37 +30,43 @@ const DateTriggerConfig = () => {
     setSelectedSheet,
   } = useGoogleSheets();
 
-  const handleSave = async () => {
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('monday_user_id')
-        .single();
+  const mondayColumns = [
+    { value: 'budget', label: 'Budget' },
+    { value: 'due_date', label: 'Due date' },
+    { value: 'item_id', label: 'Item ID' },
+    { value: 'name', label: 'Name' },
+    { value: 'owner', label: 'Owner' },
+    { value: 'priority', label: 'Priority' }
+  ];
 
-      if (!profile?.monday_user_id) {
-        toast.error("Please connect your Monday.com account first");
-        return;
-      }
-
-      toast.success("Configuration saved successfully");
-    } catch (error) {
-      console.error('Error saving configuration:', error);
-      toast.error("Failed to save configuration");
+  const handleAddValue = (value: string) => {
+    if (!selectedValues.includes(value)) {
+      setSelectedValues([...selectedValues, value]);
     }
+  };
+
+  const handleRemoveValue = (value: string) => {
+    setSelectedValues(selectedValues.filter(v => v !== value));
   };
 
   return (
     <div className="space-y-8">
       <div className="bg-white p-6 rounded-lg border border-gray-200">
         <p className="text-xl leading-relaxed text-gray-800 flex items-center gap-2 flex-wrap">
-          When date
-          <input
-            type="date"
-            value={triggerDate}
-            onChange={(e) => setTriggerDate(e.target.value)}
-            className="inline-block px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-google-green focus:border-transparent"
+          When
+          <DateColumnSelect
+            selectedColumn={selectedDateColumn}
+            onColumnSelect={setSelectedDateColumn}
+            selectedTime={selectedTime}
+            onTimeSelect={setSelectedTime}
+            isRelative={isRelative}
+            onIsRelativeChange={setIsRelative}
+            relativeDays={relativeDays}
+            onRelativeDaysChange={setRelativeDays}
+            relativeDirection={relativeDirection}
+            onRelativeDirectionChange={setRelativeDirection}
           />
-          is reached in
+          in
           <ConfigSelect
             label=""
             value={selectedBoard}
@@ -78,7 +96,44 @@ const DateTriggerConfig = () => {
             placeholder="Select sheet"
             className="inline-block w-[200px]"
           />
-          with these values
+          with these
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline">
+                values ({selectedValues.length})
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[300px]">
+              <div className="space-y-2">
+                {mondayColumns.map(column => (
+                  <div key={column.value} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedValues.includes(column.value)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          handleAddValue(column.value);
+                        } else {
+                          handleRemoveValue(column.value);
+                        }
+                      }}
+                    />
+                    <span>{column.label}</span>
+                  </div>
+                ))}
+                <Button
+                  variant="outline"
+                  className="w-full mt-2 text-blue-500"
+                  onClick={() => {
+                    // TODO: Implement add new column functionality
+                    toast.info('Add new column functionality coming soon');
+                  }}
+                >
+                  + Add a new column
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
         </p>
 
         {/* Information box */}
@@ -87,7 +142,7 @@ const DateTriggerConfig = () => {
             <Calendar className="w-5 h-5 text-google-green mt-1 flex-shrink-0" />
             <div>
               <p className="text-gray-600">
-                This automation will trigger when the specified date is reached, adding a new row to your selected Google Sheet.
+                This automation will trigger when the specified date column reaches the configured time, adding a new row to your selected Google Sheet with the chosen values.
               </p>
             </div>
           </div>
