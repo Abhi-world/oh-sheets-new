@@ -1,0 +1,168 @@
+import React, { useState } from 'react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import SheetSelector from '../date-trigger/SheetSelector';
+import { toast } from 'sonner';
+
+const DateTriggerSentence = () => {
+  const [selectedTime, setSelectedTime] = useState('08:00');
+  const [isRelative, setIsRelative] = useState(false);
+  const [relativeDays, setRelativeDays] = useState(1);
+  const [relativeDirection, setRelativeDirection] = useState<'before' | 'after'>('before');
+  const [selectedDateColumn, setSelectedDateColumn] = useState('');
+  const [selectedValues, setSelectedValues] = useState<string[]>([]);
+
+  const dateColumns = [
+    { id: 'due_date', label: 'Due date' },
+    { id: 'timeline_start', label: 'Timeline start date' },
+    { id: 'timeline_end', label: 'Timeline end date' }
+  ];
+
+  const mondayColumns = [
+    { value: 'budget', label: 'Budget' },
+    { value: 'due_date', label: 'Due date' },
+    { value: 'item_id', label: 'Item ID' },
+    { value: 'name', label: 'Name' },
+    { value: 'owner', label: 'Owner' },
+    { value: 'priority', label: 'Priority' }
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="text-xl">
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="text-gray-800 underline decoration-dotted hover:decoration-solid">
+              When
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[300px] bg-white border border-gray-200 shadow-lg p-4">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  checked={!isRelative}
+                  onChange={() => setIsRelative(false)}
+                  className="text-blue-500"
+                />
+                <span>When date arrives at</span>
+                <input
+                  type="time"
+                  value={selectedTime}
+                  onChange={(e) => setSelectedTime(e.target.value)}
+                  className="w-24 border border-gray-300 rounded px-2 py-1"
+                  disabled={isRelative}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  checked={isRelative}
+                  onChange={() => setIsRelative(true)}
+                  className="text-blue-500"
+                />
+                <input
+                  type="number"
+                  value={relativeDays}
+                  onChange={(e) => setRelativeDays(Number(e.target.value))}
+                  className="w-16 border border-gray-300 rounded px-2 py-1"
+                  disabled={!isRelative}
+                />
+                <span>days</span>
+                <select
+                  value={relativeDirection}
+                  onChange={(e) => setRelativeDirection(e.target.value as 'before' | 'after')}
+                  className="border border-gray-300 rounded px-2 py-1"
+                  disabled={!isRelative}
+                >
+                  <option value="before">before</option>
+                  <option value="after">after</option>
+                </select>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+        {' '}
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="text-gray-800 underline decoration-dotted hover:decoration-solid">
+              {selectedDateColumn ? dateColumns.find(c => c.id === selectedDateColumn)?.label : 'date'}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[300px] bg-white border border-gray-200 shadow-lg">
+            <div className="p-4">
+              <h3 className="mb-4 text-sm font-medium">Select a date column</h3>
+              <div className="space-y-2">
+                {dateColumns.map(column => (
+                  <button
+                    key={column.id}
+                    className="w-full text-left px-2 py-1 hover:bg-gray-100 rounded text-sm"
+                    onClick={() => setSelectedDateColumn(column.id)}
+                  >
+                    {column.label}
+                  </button>
+                ))}
+                <button
+                  className="w-full text-left px-2 py-1 hover:bg-gray-100 rounded text-sm text-blue-500 flex items-center gap-2"
+                  onClick={() => toast.info('Adding new column - Feature coming soon')}
+                >
+                  <Plus className="w-4 h-4" />
+                  Add a new column
+                </button>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+        {' '}arrives, add a row in{' '}
+        <span className="inline-block">
+          <SheetSelector />
+        </span>
+        {' '}with these{' '}
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="text-gray-800 underline decoration-dotted hover:decoration-solid">
+              values
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[300px] bg-white border border-gray-200 shadow-lg">
+            <div className="p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-sm font-medium">Select values to sync</h3>
+                <Button 
+                  size="sm"
+                  variant="outline"
+                  className="border-gray-200 hover:bg-gray-100"
+                  onClick={() => toast.info('Adding custom value - Feature coming soon')}
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {mondayColumns.map(column => (
+                  <div key={column.value} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedValues.includes(column.value)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedValues([...selectedValues, column.value]);
+                        } else {
+                          setSelectedValues(selectedValues.filter(v => v !== column.value));
+                        }
+                      }}
+                      className="text-blue-500"
+                    />
+                    <span className="text-sm">{column.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+    </div>
+  );
+};
+
+export default DateTriggerSentence;
