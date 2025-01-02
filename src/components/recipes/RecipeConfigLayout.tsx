@@ -48,7 +48,7 @@ const RecipeConfigLayout = ({ title, children }: RecipeConfigLayoutProps) => {
                 alt="Google Sheets" 
                 className="w-6 h-6"
               />
-              <span className="text-gray-600">Google Sheets</span>
+              <span className="text-[#4285F4] font-medium">Google Sheets</span>
             </div>
             <Button
               variant="ghost"
