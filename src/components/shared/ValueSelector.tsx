@@ -24,9 +24,6 @@ const ValueSelector = ({
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
   const { columnValues } = useMondayColumns(selectedColumn);
 
-  // Find the selected column's title
-  const selectedColumnTitle = columns.find(col => col.id === selectedColumn)?.title || '';
-
   useEffect(() => {
     if (value) {
       const values = value.split(',').map(v => v.trim()).filter(Boolean);
@@ -43,16 +40,7 @@ const ValueSelector = ({
     onChange(newValues.join(', '));
   };
 
-  const handleAddCustomValue = (customValue: string) => {
-    if (customValue && !selectedValues.includes(customValue)) {
-      const newValues = [...selectedValues, customValue];
-      setSelectedValues(newValues);
-      onChange(newValues.join(', '));
-    }
-  };
-
-  // Display text that shows either the selected values or the column type
-  const displayText = value || selectedColumnTitle || placeholder;
+  const displayText = value || selectedColumn || placeholder;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -61,28 +49,30 @@ const ValueSelector = ({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between bg-navy-light border-google-green focus:ring-google-green/50 text-white"
+          className="px-3 py-1 h-auto min-h-[2rem] bg-[#374151] hover:bg-[#4B5563] border-none text-white underline decoration-dotted hover:decoration-solid inline-flex"
         >
           {displayText}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0 bg-navy-dark border border-google-green/20">
-        {columns && columns.length > 0 && (
-          <ColumnSelector
-            columns={columns}
-            selectedColumn={selectedColumn}
-            onColumnSelect={onColumnSelect!}
+      <PopoverContent className="w-[300px] p-0 bg-[#1F2937] border-[#374151]">
+        <div className="p-4 space-y-4">
+          {columns.length > 0 && (
+            <ColumnSelector
+              columns={columns}
+              selectedColumn={selectedColumn}
+              onColumnSelect={onColumnSelect!}
+            />
+          )}
+          
+          <CustomValueInput onAddValue={(value) => handleValueToggle(value)} />
+          
+          <ValueList
+            values={columnValues}
+            selectedValues={selectedValues}
+            onToggleValue={handleValueToggle}
           />
-        )}
-        
-        <CustomValueInput onAddValue={handleAddCustomValue} />
-        
-        <ValueList
-          values={columnValues}
-          selectedValues={selectedValues}
-          onToggleValue={handleValueToggle}
-        />
+        </div>
       </PopoverContent>
     </Popover>
   );

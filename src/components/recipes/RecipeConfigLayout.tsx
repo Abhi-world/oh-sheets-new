@@ -1,15 +1,17 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, HelpCircle } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface RecipeConfigLayoutProps {
   title: string;
+  subtitle?: string;
   children: React.ReactNode;
+  icon?: React.ReactNode;
 }
 
-const RecipeConfigLayout = ({ title, children }: RecipeConfigLayoutProps) => {
+const RecipeConfigLayout = ({ title, subtitle = "Google Sheets Integration", icon, children }: RecipeConfigLayoutProps) => {
   const navigate = useNavigate();
 
   return (
@@ -23,35 +25,46 @@ const RecipeConfigLayout = ({ title, children }: RecipeConfigLayoutProps) => {
         Back to Templates
       </Button>
 
-      <Card className="w-full max-w-4xl mx-auto bg-white/95 backdrop-blur-sm shadow-xl border-none">
-        <div className="p-8">
-          {/* Header with integrated Google Sheets branding */}
-          <div className="flex items-center gap-4 mb-8">
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Header Section */}
+        <div className="flex items-center gap-4">
+          {icon || (
             <img 
               src="/lovable-uploads/68adb195-310b-4fb6-8cce-a0d4e2ab7a4b.png" 
               alt="Google Sheets" 
-              className="w-8 h-8"
+              className="w-10 h-10"
             />
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-800">{title}</h2>
-              <p className="text-sm text-gray-500">Google Sheets Integration</p>
-            </div>
-          </div>
-
-          {children}
-          
-          {/* Footer with only help button */}
-          <div className="mt-8 flex justify-end">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-recipe-green/90 rounded-full bg-recipe-green"
-            >
-              <HelpCircle className="w-6 h-6" />
-            </Button>
+          )}
+          <div>
+            <h2 className="text-2xl font-semibold text-white">{title}</h2>
+            <p className="text-white/80">{subtitle}</p>
           </div>
         </div>
-      </Card>
+
+        {/* Main Content Card */}
+        <Card className="bg-[#1F2937] border-none shadow-xl">
+          <div className="p-6">
+            {children}
+          </div>
+        </Card>
+
+        {/* How it works section */}
+        <Card className="bg-gray-600/50 border-none backdrop-blur-sm">
+          <div className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                <span className="text-white">?</span>
+              </div>
+              <h3 className="text-lg font-medium text-white">How does this automation work?</h3>
+            </div>
+            <p className="text-white/80 leading-relaxed">
+              This automation will monitor the selected trigger in your Monday.com board. 
+              When the specified condition is met, it will automatically create a new row 
+              in your chosen Google Sheet with the values you selected.
+            </p>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 };
