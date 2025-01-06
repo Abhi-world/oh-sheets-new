@@ -5,7 +5,7 @@ import BoardSelector from './status-change/BoardSelector';
 import SpreadsheetSelector from './status-change/SpreadsheetSelector';
 import SheetSelector from './status-change/SheetSelector';
 
-const StatusChangeConfig = () => {
+const StatusChangeConfig = ({ onConfigValid }: { onConfigValid: (valid: boolean) => void }) => {
   const [selectedBoard, setSelectedBoard] = useState('');
   
   const {
@@ -19,27 +19,42 @@ const StatusChangeConfig = () => {
     fetchSpreadsheets
   } = useGoogleSheets();
 
+  useEffect(() => {
+    // Validate configuration whenever selections change
+    const isValid = selectedBoard && selectedSpreadsheet && selectedSheet;
+    onConfigValid(isValid);
+  }, [selectedBoard, selectedSpreadsheet, selectedSheet, onConfigValid]);
+
   return (
     <div className="space-y-8">
-      {/* Natural flowing sentence */}
-      <p className="text-xl leading-relaxed text-white">
-        When the <span className="text-google-green font-medium">Status</span> of any item changes in your{' '}
-        <BoardSelector
-          selectedBoard={selectedBoard}
-          onBoardSelect={setSelectedBoard}
-          className="min-w-[180px] bg-[#1F2937] border-none text-white hover:bg-[#374151] inline-flex"
-        />{' '}
-        board, automatically add a new row to your Google Sheet:{' '}
-        <SpreadsheetSelector
-          selectedSpreadsheet={selectedSpreadsheet}
-          onSpreadsheetSelect={setSelectedSpreadsheet}
-        />{' '}
-        /{' '}
-        <SheetSelector
-          selectedSheet={selectedSheet}
-          onSheetSelect={setSelectedSheet}
-        />
-      </p>
+      <div className="space-y-6">
+        {/* Category heading */}
+        <h3 className="text-white/60 text-sm font-medium uppercase tracking-wider">
+          Status Change Trigger Recipe
+        </h3>
+
+        {/* Natural flowing sentence */}
+        <p className="text-xl leading-relaxed text-white">
+          When the <span className="text-google-green font-medium">Status</span> of any item changes in your{' '}
+          <BoardSelector
+            selectedBoard={selectedBoard}
+            onBoardSelect={setSelectedBoard}
+            className="min-w-[180px] bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid inline-flex"
+          />{' '}
+          board, automatically add a new row to your Google Sheet:{' '}
+          <SpreadsheetSelector
+            selectedSpreadsheet={selectedSpreadsheet}
+            onSpreadsheetSelect={setSelectedSpreadsheet}
+            className="min-w-[180px] bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid inline-flex"
+          />{' '}
+          /{' '}
+          <SheetSelector
+            selectedSheet={selectedSheet}
+            onSheetSelect={setSelectedSheet}
+            className="min-w-[150px] bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid inline-flex"
+          />
+        </p>
+      </div>
 
       {/* Information box */}
       <div className="bg-navy-light/30 p-4 rounded-lg border border-google-green/20">
