@@ -34,6 +34,11 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
     onConfigValid(isValid);
   }, [interval, selectedSpreadsheet, selectedSheet, onConfigValid]);
 
+  const getDisplayText = () => {
+    if (!interval) return 'time period';
+    return `${frequency} ${interval}${frequency > 1 ? 's' : ''}`;
+  };
+
   return (
     <div className="space-y-8 text-white">
       <p className="text-xl leading-relaxed">
@@ -41,7 +46,7 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
         <Popover>
           <PopoverTrigger asChild>
             <button className="text-white underline decoration-dotted hover:decoration-solid">
-              {interval ? `${frequency} ${interval}${frequency > 1 ? 's' : ''}` : 'time period'}
+              {getDisplayText()}
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-[300px] bg-[#1F2937] border-none text-white p-4">
@@ -72,7 +77,7 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
                       min="1"
                       value={frequency}
                       onChange={(e) => setFrequency(Number(e.target.value))}
-                      className="w-16 bg-transparent border-google-green focus:ring-google-green/50 text-white"
+                      className="w-16 bg-transparent border-white/20 focus:border-google-green text-white"
                     />
                     <span className="text-sm">{interval}{frequency > 1 ? 's' : ''}</span>
                   </div>
@@ -86,7 +91,7 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
                       type="time"
                       value={exportTime}
                       onChange={(e) => setExportTime(e.target.value)}
-                      className="bg-transparent border-google-green focus:ring-google-green/50 text-white"
+                      className="bg-transparent border-white/20 focus:border-google-green text-white"
                     />
                   </div>
                 </div>
