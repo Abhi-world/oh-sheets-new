@@ -109,20 +109,6 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
           onSheetSelect={setSelectedSheet}
         />
       </p>
-
-      <div className="mt-8 space-y-2">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-            <span>?</span>
-          </div>
-          <h3 className="text-lg font-medium">How does this automation work?</h3>
-        </div>
-        <p className="text-white/80 leading-relaxed">
-          This automation will export data from your Monday.com board to Google Sheets 
-          at the specified interval and time. It will automatically create a new row 
-          in your chosen Google Sheet with the latest data from your board.
-        </p>
-      </div>
     </div>
   );
 };
