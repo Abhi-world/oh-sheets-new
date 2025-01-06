@@ -20,7 +20,6 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid: (valid: boolean)
   } = useGoogleSheets();
 
   useEffect(() => {
-    // Convert the string values to a boolean before passing to onConfigValid
     const isValid = Boolean(selectedBoard && selectedSpreadsheet && selectedSheet);
     onConfigValid(isValid);
   }, [selectedBoard, selectedSpreadsheet, selectedSheet, onConfigValid]);
@@ -39,19 +38,19 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid: (valid: boolean)
           <BoardSelector
             selectedBoard={selectedBoard}
             onBoardSelect={setSelectedBoard}
-            className="min-w-[180px] bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid inline-flex"
+            className="min-w-[180px] inline-block bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid"
           />{' '}
           board, automatically add a new row to your Google Sheet:{' '}
           <SpreadsheetSelector
             selectedSpreadsheet={selectedSpreadsheet}
             onSpreadsheetSelect={setSelectedSpreadsheet}
-            className="min-w-[180px] bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid inline-flex"
+            className="min-w-[180px] inline-block bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid"
           />{' '}
           /{' '}
           <SheetSelector
             selectedSheet={selectedSheet}
             onSheetSelect={setSelectedSheet}
-            className="min-w-[150px] bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid inline-flex"
+            className="min-w-[150px] inline-block bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid"
           />
         </p>
       </div>
