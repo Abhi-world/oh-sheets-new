@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
-import { useGoogleSheetsStatus } from '@/hooks/useGoogleSheetsStatus';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Clock } from 'lucide-react';
 import { ConfigComponentProps } from '@/types/recipe';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
 
 const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
   const [interval, setInterval] = useState('');
   const [exportTime, setExportTime] = useState('09:00');
-  const { isConnected } = useGoogleSheetsStatus();
   const {
     spreadsheets,
     sheets,
@@ -26,7 +25,6 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
   }, [fetchSpreadsheets]);
 
   useEffect(() => {
-    // Check if all required fields are filled
     const isValid = Boolean(interval && selectedSpreadsheet && selectedSheet);
     onConfigValid?.(isValid);
   }, [interval, selectedSpreadsheet, selectedSheet, onConfigValid]);
@@ -36,18 +34,45 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
       {/* Main configuration sentence */}
       <p className="text-xl leading-relaxed text-white">
         Every{' '}
-        <Select value={interval} onValueChange={setInterval}>
-          <SelectTrigger className="w-32 inline-flex bg-transparent border-google-green focus:ring-google-green/50">
-            <SelectValue placeholder="Select" />
-          </SelectTrigger>
-          <SelectContent className="bg-navy-light border border-google-green">
-            <SelectItem value="hourly" className="text-white">Hour</SelectItem>
-            <SelectItem value="daily" className="text-white">Day</SelectItem>
-            <SelectItem value="weekly" className="text-white">Week</SelectItem>
-            <SelectItem value="monthly" className="text-white">Month</SelectItem>
-          </SelectContent>
-        </Select>
-        , add a row in{' '}
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="text-white/90 hover:text-white underline decoration-dotted hover:decoration-solid">
+              {interval || 'time period'}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[300px] p-4 bg-navy-light border-google-green">
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                {['daily', 'weekly', 'monthly'].map((period) => (
+                  <Button
+                    key={period}
+                    variant={interval === period ? 'default' : 'outline'}
+                    onClick={() => setInterval(period)}
+                    className={interval === period ? 'bg-google-green' : 'hover:bg-google-green/10'}
+                  >
+                    {period.charAt(0).toUpperCase() + period.slice(1)}
+                  </Button>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-white/60" />
+                  <span className="text-sm text-white/60">Export Time</span>
+                </div>
+                <Input
+                  type="time"
+                  value={exportTime}
+                  onChange={(e) => setExportTime(e.target.value)}
+                  className="bg-transparent border-google-green focus:ring-google-green/50 text-white"
+                />
+                <p className="text-sm text-white/60">
+                  Set the time when the export should run each {interval || 'period'}
+                </p>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+        {' '}add a row in{' '}
         <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
           <SelectTrigger className="w-40 inline-flex bg-transparent border-google-green focus:ring-google-green/50">
             <SelectValue placeholder="Select spreadsheet" />
@@ -74,27 +99,6 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
           </SelectContent>
         </Select>
       </p>
-
-      {/* Export Schedule Settings - directly beneath without a card */}
-      <div className="space-y-4 pl-6">
-        <div className="flex items-center gap-2 text-white">
-          <Clock className="w-5 h-5" />
-          <h3 className="text-lg font-medium">Export Schedule Settings</h3>
-        </div>
-        
-        <div className="space-y-2">
-          <Label className="text-white">Export Time</Label>
-          <Input
-            type="time"
-            value={exportTime}
-            onChange={(e) => setExportTime(e.target.value)}
-            className="bg-transparent border-google-green focus:ring-google-green/50 text-white max-w-[200px]"
-          />
-          <p className="text-sm text-white/60">
-            Set the time when the export should run each {interval || 'period'}
-          </p>
-        </div>
-      </div>
 
       {/* How it works section */}
       <div className="mt-8 space-y-2">
