@@ -5,9 +5,10 @@ import { useMonday } from '@/hooks/useMonday';
 interface BoardSelectorProps {
   selectedBoard: string;
   onBoardSelect: (boardId: string) => void;
+  className?: string; // Added className prop
 }
 
-const BoardSelector = ({ selectedBoard, onBoardSelect }: BoardSelectorProps) => {
+const BoardSelector = ({ selectedBoard, onBoardSelect, className }: BoardSelectorProps) => {
   const { data: mondayData, isLoading } = useMonday();
   const boards = mondayData?.data?.boards || [];
 
@@ -16,7 +17,7 @@ const BoardSelector = ({ selectedBoard, onBoardSelect }: BoardSelectorProps) => 
   return (
     <Select value={selectedBoard} onValueChange={onBoardSelect}>
       <SelectTrigger 
-        className="w-[180px] inline-flex bg-navy-light border-none text-white focus:ring-white/20"
+        className={className || "w-[180px] inline-flex bg-navy-light border-none text-white focus:ring-white/20"}
       >
         <SelectValue placeholder={isLoading ? "Loading..." : "Select board"} />
       </SelectTrigger>
