@@ -4,12 +4,12 @@ import { ConfigComponentProps } from '@/types/recipe';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Clock } from 'lucide-react';
+import SheetSelector from '../configs/date-trigger/SheetSelector';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
   const [interval, setInterval] = useState('');
@@ -40,7 +40,7 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
         Every{' '}
         <Popover>
           <PopoverTrigger asChild>
-            <button className="text-white/90 hover:text-white underline decoration-dotted hover:decoration-solid">
+            <button className="text-white underline decoration-dotted hover:decoration-solid">
               {interval ? `${frequency} ${interval}${frequency > 1 ? 's' : ''}` : 'time period'}
             </button>
           </PopoverTrigger>
@@ -52,7 +52,11 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
                     key={period}
                     variant={interval === period ? 'default' : 'outline'}
                     onClick={() => setInterval(period)}
-                    className={interval === period ? 'bg-google-green' : 'hover:bg-google-green/10'}
+                    className={`${
+                      interval === period 
+                        ? 'bg-google-green text-white' 
+                        : 'bg-transparent text-white border-white/20 hover:bg-white/10'
+                    }`}
                   >
                     {period.charAt(0).toUpperCase() + period.slice(1)}
                   </Button>
@@ -60,7 +64,7 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
               </div>
               
               {interval && (
-                <div className="space-y-2">
+                <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <span className="text-sm">Every</span>
                     <Input
@@ -68,7 +72,7 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
                       min="1"
                       value={frequency}
                       onChange={(e) => setFrequency(Number(e.target.value))}
-                      className="w-16 bg-transparent border-google-green focus:ring-google-green/50"
+                      className="w-16 bg-transparent border-google-green focus:ring-google-green/50 text-white"
                     />
                     <span className="text-sm">{interval}{frequency > 1 ? 's' : ''}</span>
                   </div>
@@ -82,7 +86,7 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
                       type="time"
                       value={exportTime}
                       onChange={(e) => setExportTime(e.target.value)}
-                      className="bg-transparent border-google-green focus:ring-google-green/50"
+                      className="bg-transparent border-google-green focus:ring-google-green/50 text-white"
                     />
                   </div>
                 </div>
@@ -91,34 +95,16 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
           </PopoverContent>
         </Popover>
         {' '}add a row in{' '}
-        <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
-          <SelectTrigger className="w-[180px] inline-flex bg-transparent border-none text-white underline decoration-dotted hover:decoration-solid">
-            <SelectValue placeholder="spreadsheet" />
-          </SelectTrigger>
-          <SelectContent className="bg-[#1F2937] border-none">
-            {spreadsheets.map((s) => (
-              <SelectItem key={s.id} value={s.id} className="text-white hover:bg-white/10">
-                {s.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {' / '}
-        <Select value={selectedSheet} onValueChange={setSelectedSheet}>
-          <SelectTrigger className="w-[150px] inline-flex bg-transparent border-none text-white underline decoration-dotted hover:decoration-solid">
-            <SelectValue placeholder="sheet" />
-          </SelectTrigger>
-          <SelectContent className="bg-[#1F2937] border-none">
-            {sheets.map((s) => (
-              <SelectItem key={s.id} value={s.id} className="text-white hover:bg-white/10">
-                {s.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <SheetSelector
+          spreadsheets={spreadsheets}
+          sheets={sheets}
+          selectedSpreadsheet={selectedSpreadsheet}
+          selectedSheet={selectedSheet}
+          onSpreadsheetSelect={setSelectedSpreadsheet}
+          onSheetSelect={setSelectedSheet}
+        />
       </p>
 
-      {/* How it works section */}
       <div className="mt-8 space-y-2">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
