@@ -10,13 +10,15 @@ interface ExportConfig {
   interval: string;
   lastExport: Date | null;
   isActive: boolean;
+  exportTime: string;
 }
 
 const PeriodicExportForm = () => {
   const [exportConfig, setExportConfig] = useState<ExportConfig>({
     interval: 'daily',
     lastExport: null,
-    isActive: false
+    isActive: false,
+    exportTime: '09:00'
   });
 
   useEffect(() => {
@@ -34,14 +36,21 @@ const PeriodicExportForm = () => {
     console.log('Checking if export is needed...');
     const now = new Date();
     const lastExport = exportConfig.lastExport;
+    const [exportHour, exportMinute] = exportConfig.exportTime.split(':').map(Number);
+    const scheduledTime = new Date(now);
+    scheduledTime.setHours(exportHour, exportMinute, 0, 0);
 
     if (!lastExport) {
-      performExport();
+      if (now >= scheduledTime) {
+        performExport();
+      }
       return;
     }
 
     const timeDiff = now.getTime() - lastExport.getTime();
     const shouldExport = (() => {
+      if (now < scheduledTime) return false;
+      
       switch (exportConfig.interval) {
         case 'hourly':
           return timeDiff >= 3600000; // 1 hour
@@ -63,7 +72,6 @@ const PeriodicExportForm = () => {
 
   const performExport = async () => {
     try {
-      // This is where we'll integrate with Monday.com and Google Sheets
       console.log('Exporting data from Monday.com to Google Sheets');
       toast.success('Data exported successfully');
       
@@ -104,6 +112,16 @@ const PeriodicExportForm = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Export Time</label>
+            <Input
+              type="time"
+              value={exportConfig.exportTime}
+              onChange={(e) => setExportConfig(prev => ({ ...prev, exportTime: e.target.value }))}
+              className="border-gray-200"
+            />
+          </div>
+
           <div className="space-y-2">
             <label className="text-sm font-medium">Export Interval</label>
             <Select
