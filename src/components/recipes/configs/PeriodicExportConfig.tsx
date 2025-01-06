@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import { ConfigComponentProps } from '@/types/recipe';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Clock } from 'lucide-react';
 import SheetSelector from '../configs/date-trigger/SheetSelector';
@@ -53,45 +52,46 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
             <div className="space-y-4">
               <div className="flex gap-2">
                 {['daily', 'weekly', 'monthly'].map((period) => (
-                  <Button
+                  <button
                     key={period}
-                    variant={interval === period ? 'default' : 'outline'}
                     onClick={() => setInterval(period)}
-                    className={`${
+                    className={`px-4 py-2 rounded-md transition-colors ${
                       interval === period 
                         ? 'bg-google-green text-white' 
-                        : 'bg-transparent text-white border-white/20 hover:bg-white/10'
+                        : 'bg-[#374151] hover:bg-[#4B5563] text-white'
                     }`}
                   >
                     {period.charAt(0).toUpperCase() + period.slice(1)}
-                  </Button>
+                  </button>
                 ))}
               </div>
               
               {interval && (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm">Every</span>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={frequency}
-                      onChange={(e) => setFrequency(Number(e.target.value))}
-                      className="w-16 bg-transparent border-white/20 focus:border-google-green text-white"
-                    />
-                    <span className="text-sm">{interval}{frequency > 1 ? 's' : ''}</span>
+                  <div className="space-y-2">
+                    <label className="text-sm text-white/60">Repeat every</label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min="1"
+                        value={frequency}
+                        onChange={(e) => setFrequency(Number(e.target.value))}
+                        className="w-20 bg-[#374151] border-none text-white focus:ring-1 focus:ring-google-green"
+                      />
+                      <span className="text-sm">{interval}{frequency > 1 ? 's' : ''}</span>
+                    </div>
                   </div>
                   
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-white/60" />
-                      <span className="text-sm">at</span>
-                    </div>
+                    <label className="text-sm text-white/60 flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      Export time
+                    </label>
                     <Input
                       type="time"
                       value={exportTime}
                       onChange={(e) => setExportTime(e.target.value)}
-                      className="bg-transparent border-white/20 focus:border-google-green text-white"
+                      className="bg-[#374151] border-none text-white focus:ring-1 focus:ring-google-green"
                     />
                   </div>
                 </div>
