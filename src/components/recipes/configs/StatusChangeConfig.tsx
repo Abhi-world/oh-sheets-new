@@ -36,12 +36,14 @@ const StatusChangeConfig = ({ onConfigValid }: ConfigComponentProps) => {
       <div className="bg-navy-dark/50 rounded-lg p-6">
         <p className="text-2xl leading-relaxed text-white">
           When the <span className="text-google-green font-medium">Status</span> of any item changes in your{' '}
-          <BoardSelector
-            selectedBoard={selectedBoard}
-            onBoardSelect={setSelectedBoard}
-            className="inline-block bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid cursor-pointer"
-          />{' '}
-          board, automatically add a new row to your{' '}
+          <span className="inline-block">
+            board
+            <BoardSelector
+              selectedBoard={selectedBoard}
+              onBoardSelect={setSelectedBoard}
+              className="absolute -mt-1 -ml-[3.2rem] w-[4rem] opacity-0 cursor-pointer"
+            />
+          </span>, automatically add a new row to your{' '}
           <SpreadsheetSelector
             selectedSpreadsheet={selectedSpreadsheet}
             onSpreadsheetSelect={setSelectedSpreadsheet}

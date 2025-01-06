@@ -15,7 +15,7 @@ const BoardSelector = ({ selectedBoard, onBoardSelect, className }: BoardSelecto
   return (
     <Select value={selectedBoard} onValueChange={onBoardSelect}>
       <SelectTrigger className={className}>
-        <SelectValue placeholder={isLoading ? "Loading..." : "board"} />
+        <SelectValue placeholder="" />
       </SelectTrigger>
       <SelectContent className="bg-navy-dark border-none">
         {boards.map((board: any) => (
