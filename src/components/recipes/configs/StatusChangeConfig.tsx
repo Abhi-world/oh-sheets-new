@@ -2,11 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import { Info } from 'lucide-react';
 import BoardSelector from './status-change/BoardSelector';
-import SpreadsheetSelector from './status-change/SpreadsheetSelector';
-import SheetSelector from './status-change/SheetSelector';
-import { ConfigComponentProps } from '@/types/recipe';
+import SheetSelector from './date-trigger/SheetSelector';
 
-const StatusChangeConfig = ({ onConfigValid }: ConfigComponentProps) => {
+const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boolean) => void }) => {
   const [selectedBoard, setSelectedBoard] = useState('');
   
   const {
@@ -22,7 +20,7 @@ const StatusChangeConfig = ({ onConfigValid }: ConfigComponentProps) => {
 
   useEffect(() => {
     const isValid = Boolean(selectedBoard && selectedSpreadsheet && selectedSheet);
-    onConfigValid(isValid);
+    onConfigValid?.(isValid);
   }, [selectedBoard, selectedSpreadsheet, selectedSheet, onConfigValid]);
 
   return (
@@ -41,22 +39,15 @@ const StatusChangeConfig = ({ onConfigValid }: ConfigComponentProps) => {
               onBoardSelect={setSelectedBoard}
               className="absolute inset-0 opacity-0 cursor-pointer w-full"
             />
-          </span>, automatically add a new row to{' '}
-          <span className="inline-flex items-center">
-            <SpreadsheetSelector
-              selectedSpreadsheet={selectedSpreadsheet}
-              onSpreadsheetSelect={setSelectedSpreadsheet}
-              className="text-white underline decoration-dotted hover:decoration-solid"
-              placeholder="select"
-            />
-            <span className="text-white mx-1">/</span>
-            <SheetSelector
-              selectedSheet={selectedSheet}
-              onSheetSelect={setSelectedSheet}
-              className="text-white underline decoration-dotted hover:decoration-solid"
-              placeholder="select"
-            />
-          </span>
+          </span>, automatically add a row in{' '}
+          <SheetSelector
+            spreadsheets={spreadsheets}
+            sheets={sheets}
+            selectedSpreadsheet={selectedSpreadsheet}
+            selectedSheet={selectedSheet}
+            onSpreadsheetSelect={setSelectedSpreadsheet}
+            onSheetSelect={setSelectedSheet}
+          />
         </p>
       </div>
 
