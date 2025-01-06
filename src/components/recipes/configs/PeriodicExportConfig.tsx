@@ -5,12 +5,9 @@ import { useGoogleSheetsStatus } from '@/hooks/useGoogleSheetsStatus';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Clock } from 'lucide-react';
+import { ConfigComponentProps } from '@/types/recipe';
 
-interface PeriodicExportConfigProps {
-  onConfigValid?: (isValid: boolean) => void;
-}
-
-const PeriodicExportConfig = ({ onConfigValid }: PeriodicExportConfigProps) => {
+const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
   const [interval, setInterval] = useState('');
   const [exportTime, setExportTime] = useState('09:00');
   const { isConnected } = useGoogleSheetsStatus();
@@ -29,7 +26,8 @@ const PeriodicExportConfig = ({ onConfigValid }: PeriodicExportConfigProps) => {
   }, [fetchSpreadsheets]);
 
   useEffect(() => {
-    const isValid = interval && selectedSpreadsheet && selectedSheet;
+    // Check if all required fields are filled
+    const isValid = Boolean(interval && selectedSpreadsheet && selectedSheet);
     onConfigValid?.(isValid);
   }, [interval, selectedSpreadsheet, selectedSheet, onConfigValid]);
 
