@@ -26,31 +26,31 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid: (valid: boolean)
 
   return (
     <div className="space-y-8">
-      <div className="space-y-6">
-        {/* Category heading */}
-        <h3 className="text-white/60 text-sm font-medium uppercase tracking-wider">
-          Status Change Trigger Recipe
-        </h3>
+      {/* Category heading */}
+      <h3 className="text-white/60 text-sm font-medium uppercase tracking-wider">
+        Status Change Trigger Recipe
+      </h3>
 
-        {/* Natural flowing sentence */}
-        <p className="text-xl leading-relaxed text-white">
+      {/* Natural flowing sentence */}
+      <div className="bg-navy-dark/50 rounded-lg p-6">
+        <p className="text-2xl leading-relaxed text-white">
           When the <span className="text-google-green font-medium">Status</span> of any item changes in your{' '}
           <BoardSelector
             selectedBoard={selectedBoard}
             onBoardSelect={setSelectedBoard}
-            className="min-w-[180px] inline-block bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid"
+            className="inline-block bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid cursor-pointer"
           />{' '}
-          board, automatically add a new row to your Google Sheet:{' '}
+          board, automatically add a new row to your{' '}
           <SpreadsheetSelector
             selectedSpreadsheet={selectedSpreadsheet}
             onSpreadsheetSelect={setSelectedSpreadsheet}
-            className="min-w-[180px] inline-block bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid"
-          />{' '}
-          /{' '}
+            className="inline-block bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid cursor-pointer"
+          />
+          <span className="mx-1">/</span>
           <SheetSelector
             selectedSheet={selectedSheet}
             onSheetSelect={setSelectedSheet}
-            className="min-w-[150px] inline-block bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid"
+            className="inline-block bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid cursor-pointer"
           />
         </p>
       </div>
@@ -63,10 +63,6 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid: (valid: boolean)
             <p className="text-white/90">
               This automation will create a new row in your Google Sheet whenever a status changes in Monday.com. 
               It tracks all status changes, helping you maintain a complete history of status updates.
-            </p>
-            <p className="text-white/80 text-sm">
-              For example, when a task status changes from "In Progress" to "Done", 
-              a new row will be added to your sheet with the item's details and its new status.
             </p>
           </div>
         </div>

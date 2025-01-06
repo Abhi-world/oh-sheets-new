@@ -1,7 +1,6 @@
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
-import { ChevronDown } from 'lucide-react';
 
 interface SpreadsheetSelectorProps {
   selectedSpreadsheet: string;
@@ -19,9 +18,8 @@ const SpreadsheetSelector = ({ selectedSpreadsheet, onSpreadsheetSelect, classNa
         onClick={() => fetchSpreadsheets()}
       >
         <SelectValue placeholder={isLoading ? "Loading..." : "select spreadsheet"} />
-        <ChevronDown className="h-4 w-4 opacity-50" />
       </SelectTrigger>
-      <SelectContent className="bg-navy-light border-none">
+      <SelectContent className="bg-navy-dark border-none">
         {spreadsheets.map((s) => (
           <SelectItem 
             key={s.id} 

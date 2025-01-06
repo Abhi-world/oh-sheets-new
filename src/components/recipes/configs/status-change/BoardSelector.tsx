@@ -17,9 +17,8 @@ const BoardSelector = ({ selectedBoard, onBoardSelect, className }: BoardSelecto
     <Select value={selectedBoard} onValueChange={onBoardSelect}>
       <SelectTrigger className={className}>
         <SelectValue placeholder={isLoading ? "Loading..." : "select board"} />
-        <ChevronDown className="h-4 w-4 opacity-50" />
       </SelectTrigger>
-      <SelectContent className="bg-navy-light border-none">
+      <SelectContent className="bg-navy-dark border-none">
         {boards.map((board: any) => (
           <SelectItem 
             key={board.id} 
