@@ -2,10 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import { useGoogleSheetsStatus } from '@/hooks/useGoogleSheetsStatus';
-import RecipeConfigShell from '../shared/RecipeConfigShell';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
 import { Clock } from 'lucide-react';
 
 interface PeriodicExportConfigProps {
@@ -36,9 +34,9 @@ const PeriodicExportConfig = ({ onConfigValid }: PeriodicExportConfigProps) => {
   }, [interval, selectedSpreadsheet, selectedSheet, onConfigValid]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Main configuration sentence */}
-      <div className="bg-navy-dark/40 p-6 rounded-lg border border-google-green/20">
+      <div className="bg-navy-dark/40 p-6 rounded-lg">
         <p className="text-xl leading-relaxed text-white">
           Every{' '}
           <Select value={interval} onValueChange={setInterval}>
@@ -81,30 +79,43 @@ const PeriodicExportConfig = ({ onConfigValid }: PeriodicExportConfigProps) => {
         </p>
       </div>
 
-      {/* Additional configuration options */}
-      <Card className="bg-navy-dark/20 border-none">
-        <div className="p-6 space-y-6">
-          <div className="flex items-center gap-2 text-white">
-            <Clock className="w-5 h-5" />
-            <h3 className="text-lg font-medium">Export Schedule Settings</h3>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-white">Export Time</Label>
-              <Input
-                type="time"
-                value={exportTime}
-                onChange={(e) => setExportTime(e.target.value)}
-                className="bg-navy-light border-google-green focus:ring-google-green/50 text-white"
-              />
-              <p className="text-sm text-white/60">
-                Set the time when the export should run each {interval || 'period'}
-              </p>
-            </div>
+      {/* Export Schedule Settings - directly beneath without a card */}
+      <div className="space-y-6 pl-6">
+        <div className="flex items-center gap-2 text-white">
+          <Clock className="w-5 h-5" />
+          <h3 className="text-lg font-medium">Export Schedule Settings</h3>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-white">Export Time</Label>
+            <Input
+              type="time"
+              value={exportTime}
+              onChange={(e) => setExportTime(e.target.value)}
+              className="bg-navy-light border-google-green focus:ring-google-green/50 text-white max-w-[200px]"
+            />
+            <p className="text-sm text-white/60">
+              Set the time when the export should run each {interval || 'period'}
+            </p>
           </div>
         </div>
-      </Card>
+      </div>
+
+      {/* How it works section */}
+      <div className="mt-8 bg-gray-600/50 border-none backdrop-blur-sm rounded-lg p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+            <span className="text-white">?</span>
+          </div>
+          <h3 className="text-lg font-medium text-white">How does this automation work?</h3>
+        </div>
+        <p className="text-white/80 leading-relaxed">
+          This automation will export data from your Monday.com board to Google Sheets 
+          at the specified interval and time. It will automatically create a new row 
+          in your chosen Google Sheet with the latest data from your board.
+        </p>
+      </div>
     </div>
   );
 };
