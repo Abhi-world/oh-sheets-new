@@ -42,21 +42,14 @@ const StatusChangeConfig = ({ onConfigValid }: ConfigComponentProps) => {
               className="absolute inset-0 opacity-0 cursor-pointer w-full"
             />
           </span>, automatically add a new row to{' '}
-          <span className="inline-flex items-center">
-            <SpreadsheetSelector
-              selectedSpreadsheet={selectedSpreadsheet}
-              onSpreadsheetSelect={setSelectedSpreadsheet}
-              className="text-white underline decoration-dotted"
-              placeholder="select..."
-            />
-            <span className="text-white mx-1">/</span>
-            <SheetSelector
-              selectedSheet={selectedSheet}
-              onSheetSelect={setSelectedSheet}
-              className="text-white underline decoration-dotted"
-              placeholder="select sheet"
-            />
-          </span>
+          <SheetSelector
+            spreadsheets={spreadsheets}
+            sheets={sheets}
+            selectedSpreadsheet={selectedSpreadsheet}
+            selectedSheet={selectedSheet}
+            onSpreadsheetSelect={setSelectedSpreadsheet}
+            onSheetSelect={setSelectedSheet}
+          />
         </p>
       </div>
 
