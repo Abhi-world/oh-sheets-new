@@ -19,7 +19,7 @@ const SheetSelector = ({
 
   return (
     <Select value={selectedSheet} onValueChange={onSheetSelect}>
-      <SelectTrigger className={`bg-transparent border-none p-0 h-auto ${className}`}>
+      <SelectTrigger className={`bg-transparent border-none p-0 h-auto underline decoration-dotted ${className}`}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent className="bg-navy-dark border-none">
