@@ -6,9 +6,15 @@ interface SpreadsheetSelectorProps {
   selectedSpreadsheet: string;
   onSpreadsheetSelect: (spreadsheetId: string) => void;
   className?: string;
+  placeholder?: string;
 }
 
-const SpreadsheetSelector = ({ selectedSpreadsheet, onSpreadsheetSelect, className }: SpreadsheetSelectorProps) => {
+const SpreadsheetSelector = ({ 
+  selectedSpreadsheet, 
+  onSpreadsheetSelect, 
+  className,
+  placeholder = "select..." 
+}: SpreadsheetSelectorProps) => {
   const { spreadsheets, isLoading, fetchSpreadsheets } = useGoogleSheets();
 
   return (
@@ -17,7 +23,7 @@ const SpreadsheetSelector = ({ selectedSpreadsheet, onSpreadsheetSelect, classNa
         className={className}
         onClick={() => fetchSpreadsheets()}
       >
-        <SelectValue placeholder={isLoading ? "Loading..." : "select spreadsheet"} />
+        <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent className="bg-navy-dark border-none">
         {spreadsheets.map((s) => (

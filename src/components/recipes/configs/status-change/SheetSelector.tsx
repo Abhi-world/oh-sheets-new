@@ -6,15 +6,21 @@ interface SheetSelectorProps {
   selectedSheet: string;
   onSheetSelect: (sheetId: string) => void;
   className?: string;
+  placeholder?: string;
 }
 
-const SheetSelector = ({ selectedSheet, onSheetSelect, className }: SheetSelectorProps) => {
+const SheetSelector = ({ 
+  selectedSheet, 
+  onSheetSelect, 
+  className,
+  placeholder = "select sheet"
+}: SheetSelectorProps) => {
   const { sheets, isLoading } = useGoogleSheets();
 
   return (
     <Select value={selectedSheet} onValueChange={onSheetSelect}>
       <SelectTrigger className={className}>
-        <SelectValue placeholder={isLoading ? "Loading..." : "select sheet"} />
+        <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent className="bg-navy-dark border-none">
         {sheets.map((s) => (
