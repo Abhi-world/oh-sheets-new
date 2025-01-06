@@ -36,29 +36,23 @@ const StatusChangeConfig = ({ onConfigValid }: ConfigComponentProps) => {
       <div className="bg-navy-dark/50 rounded-lg p-6">
         <p className="text-2xl leading-relaxed text-white">
           When the <span className="text-google-green font-medium">Status</span> of any item changes in your{' '}
-          <span className="relative inline-block">
-            <BoardSelector
-              selectedBoard={selectedBoard}
-              onBoardSelect={setSelectedBoard}
-              className="inline-block bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid cursor-pointer"
-            />
-          </span>{' '}
+          <BoardSelector
+            selectedBoard={selectedBoard}
+            onBoardSelect={setSelectedBoard}
+            className="inline-block bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid cursor-pointer"
+          />{' '}
           board, automatically add a new row to your{' '}
-          <span className="relative inline-block">
-            <SpreadsheetSelector
-              selectedSpreadsheet={selectedSpreadsheet}
-              onSpreadsheetSelect={setSelectedSpreadsheet}
-              className="inline-block bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid cursor-pointer"
-            />
-          </span>
+          <SpreadsheetSelector
+            selectedSpreadsheet={selectedSpreadsheet}
+            onSpreadsheetSelect={setSelectedSpreadsheet}
+            className="inline-block bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid cursor-pointer"
+          />
           <span className="mx-1">/</span>
-          <span className="relative inline-block">
-            <SheetSelector
-              selectedSheet={selectedSheet}
-              onSheetSelect={setSelectedSheet}
-              className="inline-block bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid cursor-pointer"
-            />
-          </span>
+          <SheetSelector
+            selectedSheet={selectedSheet}
+            onSheetSelect={setSelectedSheet}
+            className="inline-block bg-transparent border-none text-white hover:text-google-green underline decoration-dotted hover:decoration-solid cursor-pointer"
+          />
         </p>
       </div>
 

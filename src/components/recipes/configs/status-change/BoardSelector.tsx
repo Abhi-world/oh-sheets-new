@@ -1,7 +1,6 @@
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useMonday } from '@/hooks/useMonday';
-import { ChevronDown } from 'lucide-react';
 
 interface BoardSelectorProps {
   selectedBoard: string;
@@ -16,7 +15,7 @@ const BoardSelector = ({ selectedBoard, onBoardSelect, className }: BoardSelecto
   return (
     <Select value={selectedBoard} onValueChange={onBoardSelect}>
       <SelectTrigger className={className}>
-        <SelectValue placeholder={isLoading ? "Loading..." : "select board"} />
+        <SelectValue placeholder={isLoading ? "Loading..." : "board"} />
       </SelectTrigger>
       <SelectContent className="bg-navy-dark border-none">
         {boards.map((board: any) => (
