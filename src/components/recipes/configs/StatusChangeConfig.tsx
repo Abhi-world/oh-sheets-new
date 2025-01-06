@@ -20,8 +20,8 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid: (valid: boolean)
   } = useGoogleSheets();
 
   useEffect(() => {
-    // Validate configuration whenever selections change
-    const isValid = selectedBoard && selectedSpreadsheet && selectedSheet;
+    // Convert the string values to a boolean before passing to onConfigValid
+    const isValid = Boolean(selectedBoard && selectedSpreadsheet && selectedSheet);
     onConfigValid(isValid);
   }, [selectedBoard, selectedSpreadsheet, selectedSheet, onConfigValid]);
 
