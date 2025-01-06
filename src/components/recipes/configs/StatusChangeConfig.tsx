@@ -4,8 +4,9 @@ import { Info } from 'lucide-react';
 import BoardSelector from './status-change/BoardSelector';
 import SpreadsheetSelector from './status-change/SpreadsheetSelector';
 import SheetSelector from './status-change/SheetSelector';
+import { ConfigComponentProps } from '@/types/recipe';
 
-const StatusChangeConfig = ({ onConfigValid }: { onConfigValid: (valid: boolean) => void }) => {
+const StatusChangeConfig = ({ onConfigValid }: ConfigComponentProps) => {
   const [selectedBoard, setSelectedBoard] = useState('');
   
   const {
