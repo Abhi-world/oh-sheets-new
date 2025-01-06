@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
+import { ConfigComponentProps } from '@/types/recipe';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Clock } from 'lucide-react';
-import { ConfigComponentProps } from '@/types/recipe';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
   const [interval, setInterval] = useState('');
@@ -32,7 +36,6 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
 
   return (
     <div className="space-y-8 text-white">
-      {/* Main configuration sentence */}
       <p className="text-xl leading-relaxed">
         Every{' '}
         <Popover>
@@ -89,25 +92,25 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
         </Popover>
         {' '}add a row in{' '}
         <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
-          <SelectTrigger className="w-40 inline-flex bg-transparent border-none underline decoration-dotted hover:decoration-solid">
+          <SelectTrigger className="w-[180px] inline-flex bg-transparent border-none text-white underline decoration-dotted hover:decoration-solid">
             <SelectValue placeholder="spreadsheet" />
           </SelectTrigger>
           <SelectContent className="bg-[#1F2937] border-none">
             {spreadsheets.map((s) => (
-              <SelectItem key={s.id} value={s.id} className="text-white">
+              <SelectItem key={s.id} value={s.id} className="text-white hover:bg-white/10">
                 {s.name}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        {' '}/{' '}
+        {' / '}
         <Select value={selectedSheet} onValueChange={setSelectedSheet}>
-          <SelectTrigger className="w-32 inline-flex bg-transparent border-none underline decoration-dotted hover:decoration-solid">
+          <SelectTrigger className="w-[150px] inline-flex bg-transparent border-none text-white underline decoration-dotted hover:decoration-solid">
             <SelectValue placeholder="sheet" />
           </SelectTrigger>
           <SelectContent className="bg-[#1F2937] border-none">
             {sheets.map((s) => (
-              <SelectItem key={s.id} value={s.id} className="text-white">
+              <SelectItem key={s.id} value={s.id} className="text-white hover:bg-white/10">
                 {s.name}
               </SelectItem>
             ))}
@@ -123,7 +126,7 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
           </div>
           <h3 className="text-lg font-medium">How does this automation work?</h3>
         </div>
-        <p className="text-white/80 leading-relaxed pl-8">
+        <p className="text-white/80 leading-relaxed">
           This automation will export data from your Monday.com board to Google Sheets 
           at the specified interval and time. It will automatically create a new row 
           in your chosen Google Sheet with the latest data from your board.
