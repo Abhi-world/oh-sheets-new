@@ -47,14 +47,14 @@ const StatusChangeConfig = ({ onConfigValid }: ConfigComponentProps) => {
               selectedSpreadsheet={selectedSpreadsheet}
               onSpreadsheetSelect={setSelectedSpreadsheet}
               className="text-white underline decoration-dotted hover:decoration-solid"
-              placeholder="select..."
+              placeholder="select"
             />
             <span className="text-white mx-1">/</span>
             <SheetSelector
               selectedSheet={selectedSheet}
               onSheetSelect={setSelectedSheet}
               className="text-white underline decoration-dotted hover:decoration-solid"
-              placeholder="select sheet"
+              placeholder="select"
             />
           </span>
         </p>
