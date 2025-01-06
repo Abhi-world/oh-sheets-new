@@ -20,7 +20,7 @@ const SpreadsheetSelector = ({
   return (
     <Select value={selectedSpreadsheet} onValueChange={onSpreadsheetSelect}>
       <SelectTrigger 
-        className={className}
+        className={`bg-transparent border-none p-0 h-auto ${className}`}
         onClick={() => fetchSpreadsheets()}
       >
         <SelectValue placeholder={placeholder} />
