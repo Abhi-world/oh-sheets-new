@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
-import { Info } from 'lucide-react';
 import BoardSelector from './status-change/BoardSelector';
 import SheetSelector from './date-trigger/SheetSelector';
 
@@ -49,18 +48,6 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
             onSheetSelect={setSelectedSheet}
           />
         </p>
-      </div>
-
-      <div className="bg-navy-light/30 p-4 rounded-lg border border-google-green/20">
-        <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-google-green mt-1 flex-shrink-0" />
-          <div className="space-y-2">
-            <p className="text-white/90">
-              This automation will create a new row in your Google Sheet whenever a status changes in Monday.com. 
-              It tracks all status changes, helping you maintain a complete history of status updates.
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );
