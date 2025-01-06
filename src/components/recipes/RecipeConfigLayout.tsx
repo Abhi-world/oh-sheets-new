@@ -58,9 +58,10 @@ const RecipeConfigLayout = ({ title, subtitle = "Google Sheets Integration", ico
               <h3 className="text-lg font-medium text-white">How does this automation work?</h3>
             </div>
             <p className="text-white/80 leading-relaxed">
-              This automation will monitor the selected trigger in your Monday.com board. 
-              When the specified condition is met, it will automatically create a new row 
-              in your chosen Google Sheet with the values you selected.
+              This automation monitors status changes in your Monday.com board. When a status column's value 
+              changes to your specified condition (e.g., "Done" or "In Progress"), it automatically creates 
+              a new row in your selected Google Sheet. This helps track status updates, maintain change history, 
+              and automate your workflow between Monday.com and Google Sheets.
             </p>
           </div>
         </Card>
