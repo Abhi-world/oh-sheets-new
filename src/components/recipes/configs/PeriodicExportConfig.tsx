@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
   const [interval, setInterval] = useState('');
   const [exportTime, setExportTime] = useState('09:00');
+  const [frequency, setFrequency] = useState(1);
   const {
     spreadsheets,
     sheets,
@@ -26,21 +27,21 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
 
   useEffect(() => {
     const isValid = Boolean(interval && selectedSpreadsheet && selectedSheet);
-    onConfigValid?.(isValid);
+    onConfigValid(isValid);
   }, [interval, selectedSpreadsheet, selectedSheet, onConfigValid]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 text-white">
       {/* Main configuration sentence */}
-      <p className="text-xl leading-relaxed text-white">
+      <p className="text-xl leading-relaxed">
         Every{' '}
         <Popover>
           <PopoverTrigger asChild>
             <button className="text-white/90 hover:text-white underline decoration-dotted hover:decoration-solid">
-              {interval || 'time period'}
+              {interval ? `${frequency} ${interval}${frequency > 1 ? 's' : ''}` : 'time period'}
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-[300px] p-4 bg-navy-light border-google-green">
+          <PopoverContent className="w-[300px] bg-[#1F2937] border-none text-white p-4">
             <div className="space-y-4">
               <div className="flex gap-2">
                 {['daily', 'weekly', 'monthly'].map((period) => (
@@ -54,30 +55,44 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
                   </Button>
                 ))}
               </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-white/60" />
-                  <span className="text-sm text-white/60">Export Time</span>
+              
+              {interval && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">Every</span>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={frequency}
+                      onChange={(e) => setFrequency(Number(e.target.value))}
+                      className="w-16 bg-transparent border-google-green focus:ring-google-green/50"
+                    />
+                    <span className="text-sm">{interval}{frequency > 1 ? 's' : ''}</span>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-white/60" />
+                      <span className="text-sm">at</span>
+                    </div>
+                    <Input
+                      type="time"
+                      value={exportTime}
+                      onChange={(e) => setExportTime(e.target.value)}
+                      className="bg-transparent border-google-green focus:ring-google-green/50"
+                    />
+                  </div>
                 </div>
-                <Input
-                  type="time"
-                  value={exportTime}
-                  onChange={(e) => setExportTime(e.target.value)}
-                  className="bg-transparent border-google-green focus:ring-google-green/50 text-white"
-                />
-                <p className="text-sm text-white/60">
-                  Set the time when the export should run each {interval || 'period'}
-                </p>
-              </div>
+              )}
             </div>
           </PopoverContent>
         </Popover>
         {' '}add a row in{' '}
         <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
-          <SelectTrigger className="w-40 inline-flex bg-transparent border-google-green focus:ring-google-green/50">
-            <SelectValue placeholder="Select spreadsheet" />
+          <SelectTrigger className="w-40 inline-flex bg-transparent border-none underline decoration-dotted hover:decoration-solid">
+            <SelectValue placeholder="spreadsheet" />
           </SelectTrigger>
-          <SelectContent className="bg-navy-light border border-google-green">
+          <SelectContent className="bg-[#1F2937] border-none">
             {spreadsheets.map((s) => (
               <SelectItem key={s.id} value={s.id} className="text-white">
                 {s.name}
@@ -85,12 +100,12 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
             ))}
           </SelectContent>
         </Select>
-        {' / '}
+        {' '}/{' '}
         <Select value={selectedSheet} onValueChange={setSelectedSheet}>
-          <SelectTrigger className="w-32 inline-flex bg-transparent border-google-green focus:ring-google-green/50">
-            <SelectValue placeholder="Select sheet" />
+          <SelectTrigger className="w-32 inline-flex bg-transparent border-none underline decoration-dotted hover:decoration-solid">
+            <SelectValue placeholder="sheet" />
           </SelectTrigger>
-          <SelectContent className="bg-navy-light border border-google-green">
+          <SelectContent className="bg-[#1F2937] border-none">
             {sheets.map((s) => (
               <SelectItem key={s.id} value={s.id} className="text-white">
                 {s.name}
@@ -104,9 +119,9 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
       <div className="mt-8 space-y-2">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-            <span className="text-white">?</span>
+            <span>?</span>
           </div>
-          <h3 className="text-lg font-medium text-white">How does this automation work?</h3>
+          <h3 className="text-lg font-medium">How does this automation work?</h3>
         </div>
         <p className="text-white/80 leading-relaxed pl-8">
           This automation will export data from your Monday.com board to Google Sheets 
