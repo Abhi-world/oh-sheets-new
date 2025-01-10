@@ -1,5 +1,6 @@
 import React from 'react';
 import DateTriggerSentence from './DateTriggerSentence';
+import { Button } from '@/components/ui/button';
 
 interface DateTriggerContentProps {
   onConfigValid?: (isValid: boolean) => void;
@@ -8,9 +9,16 @@ interface DateTriggerContentProps {
 const DateTriggerContent = ({ onConfigValid }: DateTriggerContentProps) => {
   return (
     <div className="space-y-6">
-      {/* Main content */}
-      <div className="bg-[#222222] backdrop-blur-sm rounded-lg p-8">
+      <div className="bg-[#1F2937] rounded-lg">
         <DateTriggerSentence onConfigValid={onConfigValid} />
+      </div>
+
+      <div className="flex justify-end">
+        <Button 
+          className="bg-[#0F9D58] hover:bg-[#0F9D58]/90 text-white px-8 py-2 rounded-full text-lg"
+        >
+          Create Automation
+        </Button>
       </div>
 
       {/* Google Sheets branding */}

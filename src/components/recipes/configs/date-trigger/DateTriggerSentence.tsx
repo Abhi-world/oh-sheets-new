@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import SheetSelector from './SheetSelector';
-import { toast } from 'sonner';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import DateSelector from './DateSelector';
+import ValueSelector from '@/components/shared/ValueSelector';
 
 interface DateTriggerSentenceProps {
   onConfigValid?: (isValid: boolean) => void;
@@ -26,18 +26,12 @@ const DateTriggerSentence = ({ onConfigValid }: DateTriggerSentenceProps) => {
     selectedSheet,
     setSelectedSpreadsheet,
     setSelectedSheet,
-    fetchSpreadsheets,
   } = useGoogleSheets();
 
   useEffect(() => {
-    // Basic validation - check if essential fields are filled
     const isValid = selectedDateColumn && selectedSpreadsheet && selectedSheet && selectedValues.length > 0;
     onConfigValid?.(isValid);
   }, [selectedDateColumn, selectedSpreadsheet, selectedSheet, selectedValues, onConfigValid]);
-
-  useEffect(() => {
-    fetchSpreadsheets();
-  }, [fetchSpreadsheets]);
 
   const dateColumns = [
     { id: 'due_date', label: 'Due date' },
@@ -45,118 +39,80 @@ const DateTriggerSentence = ({ onConfigValid }: DateTriggerSentenceProps) => {
     { id: 'timeline_end', label: 'Timeline end date' }
   ];
 
-  const mondayColumns = [
-    { value: 'budget', label: 'Budget' },
-    { value: 'due_date', label: 'Due date' },
-    { value: 'item_id', label: 'Item ID' },
-    { value: 'name', label: 'Name' },
-    { value: 'owner', label: 'Owner' },
-    { value: 'priority', label: 'Priority' }
-  ];
-
   return (
-    <div className="text-white/90 text-xl leading-relaxed">
-      <Popover>
-        <PopoverTrigger asChild>
-          <button className="text-white/90 hover:text-white underline decoration-dotted hover:decoration-solid">
-            When
-          </button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[400px] p-0 bg-transparent border-none shadow-none">
-          <DateSelector
-            selectedTime={selectedTime}
-            onTimeSelect={setSelectedTime}
-            isRelative={isRelative}
-            onIsRelativeChange={setIsRelative}
-            relativeDays={relativeDays}
-            onRelativeDaysChange={setRelativeDays}
-            relativeDirection={relativeDirection}
-            onRelativeDirectionChange={setRelativeDirection}
-          />
-        </PopoverContent>
-      </Popover>
-      {' '}
-      <Popover>
-        <PopoverTrigger asChild>
-          <button className="text-white/90 hover:text-white underline decoration-dotted hover:decoration-solid">
-            {selectedDateColumn ? dateColumns.find(c => c.id === selectedDateColumn)?.label : 'date'}
-          </button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[300px] bg-[#1F2937] border-none text-white">
-          <div className="p-4">
-            <h3 className="mb-4 text-sm font-medium">Select a date column</h3>
-            <div className="space-y-2">
-              {dateColumns.map(column => (
-                <button
-                  key={column.id}
-                  className="w-full text-left px-2 py-1 hover:bg-white/10 rounded text-sm"
-                  onClick={() => setSelectedDateColumn(column.id)}
-                >
-                  {column.label}
-                </button>
-              ))}
-              <button
-                className="w-full text-left px-2 py-1 hover:bg-white/10 rounded text-sm text-blue-500 flex items-center gap-2"
-                onClick={() => toast.info('Adding new column - Feature coming soon')}
+    <div className="bg-[#1F2937] p-8 rounded-lg">
+      <p className="text-xl text-white/90 leading-relaxed">
+        When{' '}
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="text-white/90 hover:text-white underline decoration-dotted hover:decoration-solid">
+              {selectedDateColumn ? dateColumns.find(c => c.id === selectedDateColumn)?.label : 'date'}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[300px] bg-[#374151] border-none">
+            <div className="p-4">
+              <div className="flex items-center px-3 py-2 mb-2">
+                <Search className="w-4 h-4 text-white/50 mr-2" />
+                <Input 
+                  placeholder="Search date columns..."
+                  className="border-none bg-transparent text-white placeholder:text-white/50 focus-visible:ring-0"
+                />
+              </div>
+              <div className="space-y-1">
+                {dateColumns.map(column => (
+                  <button
+                    key={column.id}
+                    className="w-full text-left px-3 py-2 text-white hover:bg-white/10 rounded"
+                    onClick={() => setSelectedDateColumn(column.id)}
+                  >
+                    {column.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+        {' '}arrives, add a row in{' '}
+        <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
+          <SelectTrigger className="w-[200px] inline-flex bg-[#374151] border-none text-white">
+            <SelectValue placeholder="Select spreadsheet" />
+          </SelectTrigger>
+          <SelectContent className="bg-[#374151] border-white/10">
+            {spreadsheets.map((s) => (
+              <SelectItem 
+                key={s.id} 
+                value={s.id}
+                className="text-white hover:bg-white/10"
               >
-                <Plus className="w-4 h-4" />
-                Add a new column
-              </button>
-            </div>
-          </div>
-        </PopoverContent>
-      </Popover>
-      {' '}arrives, add a row in{' '}
-      <SheetSelector
-        spreadsheets={spreadsheets}
-        sheets={sheets}
-        selectedSpreadsheet={selectedSpreadsheet}
-        selectedSheet={selectedSheet}
-        onSpreadsheetSelect={setSelectedSpreadsheet}
-        onSheetSelect={setSelectedSheet}
-      />
-      {' '}with these{' '}
-      <Popover>
-        <PopoverTrigger asChild>
-          <button className="text-white/90 hover:text-white underline decoration-dotted hover:decoration-solid">
-            values
-          </button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[300px] bg-[#1F2937] border-none text-white">
-          <div className="p-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-sm font-medium">Select values to sync</h3>
-              <Button 
-                size="sm"
-                variant="ghost"
-                className="hover:bg-white/10 text-white"
-                onClick={() => toast.info('Adding custom value - Feature coming soon')}
+                {s.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {' / '}
+        <Select value={selectedSheet} onValueChange={setSelectedSheet}>
+          <SelectTrigger className="w-[150px] inline-flex bg-[#374151] border-none text-white">
+            <SelectValue placeholder="Select sheet" />
+          </SelectTrigger>
+          <SelectContent className="bg-[#374151] border-white/10">
+            {sheets.map((s) => (
+              <SelectItem 
+                key={s.id} 
+                value={s.id}
+                className="text-white hover:bg-white/10"
               >
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
-            <div className="space-y-2">
-              {mondayColumns.map(column => (
-                <div key={column.value} className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedValues.includes(column.value)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedValues([...selectedValues, column.value]);
-                      } else {
-                        setSelectedValues(selectedValues.filter(v => v !== column.value));
-                      }
-                    }}
-                    className="text-blue-500"
-                  />
-                  <span className="text-sm">{column.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </PopoverContent>
-      </Popover>
+                {s.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {' with these '}
+        <ValueSelector
+          value={selectedValues.join(',')}
+          onChange={(val) => setSelectedValues(val.split(',').filter(Boolean))}
+          className="inline-flex bg-[#374151] border-none text-white w-[120px]"
+        />
+      </p>
     </div>
   );
 };
