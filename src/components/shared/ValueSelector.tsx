@@ -11,6 +11,7 @@ import CustomValueInput from './value-selector/CustomValueInput';
 import ColumnSelector from './value-selector/ColumnSelector';
 import ValueList from './value-selector/ValueList';
 import { useMondayColumns } from './value-selector/useMondayColumns';
+import { cn } from '@/lib/utils';
 
 const ValueSelector = ({ 
   value,
@@ -18,7 +19,8 @@ const ValueSelector = ({
   placeholder = "Select values...",
   columns = [],
   selectedColumn = "status",
-  onColumnSelect
+  onColumnSelect,
+  className
 }: ValueSelectorProps) => {
   const [open, setOpen] = useState(false);
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
@@ -49,7 +51,10 @@ const ValueSelector = ({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="px-3 py-1 h-auto min-h-[2rem] bg-[#374151] hover:bg-[#4B5563] border-none text-white underline decoration-dotted hover:decoration-solid inline-flex"
+          className={cn(
+            "px-3 py-1 h-auto min-h-[2rem] bg-[#374151] hover:bg-[#4B5563] border-none text-white underline decoration-dotted hover:decoration-solid inline-flex",
+            className
+          )}
         >
           {displayText}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

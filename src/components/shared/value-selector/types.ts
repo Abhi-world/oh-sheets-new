@@ -14,4 +14,5 @@ export interface ValueSelectorProps {
   columns?: ColumnValue[];
   selectedColumn?: string;
   onColumnSelect?: (columnId: string) => void;
+  className?: string;  // Added className prop
 }
