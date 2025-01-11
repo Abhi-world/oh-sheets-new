@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import BoardSelector from './status-change/BoardSelector';
 import SheetSelector from './date-trigger/SheetSelector';
+import ValueSelector from '@/components/shared/ValueSelector';
 
 const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boolean) => void }) => {
   const [selectedBoard, setSelectedBoard] = useState('');
+  const [selectedValues, setSelectedValues] = useState('');
   
   const {
     spreadsheets,
@@ -13,8 +15,6 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
     selectedSheet,
     setSelectedSpreadsheet,
     setSelectedSheet,
-    isLoading,
-    fetchSpreadsheets
   } = useGoogleSheets();
 
   useEffect(() => {
@@ -24,11 +24,7 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
 
   return (
     <div className="space-y-8">
-      <h3 className="text-white/60 text-sm font-medium uppercase tracking-wider">
-        Status Change Trigger Recipe
-      </h3>
-
-      <div className="bg-navy-dark/50 rounded-lg p-6">
+      <div className="bg-navy-dark/40 p-6 rounded-lg border border-google-green/20">
         <p className="text-2xl leading-relaxed text-white">
           When the <span className="text-google-green font-medium">Status</span> of any item changes in your{' '}
           <span className="relative inline-block">
@@ -38,7 +34,15 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
               onBoardSelect={setSelectedBoard}
               className="absolute inset-0 opacity-0 cursor-pointer w-full"
             />
-          </span>, automatically add a row in{' '}
+          </span>
+          , automatically add a row with these{' '}
+          <ValueSelector
+            value={selectedValues}
+            onChange={setSelectedValues}
+            placeholder="values"
+            className="text-google-green font-medium"
+          />
+          {' '}in{' '}
           <SheetSelector
             spreadsheets={spreadsheets}
             sheets={sheets}

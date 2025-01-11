@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronsUpDown, Search } from 'lucide-react';
+import { ChevronsUpDown, Search, Plus } from 'lucide-react';
 import {
   Popover,
   PopoverContent,
@@ -21,17 +21,16 @@ const ValueSelector = ({
 }: ValueSelectorProps) => {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [customValue, setCustomValue] = useState('');
 
   // Use provided columns or fallback to default board columns
   const defaultColumns = [
-    { id: 'employee_id', title: 'Employee ID' },
-    { id: 'first_name', title: 'First Name' },
-    { id: 'budget', title: 'Budget' },
-    { id: 'due_date', title: 'Due date' },
-    { id: 'item_id', title: 'Item ID' },
-    { id: 'name', title: 'Name' },
-    { id: 'owner', title: 'Owner' },
-    { id: 'priority', title: 'Priority' }
+    { id: 'status', title: 'Status', type: 'status', settings: { labels: { '1': 'Done', '2': 'Working on it', '3': 'Stuck' } } },
+    { id: 'priority', title: 'Priority', type: 'color', settings: { labels: { '1': 'High', '2': 'Medium', '3': 'Low' } } },
+    { id: 'text', title: 'Text', type: 'text' },
+    { id: 'person', title: 'Person', type: 'person' },
+    { id: 'date', title: 'Date', type: 'date' },
+    { id: 'numbers', title: 'Numbers', type: 'number' }
   ];
 
   const boardColumns = columns.length > 0 ? columns : defaultColumns;
@@ -46,6 +45,13 @@ const ValueSelector = ({
       onColumnSelect(columnId);
     }
     setOpen(false);
+  };
+
+  const handleAddCustomValue = () => {
+    if (customValue) {
+      handleSelect(customValue);
+      setCustomValue('');
+    }
   };
 
   return (
@@ -85,6 +91,29 @@ const ValueSelector = ({
                 {column.title}
               </button>
             ))}
+          </div>
+          <div className="border-t border-[#374151] pt-4">
+            <div className="flex items-center space-x-2">
+              <Input
+                placeholder="Add custom value..."
+                value={customValue}
+                onChange={(e) => setCustomValue(e.target.value)}
+                className="flex-1 bg-[#374151] border-none text-white placeholder:text-white/50"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddCustomValue();
+                  }
+                }}
+              />
+              <Button
+                size="sm"
+                onClick={handleAddCustomValue}
+                className="bg-google-green hover:bg-google-green/90"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </PopoverContent>
