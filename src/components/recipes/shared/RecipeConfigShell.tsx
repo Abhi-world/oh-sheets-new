@@ -1,6 +1,5 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
 
 interface RecipeConfigShellProps {
   children: React.ReactNode;
@@ -10,12 +9,10 @@ interface RecipeConfigShellProps {
 const RecipeConfigShell = ({ children, onSave }: RecipeConfigShellProps) => {
   return (
     <div className="space-y-8">
-      {/* Main configuration sentence */}
       <div className="bg-[#111827] text-white p-6 rounded-lg">
         {children}
       </div>
 
-      {/* Create Automation Button */}
       {onSave && (
         <div className="flex justify-end">
           <Button 
