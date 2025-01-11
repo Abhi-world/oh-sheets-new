@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
-import { useGoogleSheetsStatus } from '@/hooks/useGoogleSheetsStatus';
 import ValueSelector from '@/components/shared/ValueSelector';
+import RecipeConfigShell from '../shared/RecipeConfigShell';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
-const ItemCreationConfig = () => {
+const ItemCreationConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boolean) => void }) => {
   const [selectedColumn, setSelectedColumn] = useState('status');
   const [values, setValues] = useState('');
-  const { isConnected } = useGoogleSheetsStatus();
   const {
     spreadsheets,
     sheets,
@@ -19,59 +22,73 @@ const ItemCreationConfig = () => {
 
   // Mock columns for testing with required 'type' property
   const mockColumns = [
-    { id: 'status', title: 'Status', type: 'status' },
-    { id: 'priority', title: 'Priority', type: 'color' },
+    { id: 'status', title: 'Status', type: 'status', settings: { labels: { '1': 'Done', '2': 'Working on it', '3': 'Stuck' } } },
+    { id: 'priority', title: 'Priority', type: 'color', settings: { labels: { '1': 'High', '2': 'Medium', '3': 'Low' } } },
     { id: 'text', title: 'Text', type: 'text' },
-    { id: 'person', title: 'person', type: 'person' },
+    { id: 'person', title: 'Person', type: 'person' },
     { id: 'date', title: 'Date', type: 'date' },
-    { id: 'numbers', title: 'Numbers', type: 'number' },
-    { id: 'dropdown', title: 'Dropdown', type: 'dropdown' }
+    { id: 'numbers', title: 'Numbers', type: 'number' }
   ];
 
   return (
-    <div className="space-y-12">
-      <div className="bg-navy-dark/40 p-6 rounded-lg border border-google-green/20">
+    <RecipeConfigShell onSave={() => {}}>
+      <div className="bg-[#111827] text-white p-6 rounded-lg">
         <p className="text-xl leading-relaxed text-white">
-          When a new item is created, add a row in{' '}
-          <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
-            <SelectTrigger className="w-40 inline-flex bg-navy-light border-google-green focus:ring-google-green/50">
-              <SelectValue placeholder="Select spreadsheet" />
-            </SelectTrigger>
-            <SelectContent className="bg-navy-light border border-google-green">
-              {spreadsheets.map((s) => (
-                <SelectItem key={s.id} value={s.id} className="text-white">
-                  {s.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          When an item is created, add a row in{' '}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="text-white underline decoration-dotted hover:decoration-solid">
+                {selectedSpreadsheet ? spreadsheets.find(s => s.id === selectedSpreadsheet)?.name : 'spreadsheet'}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[300px] bg-[#1F2937] border-none">
+              <div className="space-y-1">
+                {spreadsheets.map(sheet => (
+                  <button
+                    key={sheet.id}
+                    className="w-full text-left px-3 py-2 text-white hover:bg-white/10 rounded"
+                    onClick={() => setSelectedSpreadsheet(sheet.id)}
+                  >
+                    {sheet.name}
+                  </button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
           {' / '}
-          <Select value={selectedSheet} onValueChange={setSelectedSheet}>
-            <SelectTrigger className="w-32 inline-flex bg-navy-light border-google-green focus:ring-google-green/50">
-              <SelectValue placeholder="Select sheet" />
-            </SelectTrigger>
-            <SelectContent className="bg-navy-light border border-google-green">
-              {sheets.map((s) => (
-                <SelectItem key={s.id} value={s.id} className="text-white">
-                  {s.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {' '}with these{' '}
-          <div className="inline-block w-[180px]">
-            <ValueSelector
-              value={values}
-              onChange={setValues}
-              placeholder="Enter values"
-              columns={mockColumns}
-              selectedColumn={selectedColumn}
-              onColumnSelect={setSelectedColumn}
-            />
-          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="text-white underline decoration-dotted hover:decoration-solid">
+                {selectedSheet ? sheets.find(s => s.id === selectedSheet)?.name : 'sheet'}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[300px] bg-[#1F2937] border-none">
+              <div className="space-y-1">
+                {sheets.map(sheet => (
+                  <button
+                    key={sheet.id}
+                    className="w-full text-left px-3 py-2 text-white hover:bg-white/10 rounded"
+                    onClick={() => setSelectedSheet(sheet.id)}
+                  >
+                    {sheet.name}
+                  </button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+          {' with these '}
+          <ValueSelector
+            value={values}
+            onChange={setValues}
+            placeholder="values"
+            columns={mockColumns}
+            selectedColumn={selectedColumn}
+            onColumnSelect={setSelectedColumn}
+            className="text-white underline decoration-dotted hover:decoration-solid"
+          />
         </p>
       </div>
-    </div>
+    </RecipeConfigShell>
   );
 };
 
