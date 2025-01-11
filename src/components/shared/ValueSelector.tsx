@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronsUpDown, Search } from 'lucide-react';
 import {
@@ -14,13 +14,16 @@ const ValueSelector = ({
   value,
   onChange,
   placeholder = "Select values...",
-  className
+  className,
+  columns = [],
+  selectedColumn,
+  onColumnSelect
 }: ValueSelectorProps) => {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Mock board columns for demonstration - in production this would come from Monday.com API
-  const boardColumns = [
+  // Use provided columns or fallback to default board columns
+  const defaultColumns = [
     { id: 'employee_id', title: 'Employee ID' },
     { id: 'first_name', title: 'First Name' },
     { id: 'budget', title: 'Budget' },
@@ -31,12 +34,17 @@ const ValueSelector = ({
     { id: 'priority', title: 'Priority' }
   ];
 
+  const boardColumns = columns.length > 0 ? columns : defaultColumns;
+
   const filteredColumns = boardColumns.filter(column =>
     column.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleSelect = (columnId: string) => {
     onChange(columnId);
+    if (onColumnSelect) {
+      onColumnSelect(columnId);
+    }
     setOpen(false);
   };
 

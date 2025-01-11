@@ -12,4 +12,7 @@ export interface ValueSelectorProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  columns?: ColumnValue[];
+  selectedColumn?: string;
+  onColumnSelect?: (column: string) => void;
 }
