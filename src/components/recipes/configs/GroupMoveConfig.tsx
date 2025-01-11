@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import ValueSelector from '@/components/shared/ValueSelector';
-import RecipeConfigShell from '../shared/RecipeConfigShell';
 import {
   Popover,
   PopoverContent,
@@ -11,6 +10,7 @@ import {
 const GroupMoveConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boolean) => void }) => {
   const [groupName, setGroupName] = useState('');
   const [values, setValues] = useState('');
+  const [selectedColumn, setSelectedColumn] = useState('status');
   const {
     spreadsheets,
     sheets,
@@ -26,6 +26,16 @@ const GroupMoveConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boolean)
     { id: '2', name: 'In Progress' },
     { id: '3', name: 'Done' },
     { id: '4', name: 'Blocked' }
+  ];
+
+  // Mock columns that match Monday.com dashboard
+  const mockColumns = [
+    { id: 'status', title: 'Status', type: 'status', settings: { labels: { '1': 'Done', '2': 'Working on it', '3': 'Stuck' } } },
+    { id: 'priority', title: 'Priority', type: 'color', settings: { labels: { '1': 'High', '2': 'Medium', '3': 'Low' } } },
+    { id: 'text', title: 'Text', type: 'text' },
+    { id: 'person', title: 'Person', type: 'person' },
+    { id: 'date', title: 'Date', type: 'date' },
+    { id: 'numbers', title: 'Numbers', type: 'number' }
   ];
 
   return (
@@ -95,12 +105,15 @@ const GroupMoveConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boolean)
           </PopoverContent>
         </Popover>
         {' with these '}
-        <button 
-          onClick={() => {/* Add value selector logic */}} 
+        <ValueSelector
+          value={values}
+          onChange={setValues}
+          placeholder="values"
+          columns={mockColumns}
+          selectedColumn={selectedColumn}
+          onColumnSelect={setSelectedColumn}
           className="text-white underline decoration-dotted hover:decoration-solid"
-        >
-          values
-        </button>
+        />
       </p>
     </div>
   );
