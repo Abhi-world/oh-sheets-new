@@ -29,7 +29,7 @@ const GroupMoveConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boolean)
   ];
 
   return (
-    <RecipeConfigShell onSave={() => console.log('Creating automation...')}>
+    <div className="bg-[#111827] text-white p-6 rounded-lg">
       <p className="text-xl leading-relaxed text-white">
         When items are moved to{' '}
         <Popover>
@@ -95,14 +95,14 @@ const GroupMoveConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boolean)
           </PopoverContent>
         </Popover>
         {' with these '}
-        <ValueSelector
-          value={values}
-          onChange={setValues}
-          placeholder="values"
+        <button 
+          onClick={() => {/* Add value selector logic */}} 
           className="text-white underline decoration-dotted hover:decoration-solid"
-        />
+        >
+          values
+        </button>
       </p>
-    </RecipeConfigShell>
+    </div>
   );
 };
 
