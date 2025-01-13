@@ -20,7 +20,7 @@ const FormSubmissionConfig = () => {
 
   return (
     <div className="flex flex-col">
-      <div className="bg-[#111827] text-white p-6 rounded-lg">
+      <div className="bg-[#111827] text-white p-6 rounded-lg mb-4">
         <p className="text-xl leading-relaxed text-white">
           When form is submitted, add a row in{' '}
           <Popover>
@@ -64,6 +64,7 @@ const FormSubmissionConfig = () => {
           <ValueSelector
             value={formId}
             onChange={setFormId}
+            placeholder="values"
             className="text-xl text-white underline decoration-dotted hover:decoration-solid inline-flex items-center"
           />
         </p>
