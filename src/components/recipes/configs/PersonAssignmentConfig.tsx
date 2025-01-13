@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Search, User } from 'lucide-react';
+import { Search, User, Users } from 'lucide-react';
 
 const PersonAssignmentConfig = () => {
   const [personType, setPersonType] = useState('');
@@ -23,12 +23,12 @@ const PersonAssignmentConfig = () => {
 
   const personTypes = [
     { id: 'owner', label: 'Owner', icon: User },
-    { id: 'coworker', label: 'Coworker', icon: User },
+    { id: 'people', label: 'People', icon: Users },
   ];
 
   return (
     <div className="flex flex-col">
-      <div className="bg-[#111827] text-white p-6 rounded-lg">
+      <div className="bg-[#111827] text-white p-6 rounded-lg mb-4">
         <p className="text-xl leading-relaxed text-white">
           When{' '}
           <Popover>
@@ -63,7 +63,7 @@ const PersonAssignmentConfig = () => {
                 {selectedSpreadsheet ? spreadsheets.find(s => s.id === selectedSpreadsheet)?.name : 'spreadsheet'}
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-[200px] bg-navy-dark border-none p-2">
+            <PopoverContent className="w-[200px] bg-[#1F2937] border-none p-2">
               {spreadsheets.map(sheet => (
                 <button
                   key={sheet.id}
@@ -82,7 +82,7 @@ const PersonAssignmentConfig = () => {
                 {selectedSheet ? sheets.find(s => s.id === selectedSheet)?.name : 'sheet'}
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-[200px] bg-navy-dark border-none p-2">
+            <PopoverContent className="w-[200px] bg-[#1F2937] border-none p-2">
               {sheets.map(sheet => (
                 <button
                   key={sheet.id}
