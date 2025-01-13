@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
-import { useGoogleSheetsStatus } from '@/hooks/useGoogleSheetsStatus';
+import ValueSelector from '@/components/shared/ValueSelector';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 const FormSubmissionConfig = () => {
   const [formId, setFormId] = useState('');
-  const [values, setValues] = useState('');
-  const { isConnected } = useGoogleSheetsStatus();
   const {
     spreadsheets,
     sheets,
@@ -18,48 +19,52 @@ const FormSubmissionConfig = () => {
   } = useGoogleSheets();
 
   return (
-    <div className="space-y-12">
-      <div className="bg-navy-dark/40 p-6 rounded-lg border border-google-green/20">
+    <div className="flex flex-col">
+      <div className="bg-[#111827] text-white p-6 rounded-lg">
         <p className="text-xl leading-relaxed text-white">
-          When form{' '}
-          <Input
-            value={formId}
-            onChange={(e) => setFormId(e.target.value)}
-            className="w-40 inline-block mx-1 bg-navy-light border-google-green focus-visible:ring-google-green/50"
-            placeholder="Form ID"
-          />
-          {' '}is submitted, add a row in{' '}
-          <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
-            <SelectTrigger className="w-40 inline-flex bg-navy-light border-google-green focus:ring-google-green/50">
-              <SelectValue placeholder="Select spreadsheet" />
-            </SelectTrigger>
-            <SelectContent className="bg-navy-light border border-google-green">
-              {spreadsheets.map((s) => (
-                <SelectItem key={s.id} value={s.id} className="text-white">
-                  {s.name}
-                </SelectItem>
+          When form is submitted, add a row in{' '}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="text-xl text-white underline decoration-dotted hover:decoration-solid">
+                {selectedSpreadsheet ? spreadsheets.find(s => s.id === selectedSpreadsheet)?.name : 'spreadsheet'}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] bg-navy-dark border-none p-2">
+              {spreadsheets.map(sheet => (
+                <button
+                  key={sheet.id}
+                  className="w-full text-left px-2 py-1.5 text-white hover:bg-white/10 rounded"
+                  onClick={() => setSelectedSpreadsheet(sheet.id)}
+                >
+                  {sheet.name}
+                </button>
               ))}
-            </SelectContent>
-          </Select>
+            </PopoverContent>
+          </Popover>
           {' / '}
-          <Select value={selectedSheet} onValueChange={setSelectedSheet}>
-            <SelectTrigger className="w-32 inline-flex bg-navy-light border-google-green focus:ring-google-green/50">
-              <SelectValue placeholder="Select sheet" />
-            </SelectTrigger>
-            <SelectContent className="bg-navy-light border border-google-green">
-              {sheets.map((s) => (
-                <SelectItem key={s.id} value={s.id} className="text-white">
-                  {s.name}
-                </SelectItem>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="text-xl text-white underline decoration-dotted hover:decoration-solid">
+                {selectedSheet ? sheets.find(s => s.id === selectedSheet)?.name : 'sheet'}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] bg-navy-dark border-none p-2">
+              {sheets.map(sheet => (
+                <button
+                  key={sheet.id}
+                  className="w-full text-left px-2 py-1.5 text-white hover:bg-white/10 rounded"
+                  onClick={() => setSelectedSheet(sheet.id)}
+                >
+                  {sheet.name}
+                </button>
               ))}
-            </SelectContent>
-          </Select>
+            </PopoverContent>
+          </Popover>
           {' '}with these{' '}
-          <Input
-            value={values}
-            onChange={(e) => setValues(e.target.value)}
-            className="w-40 inline-block mx-1 bg-navy-light border-google-green focus-visible:ring-google-green/50"
-            placeholder="values"
+          <ValueSelector
+            value={formId}
+            onChange={setFormId}
+            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline-flex items-center"
           />
         </p>
       </div>
