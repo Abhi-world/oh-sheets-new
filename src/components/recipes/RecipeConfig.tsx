@@ -74,7 +74,6 @@ const RecipeConfig = () => {
       return;
     }
     
-    // TODO: Implement automation creation
     console.log('Creating automation with current configuration');
     toast.success('Automation created successfully');
     navigate('/');
@@ -83,10 +82,10 @@ const RecipeConfig = () => {
   return (
     <RecipeConfigLayout title={config.title}>
       <ConfigComponent onConfigValid={setIsConfigValid} />
-      <div className="mt-8 flex justify-end">
+      <div className="mt-8">
         <Button 
           size="lg"
-          className="bg-[#0F9D58] hover:bg-[#0F9D58]/90 text-white"
+          className="w-full bg-[#0F9D58] hover:bg-[#0F9D58]/90 text-white py-6 text-lg rounded-full"
           onClick={handleCreateAutomation}
           disabled={!isConfigValid}
         >

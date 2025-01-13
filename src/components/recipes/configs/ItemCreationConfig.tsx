@@ -20,7 +20,7 @@ const ItemCreationConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
     setSelectedSheet,
   } = useGoogleSheets();
 
-  // Mock columns for testing with required 'type' property
+  // Mock columns for demonstration
   const mockColumns = [
     { id: 'status', title: 'Status', type: 'status', settings: { labels: { '1': 'Done', '2': 'Working on it', '3': 'Stuck' } } },
     { id: 'priority', title: 'Priority', type: 'color', settings: { labels: { '1': 'High', '2': 'Medium', '3': 'Low' } } },
@@ -31,8 +31,8 @@ const ItemCreationConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
   ];
 
   return (
-    <RecipeConfigShell onSave={() => {}}>
-      <div className="bg-[#111827] text-white p-6 rounded-lg">
+    <div className="min-h-[300px] flex flex-col">
+      <div className="bg-[#111827] text-white p-6 rounded-lg mb-6">
         <p className="text-xl leading-relaxed text-white">
           When an item is created, add a row in{' '}
           <Popover>
@@ -84,11 +84,11 @@ const ItemCreationConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
             columns={mockColumns}
             selectedColumn={selectedColumn}
             onColumnSelect={setSelectedColumn}
-            className="text-white underline decoration-dotted hover:decoration-solid"
+            className="text-white underline decoration-dotted hover:decoration-solid inline-flex items-center"
           />
         </p>
       </div>
-    </RecipeConfigShell>
+    </div>
   );
 };
 
