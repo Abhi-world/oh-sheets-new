@@ -81,8 +81,8 @@ const RecipeConfig = () => {
 
   return (
     <RecipeConfigLayout title={config.title}>
-      <ConfigComponent onConfigValid={setIsConfigValid} />
-      <div className="mt-8">
+      <div className="space-y-4">
+        <ConfigComponent onConfigValid={setIsConfigValid} />
         <Button 
           size="lg"
           className="w-full bg-[#0F9D58] hover:bg-[#0F9D58]/90 text-white py-6 text-lg rounded-full"

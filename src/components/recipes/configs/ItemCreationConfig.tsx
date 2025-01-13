@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import ValueSelector from '@/components/shared/ValueSelector';
-import RecipeConfigShell from '../shared/RecipeConfigShell';
 import {
   Popover,
   PopoverContent,
@@ -31,13 +30,13 @@ const ItemCreationConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
   ];
 
   return (
-    <div className="min-h-[300px] flex flex-col">
-      <div className="bg-[#111827] text-white p-6 rounded-lg mb-6">
+    <div className="flex flex-col">
+      <div className="bg-[#111827] text-white p-6 rounded-lg">
         <p className="text-xl leading-relaxed text-white">
           When an item is created, add a row in{' '}
           <Popover>
             <PopoverTrigger asChild>
-              <button className="text-white underline decoration-dotted hover:decoration-solid">
+              <button className="text-xl text-white underline decoration-dotted hover:decoration-solid">
                 {selectedSpreadsheet ? spreadsheets.find(s => s.id === selectedSpreadsheet)?.name : 'spreadsheet'}
               </button>
             </PopoverTrigger>
@@ -58,7 +57,7 @@ const ItemCreationConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
           {' / '}
           <Popover>
             <PopoverTrigger asChild>
-              <button className="text-white underline decoration-dotted hover:decoration-solid">
+              <button className="text-xl text-white underline decoration-dotted hover:decoration-solid">
                 {selectedSheet ? sheets.find(s => s.id === selectedSheet)?.name : 'sheet'}
               </button>
             </PopoverTrigger>
@@ -84,7 +83,7 @@ const ItemCreationConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
             columns={mockColumns}
             selectedColumn={selectedColumn}
             onColumnSelect={setSelectedColumn}
-            className="text-white underline decoration-dotted hover:decoration-solid inline-flex items-center"
+            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline-flex items-center"
           />
         </p>
       </div>
