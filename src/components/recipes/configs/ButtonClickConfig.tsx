@@ -35,7 +35,7 @@ const ButtonClickConfig = () => {
           When{' '}
           <Popover>
             <PopoverTrigger asChild>
-              <button className="inline-flex items-center justify-center px-2 py-1 text-white bg-transparent hover:bg-white/10 rounded underline decoration-dotted hover:decoration-solid">
+              <button className="text-white underline decoration-dotted hover:decoration-solid">
                 {buttonName || 'button'}
               </button>
             </PopoverTrigger>
@@ -72,7 +72,7 @@ const ButtonClickConfig = () => {
               value={values}
               onChange={setValues}
               placeholder="values"
-              className="text-xl bg-transparent hover:bg-white/10"
+              className="text-xl text-white underline decoration-dotted hover:decoration-solid"
             />
           </div>
         </p>
