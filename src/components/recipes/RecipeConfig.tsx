@@ -81,11 +81,11 @@ const RecipeConfig = () => {
 
   return (
     <RecipeConfigLayout title={config.title}>
-      <div className="space-y-4">
+      <div className="space-y-8">
         <ConfigComponent onConfigValid={setIsConfigValid} />
         <Button 
           size="lg"
-          className="w-full bg-[#0F9D58] hover:bg-[#0F9D58]/90 text-white py-6 text-lg rounded-full"
+          className="w-full bg-recipe-green hover:bg-recipe-darkGreen text-white py-6 text-lg rounded-full"
           onClick={handleCreateAutomation}
           disabled={!isConfigValid}
         >

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import { useGoogleSheetsStatus } from '@/hooks/useGoogleSheetsStatus';
 import BoardSelector from './status-change/BoardSelector';
@@ -68,11 +67,12 @@ const ButtonClickConfig = () => {
             onSheetSelect={setSelectedSheet}
           />
           {' '}with these{' '}
-          <div className="inline-block w-[180px]">
+          <div className="inline-block w-[120px]">
             <ValueSelector
               value={values}
               onChange={setValues}
               placeholder="values"
+              className="text-xl"
             />
           </div>
         </p>
