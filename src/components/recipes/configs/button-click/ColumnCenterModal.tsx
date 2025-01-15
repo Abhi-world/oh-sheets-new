@@ -49,8 +49,8 @@ const ColumnCenterModal = ({ isOpen, onClose, onSelect }: ColumnCenterModalProps
                 <p className="text-sm text-white/70">Perform actions on items by clicking a button</p>
               </div>
               <Button 
-                variant="outline" 
-                className="ml-auto border-white/20 text-white hover:bg-white/10"
+                variant="secondary"
+                className="ml-auto bg-white/10 text-white hover:bg-white/20 border-none"
               >
                 Add to board
               </Button>
