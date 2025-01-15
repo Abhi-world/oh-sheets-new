@@ -22,7 +22,7 @@ const Index = () => {
         <div className="max-w-6xl mx-auto px-4 py-12">
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
             <div className="flex flex-col items-center space-y-6">
-              {/* Logo section */}
+              {/* Logo section with animated circle */}
               <div className="flex items-center space-x-3 mb-2">
                 <img 
                   src="/lovable-uploads/5e7a0614-eebd-4595-9634-40b17d9029c2.png" 
@@ -30,11 +30,14 @@ const Index = () => {
                   className="w-12 h-12"
                 />
                 <span className="text-white opacity-80">to</span>
-                <img 
-                  src="/lovable-uploads/aa37e716-a0c4-493f-9f04-9cc9c85c931a.png" 
-                  alt="Google Sheets" 
-                  className="w-12 h-12"
-                />
+                <div className="relative">
+                  <div className="absolute inset-0 -m-1 rounded-full border-2 border-[#4285F4] animate-[spin_3s_linear_infinite]"></div>
+                  <img 
+                    src="/lovable-uploads/aa37e716-a0c4-493f-9f04-9cc9c85c931a.png" 
+                    alt="Google Sheets" 
+                    className="w-12 h-12 relative z-10"
+                  />
+                </div>
               </div>
 
               {/* Title section */}
@@ -45,7 +48,17 @@ const Index = () => {
                   </h1>
                 </div>
                 <p className="text-lg text-white mt-4 max-w-lg mx-auto">
-                  Seamlessly sync your Monday.com data with Google Sheets using our automated integration templates
+                  Seamlessly sync your{' '}
+                  <span className="relative inline-block group">
+                    Monday.com
+                    <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white transform scale-x-0 transition-transform duration-300 origin-left group-hover:scale-x-100"></span>
+                  </span>
+                  {' '}data with{' '}
+                  <span className="relative inline-block group">
+                    Google Sheets
+                    <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white transform scale-x-0 transition-transform duration-300 origin-left group-hover:scale-x-100"></span>
+                  </span>
+                  {' '}using our automated integration templates
                 </p>
               </div>
 
