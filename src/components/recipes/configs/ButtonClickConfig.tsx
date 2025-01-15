@@ -53,10 +53,13 @@ const ButtonClickConfig = () => {
             </PopoverContent>
           </Popover>
           {' '}is clicked in{' '}
-          <BoardSelector
-            selectedBoard={selectedBoard}
-            onBoardSelect={setSelectedBoard}
-          />
+          <span className="inline-block">
+            <BoardSelector
+              selectedBoard={selectedBoard}
+              onBoardSelect={setSelectedBoard}
+              className="text-white underline decoration-dotted hover:decoration-solid px-0 py-0 h-auto bg-transparent hover:bg-transparent"
+            />
+          </span>
           {', '}add a row in{' '}
           <SheetSelector
             spreadsheets={spreadsheets}
