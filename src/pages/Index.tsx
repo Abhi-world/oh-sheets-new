@@ -31,7 +31,12 @@ const Index = () => {
                 />
                 <span className="text-white opacity-80">to</span>
                 <div className="relative">
-                  <div className="absolute inset-0 -m-1 rounded-full border-2 border-[#4285F4] animate-[spin_3s_linear_infinite]"></div>
+                  <div className="absolute inset-0 -m-1 rounded-full border-2 border-[#4285F4] animate-[spin_3s_linear_infinite]" 
+                       style={{
+                         boxShadow: '0 0 10px rgba(66, 133, 244, 0.3)',
+                         animation: 'spin 3s linear infinite'
+                       }}
+                  ></div>
                   <img 
                     src="/lovable-uploads/aa37e716-a0c4-493f-9f04-9cc9c85c931a.png" 
                     alt="Google Sheets" 
@@ -49,14 +54,22 @@ const Index = () => {
                 </div>
                 <p className="text-lg text-white mt-4 max-w-lg mx-auto">
                   Seamlessly sync your{' '}
-                  <span className="relative inline-block group">
+                  <span className="relative inline-block group cursor-pointer">
                     Monday.com
-                    <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white transform scale-x-0 transition-transform duration-300 origin-left group-hover:scale-x-100"></span>
+                    <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white transform scale-x-0 transition-transform duration-300 origin-left group-hover:scale-x-100"
+                          style={{
+                            boxShadow: '0 0 5px rgba(255, 255, 255, 0.5)'
+                          }}
+                    ></span>
                   </span>
                   {' '}data with{' '}
-                  <span className="relative inline-block group">
+                  <span className="relative inline-block group cursor-pointer">
                     Google Sheets
-                    <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white transform scale-x-0 transition-transform duration-300 origin-left group-hover:scale-x-100"></span>
+                    <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white transform scale-x-0 transition-transform duration-300 origin-left group-hover:scale-x-100"
+                          style={{
+                            boxShadow: '0 0 5px rgba(255, 255, 255, 0.5)'
+                          }}
+                    ></span>
                   </span>
                   {' '}using our automated integration templates
                 </p>
