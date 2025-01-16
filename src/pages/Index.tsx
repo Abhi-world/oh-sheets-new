@@ -22,36 +22,30 @@ const Index = () => {
         <div className="max-w-6xl mx-auto px-4 py-12">
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
             <div className="flex flex-col items-center space-y-6">
-              {/* Logo section with animated circle */}
-              <div className="flex items-center space-x-3 mb-2">
-                <img 
-                  src="/lovable-uploads/5e7a0614-eebd-4595-9634-40b17d9029c2.png" 
-                  alt="Monday.com" 
-                  className="w-12 h-12"
-                />
-                <span className="text-white opacity-80">to</span>
-                <div className="relative">
-                  <div className="absolute inset-0 -m-1 rounded-full border-2 border-[#4285F4] animate-[spin_3s_linear_infinite]" 
-                       style={{
-                         boxShadow: '0 0 10px rgba(66, 133, 244, 0.3)',
-                         animation: 'spin 3s linear infinite'
-                       }}
-                  ></div>
-                  <img 
-                    src="/lovable-uploads/aa37e716-a0c4-493f-9f04-9cc9c85c931a.png" 
-                    alt="Google Sheets" 
-                    className="w-12 h-12 relative z-10"
-                  />
-                </div>
-              </div>
-
               {/* Title section */}
               <div className="text-center">
-                <div className="inline-block bg-white/95 backdrop-blur-sm rounded-xl px-6 py-3 shadow-xl">
+                <div className="inline-block bg-white/95 backdrop-blur-sm rounded-xl px-6 py-3 shadow-xl mb-8">
                   <h1 className="text-5xl font-bold bg-gradient-to-r from-[#228B22] to-[#0052CC] bg-clip-text text-transparent">
                     Oh Sheets
                   </h1>
                 </div>
+
+                {/* Google Sheets logo with animation */}
+                <div className="relative w-16 h-16 mx-auto mb-8">
+                  <div 
+                    className="absolute inset-0 -m-1 rounded-full border-2 border-[#4285F4] animate-[spin_3s_linear_infinite]" 
+                    style={{
+                      boxShadow: '0 0 15px rgba(66, 133, 244, 0.5)',
+                      animation: 'spin 3s linear infinite'
+                    }}
+                  ></div>
+                  <img 
+                    src="/lovable-uploads/aa37e716-a0c4-493f-9f04-9cc9c85c931a.png" 
+                    alt="Google Sheets" 
+                    className="w-16 h-16 relative z-10"
+                  />
+                </div>
+
                 <p className="text-lg text-white mt-4 max-w-lg mx-auto">
                   Seamlessly sync your{' '}
                   <span className="relative inline-block pb-1">
