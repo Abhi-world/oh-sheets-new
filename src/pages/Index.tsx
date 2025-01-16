@@ -60,7 +60,7 @@ const Index = () => {
                       className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FBBC05] transform transition-transform duration-500"
                       style={{
                         boxShadow: '0 0 5px rgba(251, 188, 5, 0.7)',
-                        animation: 'underlineAnimation 20s linear infinite, waveAnimation 2s ease-in-out infinite'
+                        animation: 'underlineWave 20s linear infinite'
                       }}
                     ></span>
                   </span>
@@ -71,7 +71,7 @@ const Index = () => {
                       className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FBBC05] transform transition-transform duration-500"
                       style={{
                         boxShadow: '0 0 5px rgba(251, 188, 5, 0.7)',
-                        animation: 'underlineAnimation 20s linear infinite, waveAnimation 2s ease-in-out infinite'
+                        animation: 'underlineWave 20s linear infinite'
                       }}
                     ></span>
                   </span>
@@ -83,22 +83,20 @@ const Index = () => {
                 </p>
                 <style>
                   {`
-                    @keyframes underlineAnimation {
-                      0%, 50% {
-                        transform: scaleX(1);
+                    @keyframes underlineWave {
+                      0%, 100% {
+                        transform: scaleX(1) translateY(0) rotate(-0.5deg);
                         opacity: 1;
                       }
-                      50.1%, 100% {
-                        transform: scaleX(0);
-                        opacity: 0;
-                      }
-                    }
-                    @keyframes waveAnimation {
-                      0%, 100% {
-                        transform: translateY(0px) scaleX(1);
+                      25% {
+                        transform: scaleX(1.1) translateY(1px) rotate(0.5deg);
                       }
                       50% {
-                        transform: translateY(1px) scaleX(1.02);
+                        transform: scaleX(0) translateY(0) rotate(-0.5deg);
+                        opacity: 0;
+                      }
+                      75% {
+                        transform: scaleX(1.1) translateY(-1px) rotate(0.5deg);
                       }
                     }
                   `}
