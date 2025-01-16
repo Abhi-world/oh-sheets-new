@@ -52,27 +52,47 @@ const Index = () => {
                     Oh Sheets
                   </h1>
                 </div>
-                <p className="text-lg text-white mt-4 max-w-lg mx-auto">
+                <p className="text-lg text-white mt-4 max-w-lg mx-auto leading-relaxed">
                   Seamlessly sync your{' '}
-                  <span className="relative inline-block group cursor-pointer">
+                  <span className="relative inline-block">
                     Monday.com
-                    <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white transform scale-x-0 transition-transform duration-300 origin-left group-hover:scale-x-100"
-                          style={{
-                            boxShadow: '0 0 5px rgba(255, 255, 255, 0.5)'
-                          }}
+                    <span 
+                      className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FBBC05] transform transition-transform duration-500"
+                      style={{
+                        boxShadow: '0 0 5px rgba(251, 188, 5, 0.7)',
+                        animation: 'underlineAnimation 20s linear infinite'
+                      }}
                     ></span>
                   </span>
                   {' '}data with{' '}
-                  <span className="relative inline-block group cursor-pointer">
+                  <span className="relative inline-block">
                     Google Sheets
-                    <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white transform scale-x-0 transition-transform duration-300 origin-left group-hover:scale-x-100"
-                          style={{
-                            boxShadow: '0 0 5px rgba(255, 255, 255, 0.5)'
-                          }}
+                    <span 
+                      className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FBBC05] transform transition-transform duration-500"
+                      style={{
+                        boxShadow: '0 0 5px rgba(251, 188, 5, 0.7)',
+                        animation: 'underlineAnimation 20s linear infinite'
+                      }}
                     ></span>
                   </span>
-                  {' '}using our automated integration templates
+                  {' '}
+                  <br className="my-2" />
+                  using our automated integration templates
                 </p>
+                <style>
+                  {`
+                    @keyframes underlineAnimation {
+                      0%, 50% {
+                        transform: scaleX(1);
+                        opacity: 1;
+                      }
+                      50.1%, 100% {
+                        transform: scaleX(0);
+                        opacity: 0;
+                      }
+                    }
+                  `}
+                </style>
               </div>
 
               {/* Decorative elements */}
