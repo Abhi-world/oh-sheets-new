@@ -52,14 +52,14 @@ const Index = () => {
                     Oh Sheets
                   </h1>
                 </div>
-                <p className="text-lg text-white mt-4 max-w-lg mx-auto leading-relaxed">
+                <p className="text-lg text-white mt-4 max-w-lg mx-auto">
                   Seamlessly sync your{' '}
                   <span className="relative inline-block pb-1">
                     Monday.com
                     <span 
-                      className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FBBC05] transform transition-transform duration-500"
+                      className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FEF7CD] transform transition-transform duration-500"
                       style={{
-                        boxShadow: '0 0 5px rgba(251, 188, 5, 0.7)',
+                        boxShadow: '0 0 8px rgba(254, 247, 205, 0.8)',
                         animation: 'underlineWave 20s linear infinite'
                       }}
                     ></span>
@@ -68,18 +68,14 @@ const Index = () => {
                   <span className="relative inline-block pb-1">
                     Google Sheets
                     <span 
-                      className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FBBC05] transform transition-transform duration-500"
+                      className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FEF7CD] transform transition-transform duration-500"
                       style={{
-                        boxShadow: '0 0 5px rgba(251, 188, 5, 0.7)',
+                        boxShadow: '0 0 8px rgba(254, 247, 205, 0.8)',
                         animation: 'underlineWave 20s linear infinite'
                       }}
                     ></span>
                   </span>
-                  {' '}
-                  <br className="my-2" />
-                  <span className="block mt-2">
-                    using our automated integration templates
-                  </span>
+                  {' '}using our automated integration templates
                 </p>
                 <style>
                   {`
