@@ -54,30 +54,32 @@ const Index = () => {
                 </div>
                 <p className="text-lg text-white mt-4 max-w-lg mx-auto leading-relaxed">
                   Seamlessly sync your{' '}
-                  <span className="relative inline-block">
+                  <span className="relative inline-block pb-1">
                     Monday.com
                     <span 
                       className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FBBC05] transform transition-transform duration-500"
                       style={{
                         boxShadow: '0 0 5px rgba(251, 188, 5, 0.7)',
-                        animation: 'underlineAnimation 20s linear infinite'
+                        animation: 'underlineAnimation 20s linear infinite, waveAnimation 2s ease-in-out infinite'
                       }}
                     ></span>
                   </span>
                   {' '}data with{' '}
-                  <span className="relative inline-block">
+                  <span className="relative inline-block pb-1">
                     Google Sheets
                     <span 
                       className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FBBC05] transform transition-transform duration-500"
                       style={{
                         boxShadow: '0 0 5px rgba(251, 188, 5, 0.7)',
-                        animation: 'underlineAnimation 20s linear infinite'
+                        animation: 'underlineAnimation 20s linear infinite, waveAnimation 2s ease-in-out infinite'
                       }}
                     ></span>
                   </span>
                   {' '}
                   <br className="my-2" />
-                  using our automated integration templates
+                  <span className="block mt-2">
+                    using our automated integration templates
+                  </span>
                 </p>
                 <style>
                   {`
@@ -89,6 +91,14 @@ const Index = () => {
                       50.1%, 100% {
                         transform: scaleX(0);
                         opacity: 0;
+                      }
+                    }
+                    @keyframes waveAnimation {
+                      0%, 100% {
+                        transform: translateY(0px) scaleX(1);
+                      }
+                      50% {
+                        transform: translateY(1px) scaleX(1.02);
                       }
                     }
                   `}
