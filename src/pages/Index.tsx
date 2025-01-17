@@ -30,19 +30,19 @@ const Index = () => {
                   </h1>
                 </div>
 
-                {/* Google Sheets logo with enhanced animation */}
-                <div className="relative w-16 h-16 mx-auto mb-8">
+                {/* Google Sheets logo with enhanced glowing animation */}
+                <div className="relative w-20 h-20 mx-auto mb-8">
                   <div 
-                    className="absolute inset-0 -m-1 rounded-full border-2 border-[#34A853] animate-[spin_3s_linear_infinite]" 
+                    className="absolute inset-0 -m-3 rounded-full border-2 border-[#FEF7CD] animate-[spin_3s_linear_infinite]" 
                     style={{
-                      boxShadow: '0 0 20px rgba(52, 168, 83, 0.6)',
+                      boxShadow: '0 0 25px rgba(254, 247, 205, 0.8), 0 0 15px rgba(254, 247, 205, 0.6), 0 0 35px rgba(254, 247, 205, 0.4)',
                       animation: 'spin 3s linear infinite'
                     }}
                   ></div>
                   <img 
                     src="/lovable-uploads/ea26a2c2-cb2f-4e61-8ecd-c7cbc79e0780.png" 
                     alt="Google Sheets" 
-                    className="w-16 h-16 relative z-10"
+                    className="w-16 h-16 relative z-10 mt-2"
                   />
                 </div>
 
@@ -104,7 +104,6 @@ const Index = () => {
         </div>
       </div>
       
-      {/* Recipe grid section */}
       <div className="container mx-auto px-4 -mt-6 relative z-10">
         <div className="flex justify-end mb-6 relative">
           <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 pointer-events-none">
