@@ -30,17 +30,17 @@ const Index = () => {
                   </h1>
                 </div>
 
-                {/* Google Sheets logo with animation */}
+                {/* Google Sheets logo with enhanced animation */}
                 <div className="relative w-16 h-16 mx-auto mb-8">
                   <div 
-                    className="absolute inset-0 -m-1 rounded-full border-2 border-[#4285F4] animate-[spin_3s_linear_infinite]" 
+                    className="absolute inset-0 -m-1 rounded-full border-2 border-[#34A853] animate-[spin_3s_linear_infinite]" 
                     style={{
-                      boxShadow: '0 0 15px rgba(66, 133, 244, 0.5)',
+                      boxShadow: '0 0 20px rgba(52, 168, 83, 0.6)',
                       animation: 'spin 3s linear infinite'
                     }}
                   ></div>
                   <img 
-                    src="/lovable-uploads/aa37e716-a0c4-493f-9f04-9cc9c85c931a.png" 
+                    src="/lovable-uploads/ea26a2c2-cb2f-4e61-8ecd-c7cbc79e0780.png" 
                     alt="Google Sheets" 
                     className="w-16 h-16 relative z-10"
                   />
