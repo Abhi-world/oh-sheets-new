@@ -31,7 +31,7 @@ const Index = () => {
                 </div>
 
                 {/* Google Sheets logo with enhanced glowing animation */}
-                <div className="relative w-20 h-20 mx-auto mb-8 flex items-center justify-center">
+                <div className="relative w-24 h-24 mx-auto mb-8 flex items-center justify-center">
                   <div 
                     className="absolute inset-0 rounded-full border-2 border-[#FEF7CD] animate-[spin_3s_linear_infinite]" 
                     style={{
@@ -42,7 +42,7 @@ const Index = () => {
                   <img 
                     src="/lovable-uploads/ea26a2c2-cb2f-4e61-8ecd-c7cbc79e0780.png" 
                     alt="Google Sheets" 
-                    className="w-16 h-16 relative z-10"
+                    className="w-14 h-14 relative z-10"
                   />
                 </div>
 
