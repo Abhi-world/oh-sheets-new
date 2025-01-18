@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronsUpDown, Search, Plus } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import {
   Popover,
   PopoverContent,
@@ -23,7 +23,6 @@ const ValueSelector = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [customValue, setCustomValue] = useState('');
 
-  // Use provided columns or fallback to default board columns
   const defaultColumns = [
     { id: 'status', title: 'Status', type: 'status', settings: { labels: { '1': 'Done', '2': 'Working on it', '3': 'Stuck' } } },
     { id: 'priority', title: 'Priority', type: 'color', settings: { labels: { '1': 'High', '2': 'Medium', '3': 'Low' } } },
@@ -62,12 +61,11 @@ const ValueSelector = ({
           role="combobox"
           aria-expanded={open}
           className={cn(
-            "px-0 py-0 h-auto text-white underline decoration-dotted hover:decoration-solid",
+            "px-0 py-0 h-auto font-normal text-white underline decoration-dotted hover:decoration-solid",
             className
           )}
         >
           {value || placeholder}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] p-0 bg-[#1F2937] border-[#374151]">
