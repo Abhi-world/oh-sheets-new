@@ -26,61 +26,76 @@ const ColumnChangeConfig = () => {
       <Card className="bg-recipe-navy/40 p-6 rounded-lg border-none">
         <p className="text-xl leading-relaxed text-white">
           When a column value changes in{' '}
-          <BoardSelector
-            selectedBoard={selectedBoard}
-            onBoardSelect={setSelectedBoard}
-          />
+          <button 
+            onClick={() => setSelectedBoard(selectedBoard)}
+            className="text-white underline decoration-dotted hover:decoration-solid"
+          >
+            {selectedBoard || 'board'}
+          </button>
           {' / '}
-          <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
-            <SelectTrigger 
-              className="w-[180px] inline-flex bg-recipe-navy/90 border-none text-white focus:ring-white/20"
-              onClick={() => fetchSpreadsheets()}
-            >
-              <SelectValue placeholder={isLoading ? "Loading..." : "Select spreadsheet"} />
-            </SelectTrigger>
-            <SelectContent className="bg-recipe-navy border-none">
-              {spreadsheets.map((s) => (
-                <SelectItem key={s.id} value={s.id} className="text-white hover:bg-white/10">
-                  {s.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <button 
+            className="text-white underline decoration-dotted hover:decoration-solid"
+            onClick={() => fetchSpreadsheets()}
+          >
+            {selectedSpreadsheet ? sheets.find(s => s.id === selectedSpreadsheet)?.name || 'spreadsheet' : 'spreadsheet'}
+          </button>
           {' / '}
-          <Select value={selectedSheet} onValueChange={setSelectedSheet}>
-            <SelectTrigger 
-              className="w-[150px] inline-flex bg-recipe-navy/90 border-none text-white focus:ring-white/20"
-            >
-              <SelectValue placeholder={isLoading ? "Loading..." : "Select sheet"} />
-            </SelectTrigger>
-            <SelectContent className="bg-recipe-navy border-none">
-              {sheets.map((s) => (
-                <SelectItem key={s.id} value={s.id} className="text-white hover:bg-white/10">
-                  {s.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <button 
+            className="text-white underline decoration-dotted hover:decoration-solid"
+            onClick={() => setSelectedSheet(selectedSheet)}
+          >
+            {selectedSheet ? sheets.find(s => s.id === selectedSheet)?.name || 'sheet' : 'sheet'}
+          </button>
           {' '}with these{' '}
-          <span className="text-white font-semibold bg-recipe-navy/90 px-2 py-1 rounded">values</span>
-          {' '}
-          <div className="inline-block w-[180px]">
-            <ValueSelector
-              value={values}
-              onChange={setValues}
-              placeholder="Enter values"
-            />
-          </div>
+          <ValueSelector
+            value={values}
+            onChange={setValues}
+            placeholder="values"
+            className="text-white underline decoration-dotted hover:decoration-solid inline-block"
+          />
           {' '}update to{' '}
-          <div className="inline-block w-[180px]">
-            <ValueSelector
-              value={newValues}
-              onChange={setNewValues}
-              placeholder="Enter new values"
-            />
-          </div>
+          <ValueSelector
+            value={newValues}
+            onChange={setNewValues}
+            placeholder="values"
+            className="text-white underline decoration-dotted hover:decoration-solid inline-block"
+          />
         </p>
       </Card>
+
+      {/* Hidden selects for functionality */}
+      <div className="hidden">
+        <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {spreadsheets.map((s) => (
+              <SelectItem key={s.id} value={s.id}>
+                {s.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={selectedSheet} onValueChange={setSelectedSheet}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {sheets.map((s) => (
+              <SelectItem key={s.id} value={s.id}>
+                {s.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <BoardSelector
+          selectedBoard={selectedBoard}
+          onBoardSelect={setSelectedBoard}
+        />
+      </div>
     </div>
   );
 };
