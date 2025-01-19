@@ -51,14 +51,14 @@ const ColumnChangeConfig = () => {
             value={values}
             onChange={setValues}
             placeholder="original values"
-            className="text-white underline decoration-dotted hover:decoration-solid inline-block"
+            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline-block"
           />
           {' '}update them to{' '}
           <ValueSelector
             value={newValues}
             onChange={setNewValues}
             placeholder="new values"
-            className="text-white underline decoration-dotted hover:decoration-solid inline-block"
+            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline-block"
           />
         </p>
       </Card>
