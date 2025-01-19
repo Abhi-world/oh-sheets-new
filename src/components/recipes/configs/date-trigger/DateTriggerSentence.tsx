@@ -75,7 +75,7 @@ const DateTriggerSentence = ({ onConfigValid }: DateTriggerSentenceProps) => {
         {' '}arrives, add a row in{' '}
         <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
           <SelectTrigger className="w-[200px] inline-flex bg-[#374151] border-none text-white">
-            <SelectValue placeholder="Select spreadsheet" />
+            <SelectValue placeholder="spreadsheet" />
           </SelectTrigger>
           <SelectContent className="bg-[#374151] border-white/10">
             {spreadsheets.map((s) => (
@@ -92,7 +92,7 @@ const DateTriggerSentence = ({ onConfigValid }: DateTriggerSentenceProps) => {
         {' / '}
         <Select value={selectedSheet} onValueChange={setSelectedSheet}>
           <SelectTrigger className="w-[150px] inline-flex bg-[#374151] border-none text-white">
-            <SelectValue placeholder="Select sheet" />
+            <SelectValue placeholder="sheet" />
           </SelectTrigger>
           <SelectContent className="bg-[#374151] border-white/10">
             {sheets.map((s) => (
@@ -110,7 +110,8 @@ const DateTriggerSentence = ({ onConfigValid }: DateTriggerSentenceProps) => {
         <ValueSelector
           value={selectedValues.join(',')}
           onChange={(val) => setSelectedValues(val.split(',').filter(Boolean))}
-          className="inline-flex bg-[#374151] border-none text-white w-[120px]"
+          className="inline-flex bg-[#374151] border-none text-white"
+          placeholder="values"
         />
       </p>
     </div>
