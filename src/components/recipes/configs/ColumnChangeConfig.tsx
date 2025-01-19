@@ -46,18 +46,18 @@ const ColumnChangeConfig = () => {
           >
             {selectedSheet ? sheets.find(s => s.id === selectedSheet)?.name || 'sheet' : 'sheet'}
           </button>
-          {' '}with these{' '}
+          {' '}from{' '}
           <ValueSelector
             value={values}
             onChange={setValues}
-            placeholder="values"
+            placeholder="original values"
             className="text-white underline decoration-dotted hover:decoration-solid inline-block"
           />
-          {' '}update to{' '}
+          {' '}update them to{' '}
           <ValueSelector
             value={newValues}
             onChange={setNewValues}
-            placeholder="values"
+            placeholder="new values"
             className="text-white underline decoration-dotted hover:decoration-solid inline-block"
           />
         </p>
