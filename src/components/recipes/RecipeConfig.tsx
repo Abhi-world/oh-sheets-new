@@ -16,43 +16,53 @@ import { ConfigComponentProps } from '@/types/recipe';
 
 const recipeConfigs: Record<string, { 
   component: React.ComponentType<ConfigComponentProps>, 
-  title: string 
+  title: string,
+  automationType: 'status' | 'date' | 'button' | 'column' | 'person' | 'group' | 'item' | 'form' | 'periodic'
 }> = {
   'status-change': {
     component: StatusChangeConfig,
-    title: 'Status Change Integration'
+    title: 'Status Change Integration',
+    automationType: 'status'
   },
   'date-trigger': {
     component: DateTriggerConfig,
-    title: 'Date-Based Integration'
+    title: 'Date-Based Integration',
+    automationType: 'date'
   },
   'group-move': {
     component: GroupMoveConfig,
-    title: 'Group Movement Integration'
+    title: 'Group Movement Integration',
+    automationType: 'group'
   },
   'periodic-export': {
     component: PeriodicExportConfig,
-    title: 'Scheduled Export'
+    title: 'Scheduled Export',
+    automationType: 'periodic'
   },
   'form-submission': {
     component: FormSubmissionConfig,
-    title: 'Form Response Integration'
+    title: 'Form Response Integration',
+    automationType: 'form'
   },
   'person-assignment': {
     component: PersonAssignmentConfig,
-    title: 'Person Assignment Integration'
+    title: 'Person Assignment Integration',
+    automationType: 'person'
   },
   'button-click': {
     component: ButtonClickConfig,
-    title: 'Button Click Integration'
+    title: 'Button Click Integration',
+    automationType: 'button'
   },
   'column-change': {
     component: ColumnChangeConfig,
-    title: 'Column Change Integration'
+    title: 'Column Change Integration',
+    automationType: 'column'
   },
   'item-creation': {
     component: ItemCreationConfig,
-    title: 'New Item Integration'
+    title: 'New Item Integration',
+    automationType: 'item'
   }
 };
 
@@ -80,7 +90,10 @@ const RecipeConfig = () => {
   };
 
   return (
-    <RecipeConfigLayout title={config.title}>
+    <RecipeConfigLayout 
+      title={config.title}
+      automationType={config.automationType}
+    >
       <div className="space-y-8">
         <ConfigComponent onConfigValid={setIsConfigValid} />
         <Button 
