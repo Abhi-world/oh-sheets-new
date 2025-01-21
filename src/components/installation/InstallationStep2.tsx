@@ -2,7 +2,8 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { mockWorkspaces, mockBoards } from '@/utils/mockData';
+import { mockWorkspaces } from '@/utils/mockData';
+import { useMonday } from '@/hooks/useMonday';
 
 interface InstallationStep2Props {
   selectedWorkspace: string;
@@ -21,6 +22,11 @@ const InstallationStep2 = ({
   onInstall,
   isLoading
 }: InstallationStep2Props) => {
+  const { data: mondayData, isLoading: isMondayLoading } = useMonday();
+  const boards = mondayData?.data?.boards || [];
+
+  console.log('Monday boards:', boards);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col items-center gap-4 mb-8">
@@ -65,12 +71,12 @@ const InstallationStep2 = ({
 
           <div className="space-y-4">
             <label className="block text-sm font-medium text-gray-700">Choose a board</label>
-            <Select value={selectedBoard} onValueChange={onBoardChange}>
+            <Select value={selectedBoard} onValueChange={onBoardChange} disabled={isMondayLoading}>
               <SelectTrigger className="w-full h-12 text-base bg-white">
                 <SelectValue placeholder="Choose a board" />
               </SelectTrigger>
               <SelectContent>
-                {mockBoards.map((board) => (
+                {boards.map((board: any) => (
                   <SelectItem key={board.id} value={board.id}>
                     {board.name}
                   </SelectItem>
