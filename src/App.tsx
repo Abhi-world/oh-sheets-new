@@ -1,22 +1,56 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import Index from '@/pages/Index';
 import ConnectMonday from '@/pages/ConnectMonday';
 import ConnectSheets from '@/pages/ConnectSheets';
 import MondayOAuth from '@/pages/MondayOAuth';
 import RecipeConfig from '@/components/recipes/RecipeConfig';
 import InstallationFlow from '@/components/installation/InstallationFlow';
+import { Loader2 } from "lucide-react";
+import { Suspense } from 'react';
+
+// Loading component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#7B61FF] via-[#9B87F5] to-[#7E69AB]">
+    <div className="flex flex-col items-center gap-4">
+      <Loader2 className="h-8 w-8 animate-spin text-white" />
+      <p className="text-white text-lg">Loading...</p>
+    </div>
+  </div>
+);
+
+// Animated page wrapper
+const PageWrapper = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  
+  return (
+    <motion.div
+      key={location.pathname}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/connect-monday" element={<ConnectMonday />} />
-        <Route path="/connect-sheets" element={<ConnectSheets />} />
-        <Route path="/monday-oauth" element={<MondayOAuth />} />
-        <Route path="/recipe/:recipeId" element={<RecipeConfig />} />
-        <Route path="/install" element={<InstallationFlow />} />
-      </Routes>
+      <AnimatePresence mode="wait">
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<PageWrapper><Index /></PageWrapper>} />
+            <Route path="/connect-monday" element={<PageWrapper><ConnectMonday /></PageWrapper>} />
+            <Route path="/connect-sheets" element={<PageWrapper><ConnectSheets /></PageWrapper>} />
+            <Route path="/monday-oauth" element={<PageWrapper><MondayOAuth /></PageWrapper>} />
+            <Route path="/recipe/:recipeId" element={<PageWrapper><RecipeConfig /></PageWrapper>} />
+            <Route path="/install" element={<PageWrapper><InstallationFlow /></PageWrapper>} />
+          </Routes>
+        </Suspense>
+      </AnimatePresence>
     </Router>
   );
 }
