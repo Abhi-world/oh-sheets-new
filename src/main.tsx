@@ -10,7 +10,7 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      suspense: true,
+      // Remove suspense from here as it should be used at the component level
     },
   },
 });
