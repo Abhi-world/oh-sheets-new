@@ -12,10 +12,12 @@ const BoardSelector = ({ selectedBoard, onBoardSelect, className }: BoardSelecto
   const { data: mondayData, isLoading } = useMonday();
   const boards = mondayData?.data?.boards || [];
 
+  console.log('Monday boards:', boards);
+
   return (
     <Select value={selectedBoard} onValueChange={onBoardSelect}>
       <SelectTrigger className={className}>
-        <SelectValue placeholder="" />
+        <SelectValue placeholder="Select a board" />
       </SelectTrigger>
       <SelectContent className="bg-navy-dark border-none">
         {boards.map((board: any) => (
