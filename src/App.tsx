@@ -6,6 +6,7 @@ import ConnectSheets from '@/pages/ConnectSheets';
 import MondayOAuth from '@/pages/MondayOAuth';
 import RecipeConfig from '@/components/recipes/RecipeConfig';
 import InstallationFlow from '@/components/installation/InstallationFlow';
+import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { Loader2 } from "lucide-react";
 import { Suspense } from 'react';
 
@@ -38,20 +39,22 @@ const PageWrapper = ({ children }: { children: React.ReactNode }) => {
 
 function App() {
   return (
-    <Router>
-      <AnimatePresence mode="wait">
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<PageWrapper><Index /></PageWrapper>} />
-            <Route path="/connect-monday" element={<PageWrapper><ConnectMonday /></PageWrapper>} />
-            <Route path="/connect-sheets" element={<PageWrapper><ConnectSheets /></PageWrapper>} />
-            <Route path="/monday-oauth" element={<PageWrapper><MondayOAuth /></PageWrapper>} />
-            <Route path="/recipe/:recipeId" element={<PageWrapper><RecipeConfig /></PageWrapper>} />
-            <Route path="/install" element={<PageWrapper><InstallationFlow /></PageWrapper>} />
-          </Routes>
-        </Suspense>
-      </AnimatePresence>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <AnimatePresence mode="wait">
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<PageWrapper><Index /></PageWrapper>} />
+              <Route path="/connect-monday" element={<PageWrapper><ConnectMonday /></PageWrapper>} />
+              <Route path="/connect-sheets" element={<PageWrapper><ConnectSheets /></PageWrapper>} />
+              <Route path="/monday-oauth" element={<PageWrapper><MondayOAuth /></PageWrapper>} />
+              <Route path="/recipe/:recipeId" element={<PageWrapper><RecipeConfig /></PageWrapper>} />
+              <Route path="/install" element={<PageWrapper><InstallationFlow /></PageWrapper>} />
+            </Routes>
+          </Suspense>
+        </AnimatePresence>
+      </Router>
+    </ErrorBoundary>
   );
 }
 
