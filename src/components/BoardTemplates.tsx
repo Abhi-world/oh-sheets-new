@@ -5,6 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Copy, Briefcase, Code, Megaphone } from 'lucide-react';
 import { toast } from 'sonner';
 import { useMonday } from '@/hooks/useMonday';
+import BoardTemplateSkeleton from './skeletons/BoardTemplateSkeleton';
 
 interface Template {
   id: string;
@@ -82,7 +83,7 @@ const templates: Template[] = [
 ];
 
 const BoardTemplates = () => {
-  const { data: mondayData } = useMonday();
+  const { data: mondayData, isLoading } = useMonday();
 
   const createBoard = async (template: Template) => {
     try {
@@ -107,47 +108,55 @@ const BoardTemplates = () => {
       <CardContent>
         <ScrollArea className="h-[600px] pr-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {templates.map((template) => (
-              <Card key={template.id} className="border-2 hover:border-monday-blue transition-colors">
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    {template.icon}
-                    <CardTitle className="text-lg">{template.name}</CardTitle>
-                  </div>
-                  <p className="text-sm text-gray-600">{template.description}</p>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-medium mb-2">Columns:</h4>
-                      <ul className="text-sm space-y-1">
-                        {template.columns.map((column, index) => (
-                          <li key={index} className="text-gray-600">
-                            • {column.title}
-                          </li>
-                        ))}
-                      </ul>
+            {isLoading ? (
+              <>
+                <BoardTemplateSkeleton />
+                <BoardTemplateSkeleton />
+                <BoardTemplateSkeleton />
+              </>
+            ) : (
+              templates.map((template) => (
+                <Card key={template.id} className="border-2 hover:border-monday-blue transition-colors">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      {template.icon}
+                      <CardTitle className="text-lg">{template.name}</CardTitle>
                     </div>
-                    <div>
-                      <h4 className="font-medium mb-2">Groups:</h4>
-                      <ul className="text-sm space-y-1">
-                        {template.groups.map((group, index) => (
-                          <li key={index} className="text-gray-600">
-                            • {group.title}
-                          </li>
-                        ))}
-                      </ul>
+                    <p className="text-sm text-gray-600">{template.description}</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="font-medium mb-2">Columns:</h4>
+                        <ul className="text-sm space-y-1">
+                          {template.columns.map((column, index) => (
+                            <li key={index} className="text-gray-600">
+                              • {column.title}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="font-medium mb-2">Groups:</h4>
+                        <ul className="text-sm space-y-1">
+                          {template.groups.map((group, index) => (
+                            <li key={index} className="text-gray-600">
+                              • {group.title}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <Button
+                        onClick={() => createBoard(template)}
+                        className="w-full bg-monday-blue hover:bg-monday-blue/90"
+                      >
+                        Use Template
+                      </Button>
                     </div>
-                    <Button
-                      onClick={() => createBoard(template)}
-                      className="w-full bg-monday-blue hover:bg-monday-blue/90"
-                    >
-                      Use Template
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </ScrollArea>
       </CardContent>
