@@ -14,7 +14,7 @@ const BoardSelector = ({ selectedBoard, onBoardSelect, className = '' }: BoardSe
 
   return (
     <Select value={selectedBoard} onValueChange={onBoardSelect}>
-      <SelectTrigger className={`px-0 py-0 h-auto font-normal text-xl text-white underline decoration-dotted hover:decoration-solid border-none bg-transparent ${className}`}>
+      <SelectTrigger className={`px-0 py-0 h-auto font-normal text-xl text-white underline decoration-dotted hover:decoration-solid border-none bg-transparent inline-block ${className}`}>
         <SelectValue placeholder="board" />
       </SelectTrigger>
       <SelectContent className="bg-[#1F2937] border-[#374151]">

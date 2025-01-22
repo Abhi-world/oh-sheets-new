@@ -40,7 +40,7 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
           <BoardSelector
             selectedBoard={selectedBoard}
             onBoardSelect={setSelectedBoard}
-            className="text-xl text-white underline decoration-dotted hover:decoration-solid"
+            className="inline-block"
           />
           {' / '}
           <SheetSelector
@@ -48,7 +48,7 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
             selectedId={selectedSpreadsheet}
             onSelect={setSelectedSpreadsheet}
             placeholder="spreadsheet"
-            className="text-xl text-white underline decoration-dotted hover:decoration-solid"
+            className="inline-block text-xl text-white underline decoration-dotted hover:decoration-solid"
           />
           {' / '}
           <SheetSelector
@@ -56,21 +56,21 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
             selectedId={selectedSheet}
             onSelect={setSelectedSheet}
             placeholder="sheet"
-            className="text-xl text-white underline decoration-dotted hover:decoration-solid"
+            className="inline-block text-xl text-white underline decoration-dotted hover:decoration-solid"
           />
           {' '}from{' '}
           <ValueSelector
             value={values}
             onChange={setValues}
             placeholder="original values"
-            className="text-xl text-white underline decoration-dotted hover:decoration-solid"
+            className="inline-block text-xl text-white underline decoration-dotted hover:decoration-solid"
           />
           {' '}update them to{' '}
           <ValueSelector
             value={newValues}
             onChange={setNewValues}
             placeholder="new values"
-            className="text-xl text-white underline decoration-dotted hover:decoration-solid"
+            className="inline-block text-xl text-white underline decoration-dotted hover:decoration-solid"
           />
         </p>
       </Card>
