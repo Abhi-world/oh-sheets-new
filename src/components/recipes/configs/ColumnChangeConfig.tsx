@@ -40,7 +40,7 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
           <BoardSelector
             selectedBoard={selectedBoard}
             onBoardSelect={setSelectedBoard}
-            className="inline-block"
+            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline"
           />
           {' / '}
           <SheetSelector
@@ -48,7 +48,7 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
             selectedId={selectedSpreadsheet}
             onSelect={setSelectedSpreadsheet}
             placeholder="spreadsheet"
-            className="inline-block text-xl text-white underline decoration-dotted hover:decoration-solid"
+            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline"
           />
           {' / '}
           <SheetSelector
@@ -56,21 +56,21 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
             selectedId={selectedSheet}
             onSelect={setSelectedSheet}
             placeholder="sheet"
-            className="inline-block text-xl text-white underline decoration-dotted hover:decoration-solid"
+            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline"
           />
           {' '}from{' '}
           <ValueSelector
             value={values}
             onChange={setValues}
             placeholder="original values"
-            className="inline-block text-xl text-white underline decoration-dotted hover:decoration-solid"
+            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline"
           />
           {' '}update them to{' '}
           <ValueSelector
             value={newValues}
             onChange={setNewValues}
             placeholder="new values"
-            className="inline-block text-xl text-white underline decoration-dotted hover:decoration-solid"
+            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline"
           />
         </p>
       </Card>
