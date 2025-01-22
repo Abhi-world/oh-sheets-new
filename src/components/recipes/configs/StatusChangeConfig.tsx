@@ -3,6 +3,7 @@ import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import BoardSelector from './status-change/BoardSelector';
 import SheetSelector from './date-trigger/SheetSelector';
 import ValueSelector from '@/components/shared/ValueSelector';
+import RecipeConfigSkeleton from '@/components/skeletons/RecipeConfigSkeleton';
 
 const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boolean) => void }) => {
   const [selectedBoard, setSelectedBoard] = useState('');
@@ -15,12 +16,17 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
     selectedSheet,
     setSelectedSpreadsheet,
     setSelectedSheet,
+    isLoading
   } = useGoogleSheets();
 
   useEffect(() => {
     const isValid = Boolean(selectedBoard && selectedSpreadsheet && selectedSheet);
     onConfigValid?.(isValid);
   }, [selectedBoard, selectedSpreadsheet, selectedSheet, onConfigValid]);
+
+  if (isLoading) {
+    return <RecipeConfigSkeleton />;
+  }
 
   return (
     <div className="space-y-8">
