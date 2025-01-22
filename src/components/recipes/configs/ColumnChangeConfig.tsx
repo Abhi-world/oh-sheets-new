@@ -5,7 +5,7 @@ import BoardSelector from './status-change/BoardSelector';
 import ValueSelector from '@/components/shared/ValueSelector';
 import SheetSelector from '@/components/shared/SheetSelector';
 
-const ColumnChangeConfig = () => {
+const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolean) => void }) => {
   const [values, setValues] = useState('');
   const [newValues, setNewValues] = useState('');
   const [selectedBoard, setSelectedBoard] = useState('');
@@ -21,17 +21,28 @@ const ColumnChangeConfig = () => {
     fetchSpreadsheets
   } = useGoogleSheets();
 
+  // Validate configuration
+  React.useEffect(() => {
+    const isValid = Boolean(
+      selectedBoard && 
+      selectedSpreadsheet && 
+      selectedSheet && 
+      values && 
+      newValues
+    );
+    onConfigValid(isValid);
+  }, [selectedBoard, selectedSpreadsheet, selectedSheet, values, newValues, onConfigValid]);
+
   return (
     <div className="space-y-12">
       <Card className="bg-recipe-navy/40 p-6 rounded-lg border-none">
         <p className="text-xl leading-relaxed text-white">
           When a column value changes in{' '}
-          <button 
-            onClick={() => setSelectedBoard(selectedBoard)}
-            className="text-white underline decoration-dotted hover:decoration-solid"
-          >
-            {selectedBoard || 'board'}
-          </button>
+          <BoardSelector
+            selectedBoard={selectedBoard}
+            onBoardSelect={setSelectedBoard}
+            className="inline-flex"
+          />
           {' / '}
           <SheetSelector
             items={spreadsheets}
@@ -64,13 +75,6 @@ const ColumnChangeConfig = () => {
           />
         </p>
       </Card>
-
-      <div className="hidden">
-        <BoardSelector
-          selectedBoard={selectedBoard}
-          onBoardSelect={setSelectedBoard}
-        />
-      </div>
     </div>
   );
 };
