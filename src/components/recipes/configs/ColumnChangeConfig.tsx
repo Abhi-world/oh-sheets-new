@@ -32,6 +32,8 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
     onConfigValid(isValid);
   }, [selectedBoard, selectedSpreadsheet, selectedSheet, values, newValues, onConfigValid]);
 
+  const commonClassName = "text-xl text-white";
+
   return (
     <div className="space-y-12">
       <Card className="bg-recipe-navy/40 p-6 rounded-lg border-none">
@@ -40,7 +42,7 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
           <BoardSelector
             selectedBoard={selectedBoard}
             onBoardSelect={setSelectedBoard}
-            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline"
+            className={commonClassName}
           />
           {' / '}
           <SheetSelector
@@ -48,7 +50,7 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
             selectedId={selectedSpreadsheet}
             onSelect={setSelectedSpreadsheet}
             placeholder="spreadsheet"
-            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline"
+            className={commonClassName}
           />
           {' / '}
           <SheetSelector
@@ -56,21 +58,21 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
             selectedId={selectedSheet}
             onSelect={setSelectedSheet}
             placeholder="sheet"
-            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline"
+            className={commonClassName}
           />
           {' '}from{' '}
           <ValueSelector
             value={values}
             onChange={setValues}
             placeholder="original values"
-            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline"
+            className={commonClassName}
           />
           {' '}update them to{' '}
           <ValueSelector
             value={newValues}
             onChange={setNewValues}
             placeholder="new values"
-            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline"
+            className={commonClassName}
           />
         </p>
       </Card>
