@@ -27,20 +27,16 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
       <div className="bg-navy-dark/40 p-6 rounded-lg border border-white/20">
         <p className="text-2xl leading-relaxed text-white">
           When the Status of any item changes in your{' '}
-          <span className="relative inline-block">
-            <span className="underline decoration-dotted cursor-pointer">board</span>
-            <BoardSelector
-              selectedBoard={selectedBoard}
-              onBoardSelect={setSelectedBoard}
-              className="absolute inset-0 opacity-0 cursor-pointer w-full"
-            />
-          </span>
+          <BoardSelector
+            selectedBoard={selectedBoard}
+            onBoardSelect={setSelectedBoard}
+          />
           , automatically add a row with these{' '}
           <ValueSelector
             value={selectedValues}
             onChange={setSelectedValues}
             placeholder="values"
-            className="text-2xl"
+            className="inline-text text-2xl"
           />
           {' '}in{' '}
           <SheetSelector
