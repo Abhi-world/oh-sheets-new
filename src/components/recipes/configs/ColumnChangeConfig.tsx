@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import ValueSelector from '@/components/shared/ValueSelector';
 import { Card } from '@/components/ui/card';
 import BoardSelector from './status-change/BoardSelector';
+import ValueSelector from '@/components/shared/ValueSelector';
+import SheetSelector from '@/components/shared/SheetSelector';
 
 const ColumnChangeConfig = () => {
   const [values, setValues] = useState('');
@@ -33,19 +33,21 @@ const ColumnChangeConfig = () => {
             {selectedBoard || 'board'}
           </button>
           {' / '}
-          <button 
-            className="text-white underline decoration-dotted hover:decoration-solid"
-            onClick={() => fetchSpreadsheets()}
-          >
-            {selectedSpreadsheet ? sheets.find(s => s.id === selectedSpreadsheet)?.name || 'spreadsheet' : 'spreadsheet'}
-          </button>
+          <SheetSelector
+            items={spreadsheets}
+            selectedId={selectedSpreadsheet}
+            onSelect={setSelectedSpreadsheet}
+            placeholder="spreadsheet"
+            className="inline-block"
+          />
           {' / '}
-          <button 
-            className="text-white underline decoration-dotted hover:decoration-solid"
-            onClick={() => setSelectedSheet(selectedSheet)}
-          >
-            {selectedSheet ? sheets.find(s => s.id === selectedSheet)?.name || 'sheet' : 'sheet'}
-          </button>
+          <SheetSelector
+            items={sheets}
+            selectedId={selectedSheet}
+            onSelect={setSelectedSheet}
+            placeholder="sheet"
+            className="inline-block"
+          />
           {' '}from{' '}
           <ValueSelector
             value={values}
@@ -63,34 +65,7 @@ const ColumnChangeConfig = () => {
         </p>
       </Card>
 
-      {/* Hidden selects for functionality */}
       <div className="hidden">
-        <Select value={selectedSpreadsheet} onValueChange={setSelectedSpreadsheet}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {spreadsheets.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {s.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={selectedSheet} onValueChange={setSelectedSheet}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {sheets.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {s.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
         <BoardSelector
           selectedBoard={selectedBoard}
           onBoardSelect={setSelectedBoard}

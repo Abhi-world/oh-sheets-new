@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import ValueSelector from '@/components/shared/ValueSelector';
+import SheetSelector from '@/components/shared/SheetSelector';
 
 interface DateTriggerSentenceProps {
   onConfigValid?: (isValid: boolean) => void;
@@ -67,48 +68,22 @@ const DateTriggerSentence = ({ onConfigValid }: DateTriggerSentenceProps) => {
           </PopoverContent>
         </Popover>
         {' '}arrives, add a row in{' '}
-        <Popover>
-          <PopoverTrigger asChild>
-            <button className="text-2xl text-white/90 hover:text-white underline decoration-dotted hover:decoration-solid">
-              {selectedSpreadsheet ? spreadsheets.find(s => s.id === selectedSpreadsheet)?.name : 'spreadsheet'}
-            </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[300px] bg-[#374151] border-none">
-            <div className="p-4 space-y-1">
-              {spreadsheets.map(sheet => (
-                <button
-                  key={sheet.id}
-                  className="w-full text-left px-3 py-2 text-white hover:bg-white/10 rounded"
-                  onClick={() => setSelectedSpreadsheet(sheet.id)}
-                >
-                  {sheet.name}
-                </button>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
+        <SheetSelector
+          items={spreadsheets}
+          selectedId={selectedSpreadsheet}
+          onSelect={setSelectedSpreadsheet}
+          placeholder="spreadsheet"
+          className="inline-block"
+        />
         {' / '}
-        <Popover>
-          <PopoverTrigger asChild>
-            <button className="text-2xl text-white/90 hover:text-white underline decoration-dotted hover:decoration-solid">
-              {selectedSheet ? sheets.find(s => s.id === selectedSheet)?.name : 'sheet'}
-            </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[300px] bg-[#374151] border-none">
-            <div className="p-4 space-y-1">
-              {sheets.map(sheet => (
-                <button
-                  key={sheet.id}
-                  className="w-full text-left px-3 py-2 text-white hover:bg-white/10 rounded"
-                  onClick={() => setSelectedSheet(sheet.id)}
-                >
-                  {sheet.name}
-                </button>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-        {' with these '}
+        <SheetSelector
+          items={sheets}
+          selectedId={selectedSheet}
+          onSelect={setSelectedSheet}
+          placeholder="sheet"
+          className="inline-block"
+        />
+        {' '}with these{' '}
         <ValueSelector
           value={selectedValues.join(',')}
           onChange={(val) => setSelectedValues(val.split(',').filter(Boolean))}
