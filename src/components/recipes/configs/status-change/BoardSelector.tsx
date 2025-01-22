@@ -14,8 +14,8 @@ const BoardSelector = ({ selectedBoard, onBoardSelect, className = '' }: BoardSe
 
   return (
     <Select value={selectedBoard} onValueChange={onBoardSelect}>
-      <SelectTrigger className={`bg-transparent border-none p-0 h-auto underline decoration-dotted hover:decoration-solid ${className}`}>
-        <SelectValue placeholder="board" />
+      <SelectTrigger className={`inline-flex items-center bg-transparent border-0 p-0 h-auto text-current underline decoration-dotted hover:decoration-solid focus:ring-0 focus:ring-offset-0 ${className}`}>
+        <SelectValue placeholder="board" className="p-0" />
       </SelectTrigger>
       <SelectContent className="bg-[#1F2937] border-[#374151]">
         {boards.map((board) => (
