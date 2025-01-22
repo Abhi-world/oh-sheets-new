@@ -32,8 +32,6 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
     onConfigValid(isValid);
   }, [selectedBoard, selectedSpreadsheet, selectedSheet, values, newValues, onConfigValid]);
 
-  const commonClassName = "text-xl text-white";
-
   return (
     <div className="space-y-12">
       <Card className="bg-recipe-navy/40 p-6 rounded-lg border-none">
@@ -42,7 +40,7 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
           <BoardSelector
             selectedBoard={selectedBoard}
             onBoardSelect={setSelectedBoard}
-            className={commonClassName}
+            className="text-xl text-white"
           />
           {' / '}
           <SheetSelector
@@ -50,7 +48,7 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
             selectedId={selectedSpreadsheet}
             onSelect={setSelectedSpreadsheet}
             placeholder="spreadsheet"
-            className={commonClassName}
+            className="text-xl text-white"
           />
           {' / '}
           <SheetSelector
@@ -58,21 +56,21 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
             selectedId={selectedSheet}
             onSelect={setSelectedSheet}
             placeholder="sheet"
-            className={commonClassName}
+            className="text-xl text-white"
           />
           {' '}from{' '}
           <ValueSelector
             value={values}
             onChange={setValues}
             placeholder="original values"
-            className={commonClassName}
+            className="text-xl text-white"
           />
           {' '}update them to{' '}
           <ValueSelector
             value={newValues}
             onChange={setNewValues}
             placeholder="new values"
-            className={commonClassName}
+            className="text-xl text-white"
           />
         </p>
       </Card>
