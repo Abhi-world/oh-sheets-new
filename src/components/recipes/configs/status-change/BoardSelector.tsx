@@ -5,10 +5,9 @@ import { useMonday } from '@/hooks/useMonday';
 interface BoardSelectorProps {
   selectedBoard: string;
   onBoardSelect: (value: string) => void;
-  className?: string;
 }
 
-const BoardSelector = ({ selectedBoard, onBoardSelect, className = '' }: BoardSelectorProps) => {
+const BoardSelector = ({ selectedBoard, onBoardSelect }: BoardSelectorProps) => {
   const { data: mondayData } = useMonday();
   const boards = mondayData?.data?.boards || [];
 

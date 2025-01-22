@@ -35,53 +35,38 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
   return (
     <div className="space-y-12">
       <Card className="bg-recipe-navy/40 p-6 rounded-lg border-none">
-        <p className="text-xl leading-relaxed text-white">
+        <p className="text-2xl leading-relaxed text-white">
           When a column value changes in{' '}
-          <span className="inline-text">
-            <BoardSelector
-              selectedBoard={selectedBoard}
-              onBoardSelect={setSelectedBoard}
-              className="inline-text"
-            />
-          </span>
+          <BoardSelector
+            selectedBoard={selectedBoard}
+            onBoardSelect={setSelectedBoard}
+          />
           {' / '}
-          <span className="inline-text">
-            <SheetSelector
-              items={spreadsheets}
-              selectedId={selectedSpreadsheet}
-              onSelect={setSelectedSpreadsheet}
-              placeholder="spreadsheet"
-              className="inline-text"
-            />
-          </span>
+          <SheetSelector
+            items={spreadsheets}
+            selectedId={selectedSpreadsheet}
+            onSelect={setSelectedSpreadsheet}
+            placeholder="spreadsheet"
+          />
           {' / '}
-          <span className="inline-text">
-            <SheetSelector
-              items={sheets}
-              selectedId={selectedSheet}
-              onSelect={setSelectedSheet}
-              placeholder="sheet"
-              className="inline-text"
-            />
-          </span>
+          <SheetSelector
+            items={sheets}
+            selectedId={selectedSheet}
+            onSelect={setSelectedSheet}
+            placeholder="sheet"
+          />
           {' '}from{' '}
-          <span className="inline-text">
-            <ValueSelector
-              value={values}
-              onChange={setValues}
-              placeholder="original values"
-              className="inline-text"
-            />
-          </span>
+          <ValueSelector
+            value={values}
+            onChange={setValues}
+            placeholder="original values"
+          />
           {' '}update them to{' '}
-          <span className="inline-text">
-            <ValueSelector
-              value={newValues}
-              onChange={setNewValues}
-              placeholder="new values"
-              className="inline-text"
-            />
-          </span>
+          <ValueSelector
+            value={newValues}
+            onChange={setNewValues}
+            placeholder="new values"
+          />
         </p>
       </Card>
     </div>
