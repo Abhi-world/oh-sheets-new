@@ -1,111 +1,114 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
+import RecipeConfigSkeleton from '@/components/skeletons/RecipeConfigSkeleton';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import RecipeConfigLayout from './RecipeConfigLayout';
-import StatusChangeConfig from './configs/StatusChangeConfig';
-import DateTriggerConfig from './configs/DateTriggerConfig';
-import GroupMoveConfig from './configs/GroupMoveConfig';
-import PeriodicExportConfig from './configs/PeriodicExportConfig';
-import FormSubmissionConfig from './configs/FormSubmissionConfig';
-import PersonAssignmentConfig from './configs/PersonAssignmentConfig';
-import ButtonClickConfig from './configs/ButtonClickConfig';
-import ColumnChangeConfig from './configs/ColumnChangeConfig';
-import ItemCreationConfig from './configs/ItemCreationConfig';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ConfigComponentProps } from '@/types/recipe';
-
-const recipeConfigs: Record<string, { 
-  component: React.ComponentType<ConfigComponentProps>, 
-  title: string,
-  automationType: 'status' | 'date' | 'button' | 'column' | 'person' | 'group' | 'item' | 'form' | 'periodic'
-}> = {
-  'status-change': {
-    component: StatusChangeConfig,
-    title: 'Status Change Integration',
-    automationType: 'status'
-  },
-  'date-trigger': {
-    component: DateTriggerConfig,
-    title: 'Date-Based Integration',
-    automationType: 'date'
-  },
-  'group-move': {
-    component: GroupMoveConfig,
-    title: 'Group Movement Integration',
-    automationType: 'group'
-  },
-  'periodic-export': {
-    component: PeriodicExportConfig,
-    title: 'Scheduled Export',
-    automationType: 'periodic'
-  },
-  'form-submission': {
-    component: FormSubmissionConfig,
-    title: 'Form Response Integration',
-    automationType: 'form'
-  },
-  'person-assignment': {
-    component: PersonAssignmentConfig,
-    title: 'Person Assignment Integration',
-    automationType: 'person'
-  },
-  'button-click': {
-    component: ButtonClickConfig,
-    title: 'Button Click Integration',
-    automationType: 'button'
-  },
-  'column-change': {
-    component: ColumnChangeConfig,
-    title: 'Column Change Integration',
-    automationType: 'column'
-  },
-  'item-creation': {
-    component: ItemCreationConfig,
-    title: 'New Item Integration',
-    automationType: 'item'
-  }
-};
+import { useState } from 'react';
 
 const RecipeConfig = () => {
   const { recipeId } = useParams();
-  const navigate = useNavigate();
-  const [isConfigValid, setIsConfigValid] = useState(false);
-
-  if (!recipeId || !recipeConfigs[recipeId]) {
-    return <div>Recipe not found</div>;
-  }
-
-  const config = recipeConfigs[recipeId];
-  const ConfigComponent = config.component;
-
-  const handleCreateAutomation = () => {
-    if (!isConfigValid) {
-      toast.error('Please complete all required fields');
-      return;
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [trigger, setTrigger] = useState('');
+  const [action, setAction] = useState('');
+  
+  const { data: recipeData, isLoading } = useQuery({
+    queryKey: ['recipe', recipeId],
+    queryFn: async () => {
+      console.log('Fetching recipe configuration for:', recipeId);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return {
+        name: 'Sample Recipe',
+        description: 'This is a sample recipe description',
+        trigger: 'monday_item_created',
+        action: 'create_sheet_row'
+      };
     }
-    
-    console.log('Creating automation with current configuration');
-    toast.success('Automation created successfully');
-    navigate('/');
+  });
+
+  const handleSave = async () => {
+    try {
+      // Simulate saving
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success('Recipe configuration saved successfully!');
+    } catch (error) {
+      toast.error('Failed to save recipe configuration');
+    }
   };
 
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent>
+          <RecipeConfigSkeleton />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <RecipeConfigLayout 
-      title={config.title}
-      automationType={config.automationType}
-    >
-      <div className="space-y-8">
-        <ConfigComponent onConfigValid={setIsConfigValid} />
-        <Button 
-          size="lg"
-          className="w-full bg-recipe-green hover:bg-recipe-darkGreen text-white py-6 text-lg rounded-full"
-          onClick={handleCreateAutomation}
-          disabled={!isConfigValid}
-        >
-          Create Automation
+    <Card>
+      <CardContent className="space-y-6">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Recipe Name</Label>
+            <Input
+              id="name"
+              value={name || recipeData?.name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter recipe name"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Input
+              id="description"
+              value={description || recipeData?.description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Enter recipe description"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="trigger">Trigger</Label>
+            <Select value={trigger || recipeData?.trigger} onValueChange={setTrigger}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a trigger" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="monday_item_created">Item Created in Monday</SelectItem>
+                <SelectItem value="monday_item_updated">Item Updated in Monday</SelectItem>
+                <SelectItem value="monday_status_changed">Status Changed in Monday</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="action">Action</Label>
+            <Select value={action || recipeData?.action} onValueChange={setAction}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select an action" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="create_sheet_row">Create Row in Sheet</SelectItem>
+                <SelectItem value="update_sheet_row">Update Row in Sheet</SelectItem>
+                <SelectItem value="delete_sheet_row">Delete Row in Sheet</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <Button onClick={handleSave} className="w-full">
+          Save Configuration
         </Button>
-      </div>
-    </RecipeConfigLayout>
+      </CardContent>
+    </Card>
   );
 };
 
