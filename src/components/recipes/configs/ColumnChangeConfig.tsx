@@ -21,7 +21,6 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
     fetchSpreadsheets
   } = useGoogleSheets();
 
-  // Validate configuration
   React.useEffect(() => {
     const isValid = Boolean(
       selectedBoard && 
@@ -41,7 +40,7 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
           <BoardSelector
             selectedBoard={selectedBoard}
             onBoardSelect={setSelectedBoard}
-            className="inline-flex text-xl text-white underline decoration-dotted hover:decoration-solid"
+            className="text-xl text-white underline decoration-dotted hover:decoration-solid"
           />
           {' / '}
           <SheetSelector
@@ -49,7 +48,7 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
             selectedId={selectedSpreadsheet}
             onSelect={setSelectedSpreadsheet}
             placeholder="spreadsheet"
-            className="inline-block text-xl text-white underline decoration-dotted hover:decoration-solid"
+            className="text-xl text-white underline decoration-dotted hover:decoration-solid"
           />
           {' / '}
           <SheetSelector
@@ -57,21 +56,21 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
             selectedId={selectedSheet}
             onSelect={setSelectedSheet}
             placeholder="sheet"
-            className="inline-block text-xl text-white underline decoration-dotted hover:decoration-solid"
+            className="text-xl text-white underline decoration-dotted hover:decoration-solid"
           />
           {' '}from{' '}
           <ValueSelector
             value={values}
             onChange={setValues}
             placeholder="original values"
-            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline-block"
+            className="text-xl text-white underline decoration-dotted hover:decoration-solid"
           />
           {' '}update them to{' '}
           <ValueSelector
             value={newValues}
             onChange={setNewValues}
             placeholder="new values"
-            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline-block"
+            className="text-xl text-white underline decoration-dotted hover:decoration-solid"
           />
         </p>
       </Card>
