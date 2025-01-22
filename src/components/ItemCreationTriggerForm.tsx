@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import ValueSelector from './shared/ValueSelector';
+import FormFieldSkeleton from './skeletons/FormFieldSkeleton';
+import { useQuery } from '@tanstack/react-query';
 
 interface ItemTrigger {
   values: string;
@@ -13,6 +15,38 @@ interface ItemTrigger {
 const ItemCreationTriggerForm = () => {
   const [triggers, setTriggers] = useState<ItemTrigger[]>([]);
   const [values, setValues] = useState('');
+
+  const { isLoading } = useQuery({
+    queryKey: ['item-creation-config'],
+    queryFn: async () => {
+      console.log('Fetching item creation configuration');
+      // Simulate fetching logic
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve([]);
+        }, 1000);
+      });
+    }
+  });
+
+  if (isLoading) {
+    return (
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Plus className="w-5 h-5 text-monday-blue" />
+            Item Creation Configuration
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <FormFieldSkeleton />
+            <FormFieldSkeleton />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const handleAddTrigger = () => {
     if (!values) {
