@@ -36,7 +36,7 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
   return (
     <div className="space-y-12">
       <Card className="bg-recipe-navy/40 p-6 rounded-lg border-none">
-        <p className="text-lg leading-relaxed text-white">
+        <p className="text-xl leading-relaxed text-white">
           When a column value changes in{' '}
           <BoardSelector
             selectedBoard={selectedBoard}
@@ -49,7 +49,7 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
             selectedId={selectedSpreadsheet}
             onSelect={setSelectedSpreadsheet}
             placeholder="spreadsheet"
-            className="inline-block text-lg text-white underline decoration-dotted hover:decoration-solid"
+            className="inline-block text-xl text-white underline decoration-dotted hover:decoration-solid"
           />
           {' / '}
           <SheetSelector
@@ -57,21 +57,21 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
             selectedId={selectedSheet}
             onSelect={setSelectedSheet}
             placeholder="sheet"
-            className="inline-block text-lg text-white underline decoration-dotted hover:decoration-solid"
+            className="inline-block text-xl text-white underline decoration-dotted hover:decoration-solid"
           />
           {' '}from{' '}
           <ValueSelector
             value={values}
             onChange={setValues}
             placeholder="original values"
-            className="text-lg text-white underline decoration-dotted hover:decoration-solid inline-block"
+            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline-block"
           />
           {' '}update them to{' '}
           <ValueSelector
             value={newValues}
             onChange={setNewValues}
             placeholder="new values"
-            className="text-lg text-white underline decoration-dotted hover:decoration-solid inline-block"
+            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline-block"
           />
         </p>
       </Card>
