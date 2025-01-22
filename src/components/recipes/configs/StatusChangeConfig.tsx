@@ -36,7 +36,7 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
             value={selectedValues}
             onChange={setSelectedValues}
             placeholder="values"
-            className="inline-text text-2xl"
+            className="text-2xl text-white underline decoration-dotted hover:decoration-solid"
           />
           {' '}in{' '}
           <SheetSelector
