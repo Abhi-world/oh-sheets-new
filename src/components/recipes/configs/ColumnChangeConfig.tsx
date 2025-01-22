@@ -49,7 +49,7 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
             selectedId={selectedSpreadsheet}
             onSelect={setSelectedSpreadsheet}
             placeholder="spreadsheet"
-            className="inline-block text-xl text-white underline decoration-dotted hover:decoration-solid"
+            className="inline-block text-xl"
           />
           {' / '}
           <SheetSelector
@@ -57,21 +57,21 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
             selectedId={selectedSheet}
             onSelect={setSelectedSheet}
             placeholder="sheet"
-            className="inline-block text-xl text-white underline decoration-dotted hover:decoration-solid"
+            className="inline-block text-xl"
           />
           {' '}from{' '}
           <ValueSelector
             value={values}
             onChange={setValues}
             placeholder="original values"
-            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline-block"
+            className="text-xl underline decoration-dotted hover:decoration-solid inline-block"
           />
           {' '}update them to{' '}
           <ValueSelector
             value={newValues}
             onChange={setNewValues}
             placeholder="new values"
-            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline-block"
+            className="text-xl underline decoration-dotted hover:decoration-solid inline-block"
           />
         </p>
       </Card>
