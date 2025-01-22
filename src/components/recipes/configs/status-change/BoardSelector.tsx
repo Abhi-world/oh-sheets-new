@@ -4,7 +4,7 @@ import { useMonday } from '@/hooks/useMonday';
 
 interface BoardSelectorProps {
   selectedBoard: string;
-  onBoardSelect: (boardId: string) => void;
+  onBoardSelect: (value: string) => void;
   className?: string;
 }
 
@@ -18,9 +18,9 @@ const BoardSelector = ({ selectedBoard, onBoardSelect, className = '' }: BoardSe
         <SelectValue placeholder="board" />
       </SelectTrigger>
       <SelectContent className="bg-[#1F2937] border-[#374151]">
-        {boards.map((board: any) => (
+        {boards.map((board) => (
           <SelectItem 
-            key={board.id}
+            key={board.id} 
             value={board.id}
             className="text-white hover:bg-white/10"
           >
