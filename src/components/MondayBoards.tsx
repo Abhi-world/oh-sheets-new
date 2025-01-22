@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import MondayBoardSkeleton from './skeletons/MondayBoardSkeleton';
 
 const MondayBoards = () => {
   const { data, isLoading, error } = useMonday();
@@ -12,9 +13,28 @@ const MondayBoards = () => {
   if (isLoading) {
     return (
       <Card className="w-full">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-monday-blue"></div>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <img src="/lovable-uploads/55c54574-060a-410d-8dd8-64cf691dc4bb.png" alt="App Icon" className="w-6 h-6" />
+            Google Sheets Integration
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert className="mb-4">
+            <Info className="h-4 w-4" />
+            <AlertTitle>Loading your boards...</AlertTitle>
+            <AlertDescription>
+              Please wait while we fetch your Monday.com boards.
+            </AlertDescription>
+          </Alert>
+          
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold mb-2">Connected Boards</h3>
+            <ScrollArea className="h-[400px]">
+              <MondayBoardSkeleton />
+              <MondayBoardSkeleton />
+              <MondayBoardSkeleton />
+            </ScrollArea>
           </div>
         </CardContent>
       </Card>
