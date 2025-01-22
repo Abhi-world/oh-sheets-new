@@ -16,10 +16,10 @@ const BoardSelector = ({ selectedBoard, onBoardSelect, className }: BoardSelecto
 
   return (
     <Select value={selectedBoard} onValueChange={onBoardSelect}>
-      <SelectTrigger className={className}>
-        <SelectValue placeholder="Select a board" />
+      <SelectTrigger className={`px-0 py-0 h-auto font-normal text-white underline decoration-dotted hover:decoration-solid border-none bg-transparent ${className}`}>
+        <SelectValue placeholder="board" />
       </SelectTrigger>
-      <SelectContent className="bg-navy-dark border-none">
+      <SelectContent className="bg-[#1F2937] border-[#374151]">
         {boards.map((board: any) => (
           <SelectItem 
             key={board.id} 
