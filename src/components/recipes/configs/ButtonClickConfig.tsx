@@ -31,22 +31,22 @@ const ButtonClickConfig = () => {
   return (
     <div className="space-y-12">
       <div className="bg-navy-dark/40 p-6 rounded-lg border border-google-green/20">
-        <p className="text-xl leading-relaxed text-white">
+        <p className="text-2xl leading-relaxed text-white">
           When{' '}
           <Popover>
             <PopoverTrigger asChild>
-              <button className="text-white underline decoration-dotted hover:decoration-solid">
+              <button className="text-2xl text-white underline decoration-dotted hover:decoration-solid">
                 {buttonName || 'button'}
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-[200px] bg-navy-dark border-none p-2">
               <div className="space-y-2">
-                <div className="px-2 py-1.5 text-white/70 text-sm">Select a column</div>
+                <div className="px-2 py-1.5 text-white/70 text-2xl">Select a column</div>
                 <button
-                  className="w-full flex items-center gap-2 text-left px-2 py-1.5 text-white hover:bg-white/10 rounded"
+                  className="w-full flex items-center gap-2 text-left px-2 py-1.5 text-2xl text-white hover:bg-white/10 rounded"
                   onClick={() => setIsColumnCenterOpen(true)}
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-5 w-5" />
                   Add a new column
                 </button>
               </div>
@@ -56,7 +56,7 @@ const ButtonClickConfig = () => {
           <span className="inline-block">
             <button 
               onClick={() => setIsColumnCenterOpen(true)}
-              className="text-white underline decoration-dotted hover:decoration-solid"
+              className="text-2xl text-white underline decoration-dotted hover:decoration-solid"
             >
               {selectedBoard ? 'board' : 'board'}
             </button>
@@ -69,6 +69,7 @@ const ButtonClickConfig = () => {
             selectedSheet={selectedSheet}
             onSpreadsheetSelect={setSelectedSpreadsheet}
             onSheetSelect={setSelectedSheet}
+            className="text-2xl"
           />
           {' '}with these{' '}
           <div className="inline-block w-[120px]">
@@ -76,7 +77,7 @@ const ButtonClickConfig = () => {
               value={values}
               onChange={setValues}
               placeholder="values"
-              className="text-xl text-white underline decoration-dotted hover:decoration-solid"
+              className="text-2xl text-white underline decoration-dotted hover:decoration-solid"
             />
           </div>
         </p>
