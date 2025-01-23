@@ -8,17 +8,20 @@ interface BoardSelectorProps {
   onBoardSelect: (boardId: string) => void;
 }
 
-const BoardSelector = ({ boards, selectedBoard, onBoardSelect }: BoardSelectorProps) => {
+const BoardSelector = ({ boards = [], selectedBoard, onBoardSelect }: BoardSelectorProps) => {
+  // Add console log to help with debugging
+  console.log('BoardSelector received boards:', boards);
+  
   return (
     <Select value={selectedBoard} onValueChange={onBoardSelect}>
-      <SelectTrigger className="inline-flex px-0 py-0 h-auto font-normal text-2xl text-white bg-transparent border-none shadow-none">
+      <SelectTrigger className="inline-text text-2xl text-white bg-transparent border-none p-0 h-auto">
         <SelectValue 
           placeholder="board" 
           className="decoration-dotted decoration-white underline hover:decoration-solid"
         />
       </SelectTrigger>
       <SelectContent className="bg-navy-dark border-none">
-        {boards.map((board) => (
+        {(boards || []).map((board) => (
           <SelectItem 
             key={board.id} 
             value={board.id}
