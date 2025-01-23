@@ -9,15 +9,14 @@ interface BoardSelectorProps {
 }
 
 const BoardSelector = ({ boards = [], selectedBoard, onBoardSelect }: BoardSelectorProps) => {
-  // Add console log to help with debugging
   console.log('BoardSelector received boards:', boards);
   
   return (
     <Select value={selectedBoard} onValueChange={onBoardSelect}>
-      <SelectTrigger className="inline-text text-2xl text-white bg-transparent border-none p-0 h-auto">
+      <SelectTrigger className="inline-block px-0 py-0 h-auto min-w-0 w-auto text-2xl text-white bg-transparent border-none shadow-none">
         <SelectValue 
           placeholder="board" 
-          className="decoration-dotted decoration-white underline hover:decoration-solid"
+          className="decoration-dotted decoration-white underline hover:decoration-solid m-0 p-0"
         />
       </SelectTrigger>
       <SelectContent className="bg-navy-dark border-none">
