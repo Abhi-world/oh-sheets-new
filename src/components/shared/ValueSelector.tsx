@@ -61,7 +61,7 @@ const ValueSelector = ({
           role="combobox"
           aria-expanded={open}
           className={cn(
-            "px-0 py-0 h-auto font-normal text-white underline decoration-dotted hover:decoration-solid",
+            "px-0 py-0 h-auto font-normal text-2xl text-white underline decoration-dotted hover:decoration-solid",
             className
           )}
         >
