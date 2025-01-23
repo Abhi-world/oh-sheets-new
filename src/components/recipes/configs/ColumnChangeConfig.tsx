@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
+import { useMonday } from '@/hooks/useMonday';
 import { Card } from '@/components/ui/card';
 import BoardSelector from './status-change/BoardSelector';
 import ValueSelector from '@/components/shared/ValueSelector';
@@ -10,6 +11,9 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
   const [newValues, setNewValues] = useState('');
   const [selectedBoard, setSelectedBoard] = useState('');
   
+  const { data: mondayData } = useMonday();
+  const boards = mondayData?.data?.boards || [];
+
   const {
     spreadsheets,
     sheets,
@@ -38,6 +42,7 @@ const ColumnChangeConfig = ({ onConfigValid }: { onConfigValid: (isValid: boolea
         <p className="text-2xl leading-relaxed text-white">
           When a column value changes in{' '}
           <BoardSelector
+            boards={boards}
             selectedBoard={selectedBoard}
             onBoardSelect={setSelectedBoard}
           />

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
+import { useMonday } from '@/hooks/useMonday';
 import BoardSelector from './status-change/BoardSelector';
 import SheetSelector from './date-trigger/SheetSelector';
 import ValueSelector from '@/components/shared/ValueSelector';
@@ -7,6 +8,9 @@ import ValueSelector from '@/components/shared/ValueSelector';
 const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boolean) => void }) => {
   const [selectedBoard, setSelectedBoard] = useState('');
   const [selectedValues, setSelectedValues] = useState('');
+  
+  const { data: mondayData } = useMonday();
+  const boards = mondayData?.data?.boards || [];
   
   const {
     spreadsheets,
@@ -28,6 +32,7 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
         <p className="text-2xl leading-relaxed text-white">
           When the Status of any item changes in your{' '}
           <BoardSelector
+            boards={boards}
             selectedBoard={selectedBoard}
             onBoardSelect={setSelectedBoard}
           />
