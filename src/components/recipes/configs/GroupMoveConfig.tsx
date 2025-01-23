@@ -31,11 +31,11 @@ const GroupMoveConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boolean)
 
   return (
     <div className="bg-[#111827] text-white p-6 rounded-lg">
-      <p className="text-xl leading-relaxed text-white">
+      <p className="text-2xl leading-relaxed text-white">
         When items are moved to{' '}
         <Popover>
           <PopoverTrigger asChild>
-            <button className="text-white underline decoration-dotted hover:decoration-solid">
+            <button className="text-2xl text-white underline decoration-dotted hover:decoration-solid">
               {groupName || 'group'}
             </button>
           </PopoverTrigger>
@@ -59,7 +59,7 @@ const GroupMoveConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boolean)
           selectedId={selectedSpreadsheet}
           onSelect={setSelectedSpreadsheet}
           placeholder="spreadsheet"
-          className="text-xl"
+          className="text-2xl"
         />
         {' / '}
         <SheetSelector
@@ -67,7 +67,7 @@ const GroupMoveConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boolean)
           selectedId={selectedSheet}
           onSelect={setSelectedSheet}
           placeholder="sheet"
-          className="text-xl"
+          className="text-2xl"
         />
         {' with these '}
         <ValueSelector
@@ -77,7 +77,7 @@ const GroupMoveConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boolean)
           columns={[]}
           selectedColumn={selectedColumn}
           onColumnSelect={setSelectedColumn}
-          className="text-white underline decoration-dotted hover:decoration-solid"
+          className="text-2xl text-white underline decoration-dotted hover:decoration-solid"
         />
       </p>
     </div>
