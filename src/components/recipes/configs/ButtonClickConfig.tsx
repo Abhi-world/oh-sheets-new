@@ -6,7 +6,7 @@ import ValueSelector from '@/components/shared/ValueSelector';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Plus } from 'lucide-react';
 import ColumnCenterModal from './button-click/ColumnCenterModal';
-import SheetSelector from './date-trigger/SheetSelector';
+import SheetSelector from '@/components/shared/SheetSelector';
 
 const ButtonClickConfig = () => {
   const [buttonName, setButtonName] = useState('');
@@ -63,12 +63,18 @@ const ButtonClickConfig = () => {
           </span>
           {', '}add a row in{' '}
           <SheetSelector
-            spreadsheets={spreadsheets}
-            sheets={sheets}
-            selectedSpreadsheet={selectedSpreadsheet}
-            selectedSheet={selectedSheet}
-            onSpreadsheetSelect={setSelectedSpreadsheet}
-            onSheetSelect={setSelectedSheet}
+            items={spreadsheets}
+            selectedId={selectedSpreadsheet}
+            onSelect={setSelectedSpreadsheet}
+            placeholder="spreadsheet"
+            className="text-2xl"
+          />
+          {' / '}
+          <SheetSelector
+            items={sheets}
+            selectedId={selectedSheet}
+            onSelect={setSelectedSheet}
+            placeholder="sheet"
             className="text-2xl"
           />
           {' '}with these{' '}

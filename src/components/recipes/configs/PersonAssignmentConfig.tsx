@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import PersonTypeSelector from './person-assignment/PersonTypeSelector';
-import SheetSelector from './person-assignment/SheetSelector';
+import SheetSelector from '@/components/shared/SheetSelector';
 import ColumnCenterModal from './person-assignment/ColumnCenterModal';
 
 const PersonAssignmentConfig = () => {

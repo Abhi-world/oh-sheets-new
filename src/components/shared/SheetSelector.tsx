@@ -7,12 +7,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 
-interface SheetSelectorProps {
+export interface SheetSelectorProps {
   items: Array<{ id: string; name: string }>;
-  selectedId: string | null;
+  selectedId: string;
   onSelect: (id: string) => void;
   placeholder: string;
-  className?: string; // Added className as optional prop
+  className?: string;
 }
 
 const SheetSelector = ({ 
@@ -20,7 +20,7 @@ const SheetSelector = ({
   selectedId, 
   onSelect, 
   placeholder,
-  className = '' // Default to empty string if not provided
+  className = ''
 }: SheetSelectorProps) => {
   const [searchTerm, setSearchTerm] = useState('');
 
