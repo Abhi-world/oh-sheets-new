@@ -12,7 +12,7 @@ interface SheetSelectorProps {
   selectedId: string | null;
   onSelect: (id: string) => void;
   placeholder: string;
-  className?: string;
+  className?: string; // Added className as optional prop
 }
 
 const SheetSelector = ({ 
@@ -20,7 +20,7 @@ const SheetSelector = ({
   selectedId, 
   onSelect, 
   placeholder,
-  className 
+  className = '' // Default to empty string if not provided
 }: SheetSelectorProps) => {
   const [searchTerm, setSearchTerm] = useState('');
 
