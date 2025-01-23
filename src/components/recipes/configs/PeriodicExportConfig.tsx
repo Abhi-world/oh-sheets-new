@@ -3,7 +3,7 @@ import { useGoogleSheets } from '@/hooks/useGoogleSheets';
 import { ConfigComponentProps } from '@/types/recipe';
 import { Input } from '@/components/ui/input';
 import { Clock } from 'lucide-react';
-import SheetSelector from '../configs/date-trigger/SheetSelector';
+import SheetSelector from '@/components/shared/SheetSelector';
 import {
   Popover,
   PopoverContent,
@@ -41,11 +41,11 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
   return (
     <div className="space-y-8 text-white max-w-3xl mx-auto py-4">
       <div className="bg-[#111827] text-white p-6 rounded-lg flex items-center justify-center min-h-[100px]">
-        <p className="text-xl leading-relaxed">
+        <p className="text-2xl leading-relaxed">
           Every{' '}
           <Popover>
             <PopoverTrigger asChild>
-              <button className="text-white underline decoration-dotted hover:decoration-solid">
+              <button className="text-2xl text-white underline decoration-dotted hover:decoration-solid">
                 {getDisplayText()}
               </button>
             </PopoverTrigger>
@@ -102,12 +102,19 @@ const PeriodicExportConfig = ({ onConfigValid }: ConfigComponentProps) => {
           </Popover>
           {' '}add a row in{' '}
           <SheetSelector
-            spreadsheets={spreadsheets}
-            sheets={sheets}
-            selectedSpreadsheet={selectedSpreadsheet}
-            selectedSheet={selectedSheet}
-            onSpreadsheetSelect={setSelectedSpreadsheet}
-            onSheetSelect={setSelectedSheet}
+            items={spreadsheets}
+            selectedId={selectedSpreadsheet}
+            onSelect={setSelectedSpreadsheet}
+            placeholder="spreadsheet"
+            className="text-2xl inline-block"
+          />
+          {' / '}
+          <SheetSelector
+            items={sheets}
+            selectedId={selectedSheet}
+            onSelect={setSelectedSheet}
+            placeholder="sheet"
+            className="text-2xl inline-block"
           />
         </p>
       </div>
