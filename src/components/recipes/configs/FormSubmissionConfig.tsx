@@ -17,14 +17,14 @@ const FormSubmissionConfig = () => {
   return (
     <div className="flex flex-col">
       <div className="bg-[#111827] text-white p-6 rounded-lg mb-4">
-        <p className="text-xl leading-relaxed text-white">
+        <p className="text-2xl leading-relaxed text-white">
           When form is submitted, add a row in{' '}
           <SheetSelector
             items={spreadsheets}
             selectedId={selectedSpreadsheet}
             onSelect={setSelectedSpreadsheet}
             placeholder="spreadsheet"
-            className="text-xl"
+            className="text-2xl"
           />
           {' / '}
           <SheetSelector
@@ -32,14 +32,14 @@ const FormSubmissionConfig = () => {
             selectedId={selectedSheet}
             onSelect={setSelectedSheet}
             placeholder="sheet"
-            className="text-xl"
+            className="text-2xl"
           />
           {' with these '}
           <ValueSelector
             value={formId}
             onChange={setFormId}
             placeholder="values"
-            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline-flex items-center"
+            className="text-2xl text-white underline decoration-dotted hover:decoration-solid inline-flex items-center"
           />
         </p>
       </div>
