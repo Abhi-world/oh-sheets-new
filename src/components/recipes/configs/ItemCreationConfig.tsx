@@ -18,14 +18,14 @@ const ItemCreationConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
   return (
     <div className="flex flex-col">
       <div className="bg-[#111827] text-white p-6 rounded-lg">
-        <p className="text-xl leading-relaxed text-white">
+        <p className="text-2xl leading-relaxed text-white">
           When an item is created, add a row in{' '}
           <SheetSelector
             items={spreadsheets}
             selectedId={selectedSpreadsheet}
             onSelect={setSelectedSpreadsheet}
             placeholder="spreadsheet"
-            className="text-xl"
+            className="text-2xl"
           />
           {' / '}
           <SheetSelector
@@ -33,7 +33,7 @@ const ItemCreationConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
             selectedId={selectedSheet}
             onSelect={setSelectedSheet}
             placeholder="sheet"
-            className="text-xl"
+            className="text-2xl"
           />
           {' with these '}
           <ValueSelector
@@ -43,7 +43,7 @@ const ItemCreationConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
             columns={[]}
             selectedColumn={selectedColumn}
             onColumnSelect={setSelectedColumn}
-            className="text-xl text-white underline decoration-dotted hover:decoration-solid inline-flex items-center"
+            className="text-2xl"
           />
         </p>
       </div>

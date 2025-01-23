@@ -50,7 +50,7 @@ const SheetSelector = ({
             {filteredItems.map(item => (
               <button
                 key={item.id}
-                className="w-full text-left px-3 py-2 text-white hover:bg-white/10 rounded"
+                className="w-full text-left px-3 py-2 text-white hover:bg-white/10 rounded text-lg"
                 onClick={() => {
                   onSelect(item.id);
                   setSearchTerm('');
