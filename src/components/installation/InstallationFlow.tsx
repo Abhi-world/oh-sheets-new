@@ -60,9 +60,9 @@ const InstallationFlow = () => {
             <div className="space-y-6">
               <div className="flex flex-col items-center gap-4 mb-8">
                 <div className="flex items-center gap-4">
-                  <img src="/lovable-uploads/5e7a0614-eebd-4595-9634-40b17d9029c2.png" alt="Monday.com" className="w-12 h-12" />
+                  <img src="/lovable-uploads/e65968c4-d39a-4ecb-ba57-9c9bea1f36ac.png" alt="Monday.com" className="w-12 h-12" />
                   <span className="text-white opacity-80">to</span>
-                  <img src="/lovable-uploads/aa37e716-a0c4-493f-9f04-9cc9c85c931a.png" alt="Google Sheets" className="w-12 h-12" />
+                  <img src="/lovable-uploads/93eea699-d5bc-4e01-8375-e441bfc62486.png" alt="Google Sheets" className="w-12 h-12" />
                 </div>
                 <div className="text-center">
                   <div className="inline-block bg-white/95 backdrop-blur-sm rounded-xl px-6 py-3 shadow-xl">
@@ -75,7 +75,7 @@ const InstallationFlow = () => {
                   </p>
                 </div>
               </div>
-              
+
               <Card className="border-0 shadow-2xl backdrop-blur-sm bg-white/90">
                 <CardContent className="p-6">
                   <p className="text-gray-600 mb-6">
