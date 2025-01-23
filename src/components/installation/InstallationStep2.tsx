@@ -1,9 +1,10 @@
 import React from 'react';
-import { useMonday } from '@/hooks/useMonday';
+import { useMondayWorkspaces, useMondayBoardsByWorkspace } from '@/hooks/useMonday';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { mockWorkspaces } from '@/utils/mockData';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Info } from 'lucide-react';
 
 interface InstallationStep2Props {
   selectedWorkspace: string;
@@ -22,8 +23,8 @@ const InstallationStep2: React.FC<InstallationStep2Props> = ({
   onInstall,
   isLoading
 }) => {
-  const { data: mondayData, isLoading: isMondayLoading } = useMonday();
-  const boards = mondayData?.data?.boards || [];
+  const { workspaces } = useMondayWorkspaces();
+  const { boards } = useMondayBoardsByWorkspace(selectedWorkspace);
 
   return (
     <div className="space-y-6">
@@ -52,11 +53,17 @@ const InstallationStep2: React.FC<InstallationStep2Props> = ({
                   <SelectValue placeholder="Select workspace" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockWorkspaces.map((workspace) => (
-                    <SelectItem key={workspace.id} value={workspace.id}>
-                      {workspace.name}
+                  {workspaces.length > 0 ? (
+                    workspaces.map((workspace: any) => (
+                      <SelectItem key={workspace.id} value={workspace.id}>
+                        {workspace.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-workspaces" disabled>
+                      No workspaces available
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -68,24 +75,36 @@ const InstallationStep2: React.FC<InstallationStep2Props> = ({
                   <SelectValue placeholder="Select board" />
                 </SelectTrigger>
                 <SelectContent>
-                  {isMondayLoading ? (
-                    <SelectItem value="loading" disabled>
-                      Loading boards...
-                    </SelectItem>
-                  ) : boards.length > 0 ? (
-                    boards.map((board: any) => (
-                      <SelectItem key={board.id} value={board.id}>
-                        {board.name}
+                  {selectedWorkspace ? (
+                    boards.length > 0 ? (
+                      boards.map((board: any) => (
+                        <SelectItem key={board.id} value={board.id}>
+                          {board.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="no-boards" disabled>
+                        No boards in this workspace
                       </SelectItem>
-                    ))
+                    )
                   ) : (
-                    <SelectItem value="no-boards" disabled>
-                      No boards available
+                    <SelectItem value="select-workspace" disabled>
+                      Select a workspace first
                     </SelectItem>
                   )}
                 </SelectContent>
               </Select>
             </div>
+
+            {selectedWorkspace && selectedBoard && (
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  You're about to install the Google Sheets integration for the selected board.
+                  This will allow you to sync data between Monday.com and Google Sheets.
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
         </CardContent>
       </Card>
