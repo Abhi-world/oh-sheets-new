@@ -13,7 +13,7 @@ const BoardSelector = ({ selectedBoard, onBoardSelect }: BoardSelectorProps) => 
 
   return (
     <Select value={selectedBoard} onValueChange={onBoardSelect}>
-      <SelectTrigger className="text-2xl text-white underline decoration-dotted hover:decoration-solid bg-transparent border-none p-0 h-auto">
+      <SelectTrigger className="inline-text text-2xl text-white">
         <SelectValue placeholder="board" />
       </SelectTrigger>
       <SelectContent className="bg-navy-dark border-none">

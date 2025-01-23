@@ -24,7 +24,7 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
 
   return (
     <div className="space-y-8">
-      <div className="bg-navy-dark/40 p-6 rounded-lg border border-white/20">
+      <div className="bg-navy-dark/40 p-6 rounded-lg">
         <p className="text-2xl leading-relaxed text-white">
           When the Status of any item changes in your{' '}
           <BoardSelector
@@ -36,7 +36,7 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
             value={selectedValues}
             onChange={setSelectedValues}
             placeholder="values"
-            className="text-2xl text-white underline decoration-dotted hover:decoration-solid"
+            className="inline-text text-2xl text-white"
           />
           {' '}in{' '}
           <SheetSelector
