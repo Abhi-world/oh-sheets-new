@@ -17,7 +17,7 @@ const PersonTypeSelector = ({ personType, setPersonType, onAddColumn }: PersonTy
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button className="text-xl text-white underline decoration-dotted hover:decoration-solid">
+        <button className="text-2xl text-white underline decoration-dotted hover:decoration-solid">
           {personType || 'person'}
         </button>
       </PopoverTrigger>

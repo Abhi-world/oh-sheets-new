@@ -19,7 +19,7 @@ const PersonAssignmentConfig = () => {
   return (
     <div className="flex flex-col">
       <div className="bg-[#111827] text-white p-6 rounded-lg mb-4">
-        <p className="text-xl leading-relaxed text-white">
+        <p className="text-2xl leading-relaxed text-white">
           When{' '}
           <PersonTypeSelector
             personType={personType}
@@ -32,6 +32,7 @@ const PersonAssignmentConfig = () => {
             selectedId={selectedSpreadsheet}
             onSelect={setSelectedSpreadsheet}
             placeholder="spreadsheet"
+            className="text-2xl"
           />
           {' / '}
           <SheetSelector
@@ -39,6 +40,7 @@ const PersonAssignmentConfig = () => {
             selectedId={selectedSheet}
             onSelect={setSelectedSheet}
             placeholder="sheet"
+            className="text-2xl"
           />
         </p>
       </div>
