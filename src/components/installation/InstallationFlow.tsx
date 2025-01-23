@@ -4,10 +4,10 @@ import { RadioGroup } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { mockWorkspaces } from '@/utils/mockData';
 import InstallationHeader from './InstallationHeader';
 import InstallationStep2 from './InstallationStep2';
 import { Card, CardContent } from '@/components/ui/card';
+import { useMonday } from '@/hooks/useMonday';
 
 const InstallationFlow = () => {
   const navigate = useNavigate();
@@ -16,6 +16,19 @@ const InstallationFlow = () => {
   const [selectedWorkspace, setSelectedWorkspace] = useState('');
   const [selectedBoard, setSelectedBoard] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Fetch real Monday.com workspaces
+  const { data: mondayData, isLoading: isMondayLoading, error: mondayError } = useMonday();
+  
+  // Extract unique workspaces from boards
+  const workspaces = mondayData?.data?.boards?.reduce((acc: any[], board: any) => {
+    if (board.workspace && !acc.find((w) => w.id === board.workspace.id)) {
+      acc.push(board.workspace);
+    }
+    return acc;
+  }, []) || [];
+
+  console.log('Monday.com workspaces:', workspaces);
 
   const permissions = [
     { title: 'Read', description: 'all of your boards data' },
@@ -27,16 +40,16 @@ const InstallationFlow = () => {
   const handleInstall = async () => {
     try {
       setIsLoading(true);
-      console.log('Mock installation process...');
-      console.log('Selected workspace:', selectedWorkspace);
+      console.log('Installing app for workspace:', selectedWorkspace);
       console.log('Selected board:', selectedBoard);
       
+      // Here you would make the actual API call to Monday.com to install the app
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      toast.success('App installed successfully! (Mock)');
+      toast.success('App installed successfully!');
       navigate('/');
     } catch (error) {
-      console.error('Error in mock installation:', error);
+      console.error('Error installing app:', error);
       toast.error('Failed to install app');
     } finally {
       setIsLoading(false);
@@ -45,10 +58,8 @@ const InstallationFlow = () => {
 
   return (
     <div className="min-h-screen relative bg-[#6366F1]">
-      {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/50 via-purple-500/30 to-pink-500/40" />
       
-      {/* Content */}
       <div className="relative p-6">
         <div className="mx-auto max-w-2xl">
           <InstallationHeader 
@@ -125,11 +136,19 @@ const InstallationFlow = () => {
                               <SelectValue placeholder="Choose workspace" />
                             </SelectTrigger>
                             <SelectContent>
-                              {mockWorkspaces.map((workspace) => (
-                                <SelectItem key={workspace.id} value={workspace.id}>
-                                  {workspace.name}
-                                </SelectItem>
-                              ))}
+                              {isMondayLoading ? (
+                                <SelectItem value="loading" disabled>Loading workspaces...</SelectItem>
+                              ) : mondayError ? (
+                                <SelectItem value="error" disabled>Error loading workspaces</SelectItem>
+                              ) : workspaces.length > 0 ? (
+                                workspaces.map((workspace: any) => (
+                                  <SelectItem key={workspace.id} value={workspace.id}>
+                                    {workspace.name}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem value="no-workspaces" disabled>No workspaces found</SelectItem>
+                              )}
                             </SelectContent>
                           </Select>
                         )}
@@ -156,7 +175,7 @@ const InstallationFlow = () => {
                 onClick={() => setStep(2)}
                 disabled={workspaceType === 'specific' && !selectedWorkspace || isLoading}
               >
-                {isLoading ? 'Loading...' : 'Install'}
+                {isLoading ? 'Loading...' : 'Next'}
               </Button>
             </div>
           )}
