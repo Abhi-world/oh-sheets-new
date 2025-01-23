@@ -108,18 +108,6 @@ const Index = () => {
       </div>
       
       <div className="container mx-auto px-4 -mt-6 relative z-10">
-        <div className="flex justify-end mb-6 relative">
-          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 pointer-events-none">
-            <div className="w-full border-t border-white/10"></div>
-          </div>
-          <Button 
-            onClick={() => navigate('/install')}
-            className="relative bg-[#0F9D58] hover:bg-[#0F9D58]/90 text-white font-semibold px-6 py-2 text-base shadow-lg"
-          >
-            Install App
-          </Button>
-        </div>
-
         <div className="text-center mb-8">
           <h2 className="text-2xl font-semibold text-white mb-2">Integration Templates</h2>
           <div className="flex items-center justify-center gap-2">
