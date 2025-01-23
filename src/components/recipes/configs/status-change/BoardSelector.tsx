@@ -13,7 +13,7 @@ const BoardSelector = ({ boards = [], selectedBoard, onBoardSelect }: BoardSelec
   
   return (
     <Select value={selectedBoard} onValueChange={onBoardSelect}>
-      <SelectTrigger className="inline-text text-2xl text-white">
+      <SelectTrigger className="inline-text text-2xl text-white min-w-0 px-0">
         <SelectValue 
           placeholder="board"
         />
