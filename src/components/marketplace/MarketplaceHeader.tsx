@@ -1,21 +1,15 @@
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, FileSpreadsheet } from 'lucide-react';
 
 const MarketplaceHeader = () => {
   return (
     <div className="relative z-10">
-      {/* Main content container */}
       <div className="max-w-6xl mx-auto px-4 py-12">
-        {/* Header content with enhanced styling */}
         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20">
           <div className="flex flex-col items-center space-y-6">
             {/* App Icon */}
             <div className="w-20 h-20 bg-[#228B22] rounded-xl flex items-center justify-center mb-4">
-              <img 
-                src="/lovable-uploads/ea26a2c2-cb2f-4e61-8ecd-c7cbc79e0780.png" 
-                alt="Oh Sheets Icon" 
-                className="w-12 h-12"
-              />
+              <FileSpreadsheet className="w-12 h-12 text-white" />
             </div>
 
             {/* Logo and title section */}
@@ -26,11 +20,7 @@ const MarketplaceHeader = () => {
                 className="w-10 h-10"
               />
               <ArrowRight className="w-6 h-6 text-white/80" />
-              <img 
-                src="/lovable-uploads/aa37e716-a0c4-493f-9f04-9cc9c85c931a.png" 
-                alt="Google Sheets" 
-                className="w-10 h-10"
-              />
+              <FileSpreadsheet className="w-10 h-10 text-white" />
             </div>
 
             {/* Title with enhanced typography */}

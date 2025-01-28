@@ -1,4 +1,5 @@
 import React from 'react';
+import { FileSpreadsheet } from 'lucide-react';
 
 const GlowingLogo = () => {
   return (
@@ -11,10 +12,8 @@ const GlowingLogo = () => {
             animation: 'spin 3s linear infinite'
           }}
         />
-        <img 
-          src="/lovable-uploads/ea26a2c2-cb2f-4e61-8ecd-c7cbc79e0780.png" 
-          alt="Google Sheets" 
-          className="w-14 h-14 relative z-10"
+        <FileSpreadsheet 
+          className="w-14 h-14 relative z-10 text-white"
         />
       </div>
       <span className="text-white text-lg font-medium mb-4">Google Sheets</span>
