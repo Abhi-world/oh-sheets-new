@@ -16,7 +16,7 @@ const GlowingLogo = () => {
           className="w-14 h-14 relative z-10 text-white"
         />
       </div>
-      <span className="text-white text-lg font-medium mb-4">Google Sheets</span>
+      <span className="text-white text-lg font-medium mb-4">Google Sheets Integration</span>
     </div>
   );
 };
