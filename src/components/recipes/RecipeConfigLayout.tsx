@@ -13,6 +13,48 @@ interface RecipeConfigLayoutProps {
   automationType?: 'status' | 'date' | 'button' | 'column' | 'person' | 'group' | 'item' | 'form' | 'periodic';
 }
 
+const AppIcon = () => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 512 512"
+    className="w-10 h-10"
+  >
+    <rect width="512" height="512" rx="51.2" fill="#00c875"/>
+    <path 
+      d="M 307.2 128 H 179.2 C 167.6 128 156.4 132.8 148 141.2 C 139.6 149.6 134.8 160.8 134.8 172.4 V 339.6 C 134.8 351.2 139.6 362.4 148 370.8 C 156.4 379.2 167.6 384 179.2 384 H 332.8 C 344.4 384 355.6 379.2 364 370.8 C 372.4 362.4 377.2 351.2 377.2 339.6 V 198 L 307.2 128 Z" 
+      fill="none" 
+      stroke="white" 
+      strokeWidth="22"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path 
+      d="M 307.2 128 V 198 H 377.2" 
+      fill="none" 
+      stroke="white" 
+      strokeWidth="22"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path 
+      d="M 179.2 268 H 332.8" 
+      fill="none" 
+      stroke="white" 
+      strokeWidth="22"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path 
+      d="M 256 233 V 303" 
+      fill="none" 
+      stroke="white" 
+      strokeWidth="22"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 const RecipeConfigLayout = ({ 
   title, 
   subtitle = "Google Sheets Integration", 
@@ -36,13 +78,7 @@ const RecipeConfigLayout = ({
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header Section */}
         <div className="flex items-center gap-4">
-          {icon || (
-            <img 
-              src="/lovable-uploads/68adb195-310b-4fb6-8cce-a0d4e2ab7a4b.png" 
-              alt="Google Sheets" 
-              className="w-10 h-10"
-            />
-          )}
+          {icon || <AppIcon />}
           <div>
             <h2 className="text-2xl font-semibold text-white">{title}</h2>
             <p className="text-white/80">{subtitle}</p>
