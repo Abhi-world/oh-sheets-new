@@ -3,15 +3,56 @@ import RecipeCard from './RecipeCard';
 import { 
   CalendarDays, 
   ClipboardCheck, 
-  FileSpreadsheet,
-  UserPlus,
   MousePointerClick,
   LayoutGrid,
   Clock,
   Send,
-  FileInput
+  FileInput,
+  UserPlus
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+
+const AppIcon = () => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 512 512"
+    className="w-5 h-5"
+  >
+    <rect width="512" height="512" rx="51.2" fill="#00c875"/>
+    <path 
+      d="M 307.2 128 H 179.2 C 167.6 128 156.4 132.8 148 141.2 C 139.6 149.6 134.8 160.8 134.8 172.4 V 339.6 C 134.8 351.2 139.6 362.4 148 370.8 C 156.4 379.2 167.6 384 179.2 384 H 332.8 C 344.4 384 355.6 379.2 364 370.8 C 372.4 362.4 377.2 351.2 377.2 339.6 V 198 L 307.2 128 Z" 
+      fill="none" 
+      stroke="white" 
+      strokeWidth="22"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path 
+      d="M 307.2 128 V 198 H 377.2" 
+      fill="none" 
+      stroke="white" 
+      strokeWidth="22"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path 
+      d="M 179.2 268 H 332.8" 
+      fill="none" 
+      stroke="white" 
+      strokeWidth="22"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path 
+      d="M 256 233 V 303" 
+      fill="none" 
+      stroke="white" 
+      strokeWidth="22"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 const recipes = [
   {
@@ -68,7 +109,7 @@ const recipes = [
     title: "Column Value Monitor",
     description: "When column changes, add a row in Google Sheets with these values.",
     category: "Column Triggers",
-    icon: <FileSpreadsheet className="w-5 h-5 text-[#00c875]" />
+    icon: <AppIcon />
   },
   {
     id: 'item-creation',
