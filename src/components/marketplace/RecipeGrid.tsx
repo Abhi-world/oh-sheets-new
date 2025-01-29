@@ -60,49 +60,49 @@ const recipes = [
     title: "Status Change Sync",
     description: "When status changes, add a row in Google Sheets with these values.",
     category: "Status Triggers",
-    icon: <ClipboardCheck className="w-5 h-5 text-[#00c875]" />
+    icon: <AppIcon />
   },
   {
     id: 'date-trigger',
     title: "Date-Based Sync",
     description: "When date is reached, add a row in Google Sheets with these values.",
     category: "Date Triggers",
-    icon: <CalendarDays className="w-5 h-5 text-[#00c875]" />
+    icon: <AppIcon />
   },
   {
     id: 'group-move',
     title: "Group Movement Sync",
     description: "When items are moved to a group, add a row in Google Sheets with these values.",
     category: "Group Triggers",
-    icon: <LayoutGrid className="w-5 h-5 text-[#00c875]" />
+    icon: <AppIcon />
   },
   {
     id: 'periodic-export',
     title: "Scheduled Export",
     description: "Every hour/day/week/month, add a row in Google Sheets with these values.",
     category: "Time Triggers",
-    icon: <Clock className="w-5 h-5 text-[#00c875]" />
+    icon: <AppIcon />
   },
   {
     id: 'form-submission',
     title: "Form Response Sync",
     description: "When form is submitted, add a row in Google Sheets with these values.",
     category: "Form Triggers",
-    icon: <FileInput className="w-5 h-5 text-[#00c875]" />
+    icon: <AppIcon />
   },
   {
     id: 'person-assignment',
     title: "Person Assignment Sync",
     description: "When person is assigned, add a row in Google Sheets with these values.",
     category: "Assignment Triggers",
-    icon: <UserPlus className="w-5 h-5 text-[#00c875]" />
+    icon: <AppIcon />
   },
   {
     id: 'button-click',
     title: "Button Click Sync",
     description: "When button clicked, add a row in Google Sheets with these values.",
     category: "Button Triggers",
-    icon: <MousePointerClick className="w-5 h-5 text-[#00c875]" />
+    icon: <AppIcon />
   },
   {
     id: 'column-change',
@@ -116,7 +116,7 @@ const recipes = [
     title: "New Item Sync",
     description: "When an item is created, add a row in Google Sheets with these values.",
     category: "Item Triggers",
-    icon: <Send className="w-5 h-5 text-[#00c875]" />
+    icon: <AppIcon />
   }
 ];
 
