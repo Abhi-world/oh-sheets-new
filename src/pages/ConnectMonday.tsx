@@ -1,16 +1,25 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
 
 const ConnectMonday = () => {
   const navigate = useNavigate();
 
-  // Temporarily disabled OAuth for testing
   const handleConnect = () => {
-    console.log('Bypassing OAuth for testing purposes');
-    // Navigate directly to installation flow for testing
-    navigate('/install');
+    // Construct the Monday.com OAuth URL
+    const mondayAuthUrl = new URL('https://auth.monday.com/oauth2/authorize');
+    
+    // Add required OAuth parameters
+    mondayAuthUrl.searchParams.append('client_id', import.meta.env.VITE_MONDAY_CLIENT_ID);
+    mondayAuthUrl.searchParams.append('redirect_uri', `${window.location.origin}/monday-oauth`);
+    mondayAuthUrl.searchParams.append('response_type', 'code');
+    
+    // Add required scopes
+    const scopes = ['boards:read', 'workspaces:read', 'users:read'];
+    mondayAuthUrl.searchParams.append('scope', scopes.join(' '));
+    
+    // Redirect to Monday.com OAuth page
+    window.location.href = mondayAuthUrl.toString();
   };
 
   return (
@@ -21,7 +30,7 @@ const ConnectMonday = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           <p className="text-gray-600 text-center">
-            Click below to securely connect your Monday.com account. No manual API token needed!
+            Click below to securely connect your Monday.com account.
           </p>
           <Button 
             onClick={handleConnect}
@@ -29,9 +38,6 @@ const ConnectMonday = () => {
           >
             Connect Monday.com
           </Button>
-          <p className="text-xs text-gray-500 text-center">
-            Note: OAuth is temporarily disabled for testing purposes
-          </p>
         </CardContent>
       </Card>
     </div>

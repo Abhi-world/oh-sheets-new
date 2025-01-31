@@ -22,63 +22,27 @@ const MondayOAuth = () => {
 
         console.log('Received Monday.com OAuth code:', code);
 
-        // Exchange code for access token (this would typically be done through your backend)
-        const tokenResponse = await fetch('https://api.monday.com/v2/oauth/token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            code,
-            client_id: process.env.MONDAY_CLIENT_ID,
-            client_secret: process.env.MONDAY_CLIENT_SECRET,
-          }),
-        });
-
-        if (!tokenResponse.ok) {
-          throw new Error('Failed to exchange code for token');
-        }
-
-        const { access_token } = await tokenResponse.json();
-
-        // Get user information from Monday.com
-        const userResponse = await fetch('https://api.monday.com/v2', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': access_token,
-          },
-          body: JSON.stringify({
-            query: `
-              query {
-                me {
-                  id
-                  email
-                }
-              }
-            `,
-          }),
-        });
-
-        if (!userResponse.ok) {
-          throw new Error('Failed to fetch user information');
-        }
-
-        const { data: { me: { id: mondayUserId, email: mondayUserEmail } } } = await userResponse.json();
-
-        // Get or create Supabase user
+        // Get the current user
         const { data: { user } } = await supabase.auth.getUser();
-        
         if (!user) {
           throw new Error('No authenticated user found');
         }
+
+        // Exchange code for access token using Supabase Edge Function
+        const { data: tokenData, error: tokenError } = await supabase.functions.invoke('monday-oauth-callback', {
+          body: { code }
+        });
+
+        if (tokenError) throw tokenError;
+
+        const { access_token, monday_user_id, monday_user_email } = tokenData;
 
         // Update the profile with Monday.com information
         const { error: updateError } = await supabase
           .from('profiles')
           .update({
-            monday_user_id: mondayUserId,
-            monday_user_email: mondayUserEmail,
+            monday_user_id,
+            monday_user_email,
             monday_access_token: access_token,
             updated_at: new Date().toISOString(),
           })
