@@ -19,15 +19,17 @@ const InstallationFlow = () => {
       console.log('Installing app for workspace:', selectedWorkspace);
       console.log('Selected board:', selectedBoard);
       
-      // Here you would make the actual API call to Monday.com to install the app
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Here we'll make the actual API call to Monday.com to install the app
+      const mondayClientId = import.meta.env.VITE_MONDAY_CLIENT_ID;
+      const redirectUri = `${window.location.origin}/monday-oauth`;
       
-      toast.success('App installed successfully!');
-      navigate('/');
+      // Redirect to Monday.com's OAuth flow
+      const authUrl = `https://auth.monday.com/oauth2/authorize?client_id=${mondayClientId}&redirect_uri=${redirectUri}`;
+      window.location.href = authUrl;
+      
     } catch (error) {
       console.error('Error installing app:', error);
       toast.error('Failed to install app');
-    } finally {
       setIsLoading(false);
     }
   };
