@@ -5,8 +5,7 @@ import DecorativeDivider from '@/components/home/DecorativeDivider';
 import ConnectionCards from '@/components/ConnectionCards';
 
 const Index = () => {
-  // For now, we'll set these to false. Later we can implement the actual connection status check
-  const mondayConnected = false;
+  // For now, we'll set this to false. Later we can implement the actual connection status check
   const sheetsConnected = false;
 
   return (
@@ -22,10 +21,7 @@ const Index = () => {
       
       <Hero />
       
-      <ConnectionCards 
-        mondayConnected={mondayConnected}
-        sheetsConnected={sheetsConnected}
-      />
+      <ConnectionCards sheetsConnected={sheetsConnected} />
       
       <div className="container mx-auto px-4 mt-12 relative z-10">
         <div className="text-center mb-8">
