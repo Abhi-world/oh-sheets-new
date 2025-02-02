@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import InstallationHeader from './InstallationHeader';
 import InstallationStep1 from './InstallationStep1';
 import InstallationStep2 from './InstallationStep2';
@@ -19,12 +20,20 @@ const InstallationFlow = () => {
       console.log('Installing app for workspace:', selectedWorkspace);
       console.log('Selected board:', selectedBoard);
       
-      // Here we'll make the actual API call to Monday.com to install the app
-      const mondayClientId = import.meta.env.VITE_MONDAY_CLIENT_ID;
-      const redirectUri = `${window.location.origin}/monday-oauth`;
+      // Fetch the Monday.com client ID from Supabase Edge Function
+      const { data: { MONDAY_CLIENT_ID }, error } = await supabase.functions.invoke('get-monday-client-id');
+      
+      if (error) {
+        throw new Error('Failed to get Monday.com client ID');
+      }
+
+      if (!MONDAY_CLIENT_ID) {
+        throw new Error('Monday.com client ID not found');
+      }
       
       // Redirect to Monday.com's OAuth flow
-      const authUrl = `https://auth.monday.com/oauth2/authorize?client_id=${mondayClientId}&redirect_uri=${redirectUri}`;
+      const redirectUri = `${window.location.origin}/monday-oauth`;
+      const authUrl = `https://auth.monday.com/oauth2/authorize?client_id=${MONDAY_CLIENT_ID}&redirect_uri=${redirectUri}`;
       window.location.href = authUrl;
       
     } catch (error) {
