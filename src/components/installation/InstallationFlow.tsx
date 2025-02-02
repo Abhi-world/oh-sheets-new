@@ -24,21 +24,39 @@ const InstallationFlow = () => {
       const { data: { MONDAY_CLIENT_ID }, error } = await supabase.functions.invoke('get-monday-client-id');
       
       if (error) {
+        console.error('Error fetching Monday.com client ID:', error);
         throw new Error('Failed to get Monday.com client ID');
       }
 
       if (!MONDAY_CLIENT_ID) {
+        console.error('Monday.com client ID not found in response');
         throw new Error('Monday.com client ID not found');
       }
       
-      // Redirect to Monday.com's OAuth flow
+      // Construct OAuth URL with all required scopes
+      const scopes = [
+        'me:read',
+        'boards:read',
+        'boards:write',
+        'workspaces:read',
+        'users:read',
+        'updates:read',
+        'updates:write'
+      ].join(' ');
+
+      // Get the current origin for the redirect URI
       const redirectUri = `${window.location.origin}/monday-oauth`;
-      const authUrl = `https://auth.monday.com/oauth2/authorize?client_id=${MONDAY_CLIENT_ID}&redirect_uri=${redirectUri}`;
+      console.log('Redirect URI:', redirectUri);
+      
+      // Construct the full OAuth URL
+      const authUrl = `https://auth.monday.com/oauth2/authorize?client_id=${MONDAY_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
+      
+      console.log('Redirecting to Monday.com OAuth URL:', authUrl);
       window.location.href = authUrl;
       
     } catch (error) {
-      console.error('Error installing app:', error);
-      toast.error('Failed to install app');
+      console.error('Error during installation:', error);
+      toast.error('Failed to install app. Please try again.');
       setIsLoading(false);
     }
   };
