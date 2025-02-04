@@ -6,6 +6,8 @@ import ConnectSheets from '@/pages/ConnectSheets';
 import MondayOAuth from '@/pages/MondayOAuth';
 import RecipeConfig from '@/components/recipes/RecipeConfig';
 import InstallationFlow from '@/components/installation/InstallationFlow';
+import ItemMenu from '@/components/monday-menus/ItemMenu';
+import MultiItemMenu from '@/components/monday-menus/MultiItemMenu';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { Loader2 } from "lucide-react";
 import { Suspense } from 'react';
@@ -50,6 +52,8 @@ function App() {
               <Route path="/monday-oauth" element={<PageWrapper><MondayOAuth /></PageWrapper>} />
               <Route path="/recipe/:recipeId" element={<PageWrapper><RecipeConfig /></PageWrapper>} />
               <Route path="/install" element={<PageWrapper><InstallationFlow /></PageWrapper>} />
+              <Route path="/recipe/item-menu" element={<PageWrapper><ItemMenu /></PageWrapper>} />
+              <Route path="/recipe/multi-item-menu" element={<PageWrapper><MultiItemMenu /></PageWrapper>} />
             </Routes>
           </Suspense>
         </AnimatePresence>
