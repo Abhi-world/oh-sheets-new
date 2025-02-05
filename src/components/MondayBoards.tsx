@@ -3,7 +3,7 @@ import { useMonday } from '@/hooks/useMonday';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, AlertCircle, FileSpreadsheet } from "lucide-react";
+import { Info, AlertCircle, FileSpreadsheet, PuzzlePiece, MoreHorizontal } from "lucide-react";
 import MondayBoardSkeleton from './skeletons/MondayBoardSkeleton';
 
 const MondayBoards = () => {
@@ -62,9 +62,9 @@ const MondayBoards = () => {
               <br />
               Please make sure you:
               <ul className="list-disc ml-6 mt-2">
-                <li>Are properly connected to Monday.com</li>
-                <li>Have granted the necessary permissions</li>
                 <li>Have promoted your app to "Live" in Monday.com Developer Center</li>
+                <li>Have granted the necessary permissions</li>
+                <li>Have selected the correct workspace in App Management</li>
               </ul>
             </AlertDescription>
           </Alert>
@@ -84,13 +84,32 @@ const MondayBoards = () => {
       <CardContent>
         <Alert className="mb-4">
           <Info className="h-4 w-4" />
-          <AlertTitle>How to use this app</AlertTitle>
-          <AlertDescription>
-            1. Go to any board in your Monday.com workspace
-            2. Click the "Integrate" button in the top menu
-            3. Find "Oh Sheets" in the integration list
-            4. Click to add the integration to your board
-            5. Use the item menu (⋮) to sync items to Google Sheets
+          <AlertTitle>How to Add Oh Sheets to Your Board</AlertTitle>
+          <AlertDescription className="space-y-4">
+            <div className="flex items-start gap-2 mt-2">
+              <PuzzlePiece className="w-5 h-5 mt-1 text-monday-blue" />
+              <div>
+                <p className="font-semibold">Method 1: Using the Integrate Menu</p>
+                <ol className="list-decimal ml-4">
+                  <li>Go to your Monday.com board</li>
+                  <li>Click the "Integrate" button (puzzle piece icon) in the top menu</li>
+                  <li>Search for "Oh Sheets"</li>
+                  <li>Click to add the integration</li>
+                </ol>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-2">
+              <MoreHorizontal className="w-5 h-5 mt-1 text-monday-blue" />
+              <div>
+                <p className="font-semibold">Method 2: Using the Item Menu</p>
+                <ol className="list-decimal ml-4">
+                  <li>Click the three dots (⋮) next to any item</li>
+                  <li>Look for "Oh Sheets" in the menu</li>
+                  <li>If not visible, click "More actions" at the bottom</li>
+                </ol>
+              </div>
+            </div>
           </AlertDescription>
         </Alert>
         
