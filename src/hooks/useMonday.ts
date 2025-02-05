@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 async function getMondayAccessToken() {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+  if (!user) throw new Error('You must be logged in to access Monday.com boards');
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -11,14 +11,15 @@ async function getMondayAccessToken() {
     .eq('id', user.id)
     .single();
 
-  return profile?.monday_access_token;
+  if (!profile?.monday_access_token) {
+    throw new Error('Monday.com access token not found. Please connect your Monday.com account.');
+  }
+
+  return profile.monday_access_token;
 }
 
 async function fetchMondayBoards() {
   const accessToken = await getMondayAccessToken();
-  if (!accessToken) {
-    throw new Error('Monday.com access token not found');
-  }
 
   console.log("Fetching Monday.com boards with access token");
 
@@ -49,11 +50,17 @@ async function fetchMondayBoards() {
   });
 
   if (!response.ok) {
-    console.error('Failed to fetch Monday.com boards:', await response.text());
-    throw new Error('Failed to fetch Monday.com boards');
+    const errorText = await response.text();
+    console.error('Failed to fetch Monday.com boards:', errorText);
+    throw new Error('Failed to fetch Monday.com boards. Please check your connection and permissions.');
   }
 
   const data = await response.json();
+  if (data.errors) {
+    console.error('Monday.com API errors:', data.errors);
+    throw new Error(data.errors[0]?.message || 'Error fetching boards from Monday.com');
+  }
+
   console.log('Monday.com boards response:', data);
   return data;
 }
@@ -70,7 +77,6 @@ export const useMonday = () => {
 export const useMondayWorkspaces = () => {
   const { data } = useMonday();
   
-  // Extract unique workspaces from boards
   const workspaces = data?.data?.boards?.reduce((acc: any[], board: any) => {
     if (board.workspace && !acc.find((w) => w.id === board.workspace.id)) {
       acc.push(board.workspace);
@@ -84,7 +90,6 @@ export const useMondayWorkspaces = () => {
 export const useMondayBoardsByWorkspace = (workspaceId: string) => {
   const { data } = useMonday();
   
-  // Filter boards by workspace
   const boards = data?.data?.boards?.filter((board: any) => 
     board.workspace?.id === workspaceId
   ) || [];

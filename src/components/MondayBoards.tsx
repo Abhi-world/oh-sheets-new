@@ -3,19 +3,22 @@ import { useMonday } from '@/hooks/useMonday';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { Info, AlertCircle, FileSpreadsheet } from "lucide-react";
 import MondayBoardSkeleton from './skeletons/MondayBoardSkeleton';
 
 const MondayBoards = () => {
   const { data, isLoading, error } = useMonday();
   const boards = data?.data?.boards || [];
 
+  console.log("Monday boards data:", data);
+  console.log("Monday boards error:", error);
+
   if (isLoading) {
     return (
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <img src="/lovable-uploads/55c54574-060a-410d-8dd8-64cf691dc4bb.png" alt="App Icon" className="w-6 h-6" />
+            <FileSpreadsheet className="w-6 h-6 text-monday-blue" />
             Google Sheets Integration
           </CardTitle>
         </CardHeader>
@@ -43,10 +46,30 @@ const MondayBoards = () => {
 
   if (error) {
     return (
-      <Alert variant="destructive">
-        <AlertTitle>Error loading boards</AlertTitle>
-        <AlertDescription>{error.message}</AlertDescription>
-      </Alert>
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileSpreadsheet className="w-6 h-6 text-monday-blue" />
+            Google Sheets Integration
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Connection Error</AlertTitle>
+            <AlertDescription className="mt-2">
+              {error.message}
+              <br />
+              Please make sure you:
+              <ul className="list-disc ml-6 mt-2">
+                <li>Are properly connected to Monday.com</li>
+                <li>Have granted the necessary permissions</li>
+                <li>Have promoted your app to "Live" in Monday.com Developer Center</li>
+              </ul>
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -54,7 +77,7 @@ const MondayBoards = () => {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <img src="/lovable-uploads/55c54574-060a-410d-8dd8-64cf691dc4bb.png" alt="App Icon" className="w-6 h-6" />
+          <FileSpreadsheet className="w-6 h-6 text-monday-blue" />
           Google Sheets Integration
         </CardTitle>
       </CardHeader>
@@ -64,10 +87,10 @@ const MondayBoards = () => {
           <AlertTitle>How to use this app</AlertTitle>
           <AlertDescription>
             1. Go to any board in your Monday.com workspace
-            2. Click the "+" button in the top menu
-            3. Select "Integrate" from the menu
-            4. Find "Google Sheets Integration" in the list
-            5. Click to configure the integration for your board
+            2. Click the "Integrate" button in the top menu
+            3. Find "Oh Sheets" in the integration list
+            4. Click to add the integration to your board
+            5. Use the item menu (⋮) to sync items to Google Sheets
           </AlertDescription>
         </Alert>
         
