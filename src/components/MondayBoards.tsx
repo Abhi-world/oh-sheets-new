@@ -3,7 +3,7 @@ import { useMonday } from '@/hooks/useMonday';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, AlertCircle, FileSpreadsheet, PuzzlePiece, MoreHorizontal } from "lucide-react";
+import { Info, AlertCircle, FileSpreadsheet, Puzzle, MoreHorizontal } from "lucide-react";
 import MondayBoardSkeleton from './skeletons/MondayBoardSkeleton';
 
 const MondayBoards = () => {
@@ -87,7 +87,7 @@ const MondayBoards = () => {
           <AlertTitle>How to Add Oh Sheets to Your Board</AlertTitle>
           <AlertDescription className="space-y-4">
             <div className="flex items-start gap-2 mt-2">
-              <PuzzlePiece className="w-5 h-5 mt-1 text-monday-blue" />
+              <Puzzle className="w-5 h-5 mt-1 text-monday-blue" />
               <div>
                 <p className="font-semibold">Method 1: Using the Integrate Menu</p>
                 <ol className="list-decimal ml-4">
