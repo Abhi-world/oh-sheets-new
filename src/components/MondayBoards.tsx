@@ -71,15 +71,17 @@ const MondayBoards = () => {
               <ul className="list-disc ml-6 mt-2">
                 <li>Have installed the app in your Monday.com workspace</li>
                 <li>Have granted the necessary permissions</li>
-                <li>Have added the app through the Marketplace</li>
+                <li>Have added the app through the Monday.com Marketplace</li>
               </ul>
               <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-semibold mb-2">Installation Steps:</h4>
                 <ol className="list-decimal ml-4">
-                  <li>Click the "Apps" menu in the top bar of your Monday.com board</li>
-                  <li>Click "Explore app marketplace"</li>
-                  <li>Search for "Oh Sheets"</li>
-                  <li>Click "Install" on the Oh Sheets app</li>
+                  <li>Click your avatar/profile icon in the top-right corner</li>
+                  <li>Select "Admin" from the dropdown menu</li>
+                  <li>Navigate to "Apps" in the admin panel</li>
+                  <li>Click "Visit Marketplace"</li>
+                  <li>Search for "Oh Sheets" in the marketplace</li>
+                  <li>Click "Install" and follow the prompts</li>
                   <li>Grant the requested permissions</li>
                   <li>Return to your board and refresh the page</li>
                 </ol>
@@ -107,12 +109,13 @@ const MondayBoards = () => {
             <div className="flex items-start gap-2 mt-2">
               <Puzzle className="w-5 h-5 mt-1 text-monday-blue" />
               <div>
-                <p className="font-semibold">Method 1: Using the Apps Marketplace</p>
+                <p className="font-semibold">Method 1: Through Admin Panel</p>
                 <ol className="list-decimal ml-4">
-                  <li>Click the "Apps" menu in the top bar</li>
-                  <li>Click "Explore app marketplace"</li>
+                  <li>Click your profile picture in the top-right</li>
+                  <li>Select "Admin" from the menu</li>
+                  <li>Go to "Apps"</li>
+                  <li>Click "Visit Marketplace"</li>
                   <li>Search for "Oh Sheets"</li>
-                  <li>Click "Install" to add the app</li>
                 </ol>
               </div>
             </div>
@@ -120,12 +123,12 @@ const MondayBoards = () => {
             <div className="flex items-start gap-2">
               <MoreHorizontal className="w-5 h-5 mt-1 text-monday-blue" />
               <div>
-                <p className="font-semibold">Method 2: From the Group Menu</p>
+                <p className="font-semibold">Method 2: From Your Board Settings</p>
                 <ol className="list-decimal ml-4">
-                  <li>Click the three dots (...) next to your group title</li>
-                  <li>Navigate to "Apps"</li>
+                  <li>Click the ⚙️ (settings) icon next to your board name</li>
+                  <li>Select "Apps & Integrations"</li>
+                  <li>Click "Visit Marketplace"</li>
                   <li>Search for "Oh Sheets"</li>
-                  <li>Click to install the app</li>
                 </ol>
               </div>
             </div>
