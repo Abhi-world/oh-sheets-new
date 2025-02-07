@@ -10,8 +10,14 @@ const MondayBoards = () => {
   const { data, isLoading, error } = useMonday();
   const boards = data?.data?.boards || [];
 
-  console.log("Monday boards data:", data);
-  console.log("Monday boards error:", error);
+  console.log("Monday connection status:", {
+    isLoading,
+    hasError: !!error,
+    errorMessage: error?.message,
+    hasData: !!data,
+    boardsCount: boards?.length,
+    rawData: data
+  });
 
   if (isLoading) {
     return (
@@ -62,10 +68,21 @@ const MondayBoards = () => {
               <br />
               Please make sure you:
               <ul className="list-disc ml-6 mt-2">
-                <li>Have promoted your app to "Live" in Monday.com Developer Center</li>
+                <li>Have installed the app in your Monday.com workspace</li>
                 <li>Have granted the necessary permissions</li>
-                <li>Have selected the correct workspace in App Management</li>
+                <li>Have added the app to at least one board</li>
               </ul>
+              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-semibold mb-2">Installation Steps:</h4>
+                <ol className="list-decimal ml-4">
+                  <li>Go to the Monday.com Developer Center</li>
+                  <li>Find your app and click "Use App"</li>
+                  <li>Select the workspace where you want to use the app</li>
+                  <li>Grant the requested permissions</li>
+                  <li>Go to any board and click the "..." menu next to an item</li>
+                  <li>Look for "Oh Sheets" in the menu options</li>
+                </ol>
+              </div>
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -89,12 +106,12 @@ const MondayBoards = () => {
             <div className="flex items-start gap-2 mt-2">
               <Puzzle className="w-5 h-5 mt-1 text-monday-blue" />
               <div>
-                <p className="font-semibold">Method 1: Using the Integrate Menu</p>
+                <p className="font-semibold">Method 1: Using the Item Menu</p>
                 <ol className="list-decimal ml-4">
-                  <li>Go to your Monday.com board</li>
-                  <li>Click the "Integrate" button (puzzle piece icon) in the top menu</li>
-                  <li>Search for "Oh Sheets"</li>
-                  <li>Click to add the integration</li>
+                  <li>Go to any board where you want to use Oh Sheets</li>
+                  <li>Click the three dots (⋮) next to any item</li>
+                  <li>Look for "Oh Sheets" in the menu</li>
+                  <li>If not visible, click "More actions" at the bottom</li>
                 </ol>
               </div>
             </div>
@@ -102,11 +119,11 @@ const MondayBoards = () => {
             <div className="flex items-start gap-2">
               <MoreHorizontal className="w-5 h-5 mt-1 text-monday-blue" />
               <div>
-                <p className="font-semibold">Method 2: Using the Item Menu</p>
+                <p className="font-semibold">Method 2: Using Multi-Item Selection</p>
                 <ol className="list-decimal ml-4">
-                  <li>Click the three dots (⋮) next to any item</li>
-                  <li>Look for "Oh Sheets" in the menu</li>
-                  <li>If not visible, click "More actions" at the bottom</li>
+                  <li>Select multiple items in your board</li>
+                  <li>Click the "..." menu in the top bar</li>
+                  <li>Look for "Bulk Sync to Google Sheets"</li>
                 </ol>
               </div>
             </div>
