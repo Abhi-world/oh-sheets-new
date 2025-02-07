@@ -104,34 +104,37 @@ const MondayBoards = () => {
       <CardContent>
         <Alert className="mb-4">
           <Info className="h-4 w-4" />
-          <AlertTitle>How to Add Oh Sheets to Your Board</AlertTitle>
+          <AlertTitle>How to Use Oh Sheets in Your Board</AlertTitle>
           <AlertDescription className="space-y-4">
             <div className="flex items-start gap-2 mt-2">
-              <Puzzle className="w-5 h-5 mt-1 text-monday-blue" />
               <div>
-                <p className="font-semibold">Method 1: Through Admin Panel</p>
+                <p className="font-semibold mb-2">To sync items to Google Sheets:</p>
                 <ol className="list-decimal ml-4">
-                  <li>Click your profile picture in the top-right</li>
-                  <li>Select "Admin" from the menu</li>
-                  <li>Go to "Apps"</li>
-                  <li>Click "Visit Marketplace"</li>
-                  <li>Search for "Oh Sheets"</li>
+                  <li>Click on any item in your board</li>
+                  <li>Look for the "Oh Sheets" tab in the item's side panel</li>
+                  <li>Click "Configure Sync" to set up the Google Sheets connection</li>
                 </ol>
               </div>
             </div>
             
             <div className="flex items-start gap-2">
-              <MoreHorizontal className="w-5 h-5 mt-1 text-monday-blue" />
               <div>
-                <p className="font-semibold">Method 2: From Your Board Settings</p>
+                <p className="font-semibold mb-2">To sync multiple items at once:</p>
                 <ol className="list-decimal ml-4">
-                  <li>Click the ⚙️ (settings) icon next to your board name</li>
-                  <li>Select "Apps & Integrations"</li>
-                  <li>Click "Visit Marketplace"</li>
-                  <li>Search for "Oh Sheets"</li>
+                  <li>Select multiple items in your board</li>
+                  <li>Click the "Batch Actions" menu (three dots)</li>
+                  <li>Choose "Oh Sheets - Sync to Google Sheets"</li>
                 </ol>
               </div>
             </div>
+
+            <Alert variant="default" className="mt-4 bg-blue-50">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Quick Tip</AlertTitle>
+              <AlertDescription>
+                If you don't see the Oh Sheets options, try refreshing your board or re-adding the app through the integrations menu.
+              </AlertDescription>
+            </Alert>
           </AlertDescription>
         </Alert>
         
