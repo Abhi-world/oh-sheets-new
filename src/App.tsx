@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import Index from '@/pages/Index';
@@ -8,6 +9,7 @@ import RecipeConfig from '@/components/recipes/RecipeConfig';
 import InstallationFlow from '@/components/installation/InstallationFlow';
 import ItemMenu from '@/components/monday-menus/ItemMenu';
 import MultiItemMenu from '@/components/monday-menus/MultiItemMenu';
+import MondayBoards from '@/components/MondayBoards';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { Loader2 } from "lucide-react";
 import { Suspense } from 'react';
@@ -54,6 +56,7 @@ function App() {
               <Route path="/install" element={<PageWrapper><InstallationFlow /></PageWrapper>} />
               <Route path="/recipe/item-menu" element={<PageWrapper><ItemMenu /></PageWrapper>} />
               <Route path="/recipe/multi-item-menu" element={<PageWrapper><MultiItemMenu /></PageWrapper>} />
+              <Route path="/board-view" element={<PageWrapper><MondayBoards /></PageWrapper>} />
             </Routes>
           </Suspense>
         </AnimatePresence>
