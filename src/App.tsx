@@ -14,7 +14,6 @@ import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import { Loader2 } from "lucide-react";
 import { Suspense } from 'react';
 
-// Loading component
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#7B61FF] via-[#9B87F5] to-[#7E69AB]">
     <div className="flex flex-col items-center gap-4">
@@ -24,7 +23,6 @@ const PageLoader = () => (
   </div>
 );
 
-// Animated page wrapper
 const PageWrapper = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   
