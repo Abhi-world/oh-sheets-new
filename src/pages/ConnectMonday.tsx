@@ -15,7 +15,7 @@ const ConnectMonday = () => {
     mondayAuthUrl.searchParams.append('response_type', 'code');
     
     // Add required scopes
-    const scopes = ['boards:read', 'workspaces:read', 'users:read'];
+    const scopes = ['me:read', 'boards:read', 'boards:write', 'workspaces:read', 'users:read', 'updates:read', 'updates:write'];
     mondayAuthUrl.searchParams.append('scope', scopes.join(' '));
     
     // Redirect to Monday.com OAuth page

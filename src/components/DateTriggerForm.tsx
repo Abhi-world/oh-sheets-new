@@ -39,12 +39,20 @@ const DateTriggerForm = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': profile.monday_access_token
+          'Authorization': `Bearer ${profile.monday_access_token}`
         },
         body: JSON.stringify({
           query: `query { boards { id name } }`
         })
       });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`Monday API Error: ${response.status} - ${errorBody}`);
+      }
+      if (response.status === 401) {
+        throw new Error('Invalid or expired Monday.com access token');
+      }
 
       const data = await response.json();
       if (data.data?.boards) {

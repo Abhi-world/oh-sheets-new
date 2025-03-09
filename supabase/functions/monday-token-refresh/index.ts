@@ -11,34 +11,36 @@ serve(async (req) => {
   }
 
   try {
-    const { code } = await req.json()
+    const { refresh_token } = await req.json()
 
-    if (!code) {
-      throw new Error('No authorization code provided')
+    if (!refresh_token) {
+      throw new Error('No refresh token provided')
     }
 
-    // Exchange code for access token
+    // Exchange refresh token for a new access token
     const tokenResponse = await fetch('https://auth.monday.com/oauth2/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        code,
         client_id: Deno.env.get('MONDAY_CLIENT_ID'),
         client_secret: Deno.env.get('MONDAY_CLIENT_SECRET'),
-        redirect_uri: `${Deno.env.get('SUPABASE_URL')}/functions/v1/monday-oauth-callback`,
+        refresh_token,
+        grant_type: 'refresh_token',
       }),
     })
 
     if (!tokenResponse.ok) {
-      throw new Error('Failed to exchange code for token')
+      const errorText = await tokenResponse.text()
+      console.error('Failed to refresh token:', errorText)
+      throw new Error(`Failed to refresh token: ${tokenResponse.status}`)
     }
 
     const tokenData = await tokenResponse.json()
-    const { access_token, refresh_token, expires_in } = tokenData
+    const { access_token, refresh_token: new_refresh_token, expires_in } = tokenData
 
-    // Get user information from Monday.com
+    // Get user information from Monday.com to confirm token validity
     const userResponse = await fetch('https://api.monday.com/v2', {
       method: 'POST',
       headers: {
@@ -58,15 +60,16 @@ serve(async (req) => {
     })
 
     if (!userResponse.ok) {
-      throw new Error('Failed to fetch user information')
+      throw new Error('Failed to validate new access token')
     }
 
-    const { data: { me: { id: monday_user_id, email: monday_user_email } } } = await userResponse.json()
+    const userData = await userResponse.json()
+    const { data: { me: { id: monday_user_id, email: monday_user_email } } } = userData
 
     return new Response(
       JSON.stringify({
         access_token,
-        refresh_token,
+        refresh_token: new_refresh_token || refresh_token, // Use new refresh token if provided, otherwise keep the old one
         expires_in,
         monday_user_id,
         monday_user_email
@@ -76,6 +79,7 @@ serve(async (req) => {
       },
     )
   } catch (error) {
+    console.error('Token refresh error:', error.message)
     return new Response(
       JSON.stringify({ error: error.message }),
       {

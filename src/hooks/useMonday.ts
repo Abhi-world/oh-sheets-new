@@ -7,7 +7,7 @@ async function getMondayAccessToken() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('monday_access_token')
+    .select('monday_access_token, monday_token_expires_at, monday_refresh_token')
     .eq('id', user.id)
     .single();
 
@@ -15,7 +15,56 @@ async function getMondayAccessToken() {
     throw new Error('Monday.com access token not found. Please connect your Monday.com account.');
   }
 
+  // Check if token is expired or about to expire (within 5 minutes)
+  const expiresAt = profile.monday_token_expires_at ? new Date(profile.monday_token_expires_at) : null;
+  const isExpired = expiresAt && (new Date() > new Date(expiresAt.getTime() - 5 * 60 * 1000));
+
+  if (isExpired && profile.monday_refresh_token) {
+    console.log('Monday.com token expired or about to expire, refreshing...');
+    return await refreshMondayToken(profile.monday_refresh_token, user.id);
+  }
+
   return profile.monday_access_token;
+}
+
+async function refreshMondayToken(refreshToken: string, userId: string) {
+  try {
+    console.log('Refreshing Monday.com access token...');
+    
+    // Call the token refresh edge function
+    const { data: tokenData, error } = await supabase.functions.invoke('monday-token-refresh', {
+      body: { refresh_token: refreshToken }
+    });
+
+    if (error || tokenData?.error) {
+      console.error('Error refreshing token:', error || tokenData?.error);
+      throw new Error('Failed to refresh Monday.com token');
+    }
+
+    const { access_token, refresh_token, expires_in } = tokenData;
+    
+    // Update the profile with new token information
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({
+        monday_access_token: access_token,
+        monday_refresh_token: refresh_token || refreshToken, // Use new refresh token if provided
+        monday_token_expires_at: new Date(Date.now() + (expires_in * 1000)).toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId);
+
+    if (updateError) {
+      console.error('Error updating profile with new token:', updateError);
+      throw new Error('Failed to update profile with new token');
+    }
+
+    console.log('Successfully refreshed Monday.com access token');
+    return access_token;
+  } catch (error) {
+    console.error('Token refresh failed:', error);
+    throw new Error('Failed to refresh Monday.com token. Please reconnect your account.');
+  }
 }
 
 async function fetchMondayBoards() {
@@ -44,7 +93,7 @@ async function fetchMondayBoards() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': accessToken
+      'Authorization': `Bearer ${accessToken}`
     },
     body: JSON.stringify({ query })
   });
@@ -52,7 +101,23 @@ async function fetchMondayBoards() {
   if (!response.ok) {
     const errorText = await response.text();
     console.error('Failed to fetch Monday.com boards:', errorText);
-    throw new Error('Failed to fetch Monday.com boards. Please check your connection and permissions.');
+    
+    if (response.status === 401) {
+      // Attempt token refresh
+      console.log('Received 401 unauthorized error, attempting to refresh token...');
+      try {
+        // Get a fresh token using our refresh mechanism
+        const newToken = await getMondayAccessToken(); // This will trigger the refresh if needed
+        
+        // Retry the request with the new token
+        console.log('Token refreshed, retrying request...');
+        return await fetchMondayBoards();
+      } catch (refreshError) {
+        console.error('Token refresh failed:', refreshError);
+        throw new Error('SESSION_EXPIRED');
+      }
+    }
+    throw new Error(`Monday API Error: ${response.status} - ${errorText}`);
   }
 
   const data = await response.json();

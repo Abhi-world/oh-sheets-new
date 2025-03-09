@@ -109,12 +109,12 @@ export async function createMondayItem(boardId: string, itemName: string, column
   return data.data.create_item;
 }
 
-export async function updateMondayItem(itemId: string, columnValues: Record<string, any>) {
+export async function updateMondayItem(itemId: string, boardId: string, columnValues: Record<string, any>) {
   const apiKey = await getMondayApiKey();
   if (!apiKey) throw new Error('Monday.com API key not found');
 
   const query = `
-    mutation ($itemId: ID!, $columnValues: JSON!) {
+    mutation ($itemId: ID!, $boardId: ID!, $columnValues: JSON!) {
       change_multiple_column_values (
         item_id: $itemId,
         board_id: $boardId,
@@ -135,6 +135,7 @@ export async function updateMondayItem(itemId: string, columnValues: Record<stri
       query,
       variables: {
         itemId,
+        boardId,
         columnValues: JSON.stringify(columnValues)
       }
     })

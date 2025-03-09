@@ -28,12 +28,17 @@ const MondayOAuth = () => {
           body: { code }
         });
 
-        if (tokenError) {
+        if (tokenData?.error) {
+          console.error('Monday API error:', tokenData.error);
+          throw new Error(tokenData.error.message);
+        }
+
+        if (tokenError || tokenData?.error) {
           console.error('Error exchanging code for token:', tokenError);
           throw tokenError;
         }
 
-        const { access_token, monday_user_id, monday_user_email } = tokenData;
+        const { access_token, expires_in, refresh_token, monday_user_id, monday_user_email } = tokenData;
 
         if (!access_token || !monday_user_id) {
           console.error('Invalid token data received:', tokenData);
@@ -57,6 +62,8 @@ const MondayOAuth = () => {
             monday_user_id,
             monday_user_email,
             monday_access_token: access_token,
+            monday_token_expires_at: new Date(Date.now() + (tokenData.expires_in * 1000)).toISOString(),
+            monday_refresh_token: tokenData.refresh_token,
             updated_at: new Date().toISOString(),
           }, {
             onConflict: 'id'
