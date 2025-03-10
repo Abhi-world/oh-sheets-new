@@ -38,4 +38,4 @@ export default defineConfig(async ({ mode }) => {
       exclude: mode === 'production' ? ['lovable-tagger', 'parse-gitignore'] : [],
     },
   };
-})}
+});
