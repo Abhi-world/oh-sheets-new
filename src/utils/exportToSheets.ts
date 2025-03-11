@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { getAccessToken } from '@/lib/google-sheets';
 
 interface MondayItem {
   id: string;
@@ -40,26 +41,12 @@ export async function exportItemsToGoogleSheets(
       return false;
     }
 
-    // Get the current user and their Google Sheets credentials
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast.error('You must be logged in to export data');
+    // Get a valid access token for Google Sheets API
+    const accessToken = await getAccessToken();
+    if (!accessToken) {
+      toast.error('Failed to get Google Sheets access token. Please check your credentials.');
       return false;
     }
-
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('google_sheets_credentials')
-      .eq('id', user.id)
-      .single();
-
-    if (profileError || !profile?.google_sheets_credentials) {
-      console.error('Error fetching Google credentials:', profileError);
-      toast.error('Please connect your Google Sheets account first');
-      return false;
-    }
-
-    const credentials = profile.google_sheets_credentials as any;
 
     // Prepare the data for export
     // First row is headers
@@ -105,7 +92,7 @@ export async function exportItemsToGoogleSheets(
       {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${credentials.access_token}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
