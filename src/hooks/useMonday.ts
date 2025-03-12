@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { setupMondaySDK, fetchBoardsWithSDK } from "@/utils/mondaySDK";
+import { useState, useEffect } from "react";
 
 async function getMondayAccessToken() {
   const { data: { user } } = await supabase.auth.getUser();
@@ -68,66 +70,79 @@ async function refreshMondayToken(refreshToken: string, userId: string) {
 }
 
 async function fetchMondayBoards() {
-  const accessToken = await getMondayAccessToken();
-
-  console.log("Fetching Monday.com boards with access token");
-
-  const query = `
-    query {
-      boards {
-        id
-        name
-        workspace {
-          id
-          name
-        }
-        items {
-          id
-          name
-        }
-      }
-    }
-  `;
-
-  const response = await fetch('https://api.monday.com/v2', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`
-    },
-    body: JSON.stringify({ query })
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Failed to fetch Monday.com boards:', errorText);
+  try {
+    // First try to use the Monday SDK if we're in Monday's environment
+    const { mondayClient, isInMonday } = await setupMondaySDK();
     
-    if (response.status === 401) {
-      // Attempt token refresh
-      console.log('Received 401 unauthorized error, attempting to refresh token...');
-      try {
-        // Get a fresh token using our refresh mechanism
-        const newToken = await getMondayAccessToken(); // This will trigger the refresh if needed
-        
-        // Retry the request with the new token
-        console.log('Token refreshed, retrying request...');
-        return await fetchMondayBoards();
-      } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
-        throw new Error('SESSION_EXPIRED');
-      }
+    if (isInMonday) {
+      console.log("Using Monday SDK to fetch boards");
+      return await fetchBoardsWithSDK();
     }
-    throw new Error(`Monday API Error: ${response.status} - ${errorText}`);
-  }
+    
+    // If not in Monday's environment, use the traditional API approach
+    const accessToken = await getMondayAccessToken();
+    console.log("Fetching Monday.com boards with access token");
 
-  const data = await response.json();
-  if (data.errors) {
-    console.error('Monday.com API errors:', data.errors);
-    throw new Error(data.errors[0]?.message || 'Error fetching boards from Monday.com');
-  }
+    const query = `
+      query {
+        boards {
+          id
+          name
+          workspace {
+            id
+            name
+          }
+          items {
+            id
+            name
+          }
+        }
+      }
+    `;
 
-  console.log('Monday.com boards response:', data);
-  return data;
+    const response = await fetch('https://api.monday.com/v2', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({ query })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Failed to fetch Monday.com boards:', errorText);
+      
+      if (response.status === 401) {
+        // Attempt token refresh
+        console.log('Received 401 unauthorized error, attempting to refresh token...');
+        try {
+          // Get a fresh token using our refresh mechanism
+          const newToken = await getMondayAccessToken(); // This will trigger the refresh if needed
+          
+          // Retry the request with the new token
+          console.log('Token refreshed, retrying request...');
+          return await fetchMondayBoards();
+        } catch (refreshError) {
+          console.error('Token refresh failed:', refreshError);
+          throw new Error('SESSION_EXPIRED');
+        }
+      }
+      throw new Error(`Monday API Error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    if (data.errors) {
+      console.error('Monday.com API errors:', data.errors);
+      throw new Error(data.errors[0]?.message || 'Error fetching boards from Monday.com');
+    }
+
+    console.log('Monday.com boards response:', data);
+    return data;
+  } catch (error) {
+    console.error('Error in fetchMondayBoards:', error);
+    throw error;
+  }
 }
 
 export const useMonday = () => {
@@ -148,8 +163,23 @@ export const useMondayWorkspaces = () => {
     }
     return acc;
   }, []) || [];
-
+  
   return { workspaces };
+};
+
+export const useMondayContext = () => {
+  const [isInMonday, setIsInMonday] = useState(false);
+  
+  useEffect(() => {
+    const checkMondayContext = async () => {
+      const { isInMonday: inMonday } = await setupMondaySDK();
+      setIsInMonday(inMonday);
+    };
+    
+    checkMondayContext();
+  }, []);
+  
+  return { isInMonday };
 };
 
 export const useMondayBoardsByWorkspace = (workspaceId: string) => {

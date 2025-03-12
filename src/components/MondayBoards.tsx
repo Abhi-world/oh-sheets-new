@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useMonday } from '@/hooks/useMonday';
+import { useMonday, useMondayContext } from '@/hooks/useMonday';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -9,6 +9,7 @@ import MondayBoardSkeleton from './skeletons/MondayBoardSkeleton';
 
 const MondayBoards = () => {
   const { data, isLoading, error } = useMonday();
+  const { isInMonday } = useMondayContext();
   const boards = data?.data?.boards || [];
 
   console.log("Monday connection status:", {
@@ -17,6 +18,7 @@ const MondayBoards = () => {
     errorMessage: error?.message,
     hasData: !!data,
     boardsCount: boards?.length,
+    isInMonday,
     rawData: data
   });
 
@@ -51,7 +53,7 @@ const MondayBoards = () => {
     );
   }
 
-  if (error) {
+  if (error && !isInMonday) {
     return (
       <Card className="w-full max-w-4xl mx-auto mt-8">
         <CardHeader>
@@ -82,13 +84,15 @@ const MondayBoards = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Alert className="mb-4">
-          <Info className="h-4 w-4" />
-          <AlertTitle>Connected Boards</AlertTitle>
-          <AlertDescription>
-            Below are all your connected Monday.com boards.
-          </AlertDescription>
-        </Alert>
+        {isInMonday && (
+          <Alert className="mb-4">
+            <Info className="h-4 w-4" />
+            <AlertTitle>Running inside Monday.com</AlertTitle>
+            <AlertDescription>
+              You're currently running the app inside Monday.com. Boards are automatically detected.
+            </AlertDescription>
+          </Alert>
+        )}
         
         <div className="mb-4">
           <ScrollArea className="h-[400px]">
@@ -98,17 +102,22 @@ const MondayBoards = () => {
                   <h3 className="text-lg font-semibold">{board.name}</h3>
                   <div className="mt-2">
                     <h4 className="font-medium mb-2">Items:</h4>
-                    {board.items?.map((item: any) => (
-                      <div key={item.id} className="ml-4 mb-2 p-2 bg-gray-50 rounded">
-                        <p className="text-sm">{item.name}</p>
-                      </div>
-                    ))}
+                    <ul className="pl-4 list-disc">
+                      {board.items?.slice(0, 5).map((item: any) => (
+                        <li key={item.id} className="text-sm text-gray-600">{item.name}</li>
+                      ))}
+                      {board.items?.length > 5 && (
+                        <li className="text-sm text-gray-500 italic">
+                          + {board.items.length - 5} more items
+                        </li>
+                      )}
+                    </ul>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="text-center text-gray-500 p-4">
-                No boards connected yet. Add the integration to a board to get started.
+              <div className="text-center py-8 text-gray-500">
+                No boards found. {!isInMonday && 'Please connect your Monday.com account.'}
               </div>
             )}
           </ScrollArea>

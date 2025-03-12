@@ -1,16 +1,17 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Hero from '@/components/home/Hero';
 import RecipeGrid from '@/components/marketplace/RecipeGrid';
 import DecorativeDivider from '@/components/home/DecorativeDivider';
 import ConnectionStatus from '@/components/ConnectionStatus';
-import { useMonday } from '@/hooks/useMonday';
+import { useMonday, useMondayContext } from '@/hooks/useMonday';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Info } from "lucide-react";
 
 const Index = () => {
   const { data, isLoading, error } = useMonday();
-  const isMondayConnected = !!data?.data?.boards;
+  const { isInMonday } = useMondayContext();
+  const isMondayConnected = !!data?.data?.boards || isInMonday;
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#7B61FF] via-[#9B87F5] to-[#7E69AB] relative">
@@ -31,7 +32,17 @@ const Index = () => {
           <ConnectionStatus service="monday" isConnected={isMondayConnected} />
         </div>
 
-        {error && (
+        {isInMonday && (
+          <Alert className="mb-8">
+            <Info className="h-4 w-4" />
+            <AlertTitle>Running inside Monday.com</AlertTitle>
+            <AlertDescription>
+              You're currently running the app inside Monday.com. Boards will be automatically detected.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {error && !isInMonday && (
           <Alert variant="destructive" className="mb-8">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Connection Error</AlertTitle>

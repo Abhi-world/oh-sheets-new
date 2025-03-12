@@ -1,25 +1,53 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 const ConnectMonday = () => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleConnect = () => {
-    // Construct the Monday.com OAuth URL
-    const mondayAuthUrl = new URL('https://auth.monday.com/oauth2/authorize');
-    
-    // Add required OAuth parameters
-    mondayAuthUrl.searchParams.append('client_id', import.meta.env.VITE_MONDAY_CLIENT_ID);
-    mondayAuthUrl.searchParams.append('redirect_uri', `${window.location.origin}/monday-oauth`);
-    mondayAuthUrl.searchParams.append('response_type', 'code');
-    
-    // Add required scopes
-    const scopes = ['me:read', 'boards:read', 'boards:write', 'workspaces:read', 'users:read', 'updates:read', 'updates:write'];
-    mondayAuthUrl.searchParams.append('scope', scopes.join(' '));
-    
-    // Redirect to Monday.com OAuth page
-    window.location.href = mondayAuthUrl.toString();
+  const handleConnect = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Fetch the Monday.com client ID from Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('get-monday-client-id');
+      
+      if (error) {
+        console.error('Error fetching Monday.com client ID:', error);
+        throw new Error('Failed to get Monday.com client ID');
+      }
+
+      if (!data?.MONDAY_CLIENT_ID) {
+        console.error('Monday.com client ID not found in response');
+        throw new Error('Monday.com client ID not found');
+      }
+      
+      // Construct the Monday.com OAuth URL
+      const mondayAuthUrl = new URL('https://auth.monday.com/oauth2/authorize');
+      
+      // Add required OAuth parameters
+      mondayAuthUrl.searchParams.append('client_id', data.MONDAY_CLIENT_ID);
+      mondayAuthUrl.searchParams.append('redirect_uri', `${window.location.origin}/monday-oauth`);
+      mondayAuthUrl.searchParams.append('response_type', 'code');
+      
+      // Add required scopes
+      const scopes = ['me:read', 'boards:read', 'boards:write', 'workspaces:read', 'users:read', 'updates:read', 'updates:write'];
+      mondayAuthUrl.searchParams.append('scope', scopes.join(' '));
+      
+      console.log('Redirecting to Monday.com OAuth URL:', mondayAuthUrl.toString());
+      
+      // Redirect to Monday.com OAuth page
+      window.location.href = mondayAuthUrl.toString();
+    } catch (error) {
+      console.error('Error connecting to Monday.com:', error);
+      toast.error('Failed to connect to Monday.com. Please try again.');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -35,8 +63,16 @@ const ConnectMonday = () => {
           <Button 
             onClick={handleConnect}
             className="w-full bg-[#ff3d57] hover:bg-[#ff3d57]/90 text-white py-6 text-lg font-medium"
+            disabled={isLoading}
           >
-            Connect Monday.com
+            {isLoading ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                Connecting...
+              </>
+            ) : (
+              'Connect Monday.com'
+            )}
           </Button>
         </CardContent>
       </Card>
