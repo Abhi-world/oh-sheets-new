@@ -27,7 +27,7 @@ serve(async (req) => {
         code,
         client_id: Deno.env.get('MONDAY_CLIENT_ID'),
         client_secret: Deno.env.get('MONDAY_CLIENT_SECRET'),
-        redirect_uri: `${Deno.env.get('SUPABASE_URL')}/functions/v1/monday-oauth-callback`,
+        redirect_uri: `${Deno.env.get('APP_URL') || Deno.env.get('SUPABASE_URL')}/monday-oauth`,
       }),
     })
 

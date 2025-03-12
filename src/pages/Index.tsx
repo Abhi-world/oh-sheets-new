@@ -42,7 +42,7 @@ const Index = () => {
           </Alert>
         )}
 
-        {error && !isInMonday && (
+        {error && (
           <Alert variant="destructive" className="mb-8">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Connection Error</AlertTitle>

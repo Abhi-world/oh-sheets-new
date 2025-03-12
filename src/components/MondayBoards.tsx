@@ -53,7 +53,7 @@ const MondayBoards = () => {
     );
   }
 
-  if (error && !isInMonday) {
+  if (error) {
     return (
       <Card className="w-full max-w-4xl mx-auto mt-8">
         <CardHeader>
@@ -63,13 +63,29 @@ const MondayBoards = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Connection Error</AlertTitle>
-            <AlertDescription>
-              {error.message}
-            </AlertDescription>
-          </Alert>
+          {isInMonday ? (
+            <>
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Connection Error</AlertTitle>
+                <AlertDescription>
+                  You're running inside Monday.com, but we encountered an error: {error.message}
+                  <br />
+                  Please make sure you have the necessary permissions to access boards.
+                </AlertDescription>
+              </Alert>
+            </>
+          ) : (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Connection Error</AlertTitle>
+              <AlertDescription>
+                {error.message}
+                <br />
+                Please make sure you're properly connected to Monday.com and try again.
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
     );

@@ -13,9 +13,12 @@ const ConnectionStatus = ({ service, isConnected }: ConnectionStatusProps) => {
   const navigate = useNavigate();
   const { isInMonday } = useMondayContext();
   
-  // Don't show connect button for Monday.com when inside Monday environment
+  // Handle click behavior differently based on environment and connection status
   const handleClick = () => {
+    // If we're inside Monday.com environment, don't navigate for Monday.com service
     if (service === 'monday' && isInMonday) return;
+    
+    // Otherwise navigate to the appropriate connection page
     navigate(service === 'monday' ? '/connect-monday' : '/connect-sheets');
   };
 

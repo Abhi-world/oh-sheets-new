@@ -26,16 +26,29 @@ export async function setupMondaySDK() {
     const context = await mondayClient.get('context');
     console.log('Monday SDK context:', context);
     
-    if (context.data) {
-      // We're inside Monday's environment, use the session token
+    // More robust check for Monday.com environment
+    const isInMondayEnvironment = !!(context.data && 
+      (context.data.token || 
+       context.data.instanceId || 
+       context.data.boardId || 
+       context.data.theme));
+    
+    if (isInMondayEnvironment) {
+      console.log('Detected running inside Monday.com environment');
+      
+      // We're inside Monday's environment, use the session token if available
       if (context.data.token) {
         mondayClient.setToken(context.data.token);
         console.log('Monday SDK initialized with session token');
-        return { mondayClient, isInMonday: true };
+      } else {
+        console.log('Running in Monday.com but no token in context, will use stored token if available');
       }
+      
+      return { mondayClient, isInMonday: true };
     }
     
     // Not in Monday or no token available, try to use stored token
+    console.log('Not running inside Monday.com, will use stored token if available');
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       const { data: profile } = await supabase

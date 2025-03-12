@@ -32,8 +32,13 @@ const ConnectMonday = () => {
       
       // Add required OAuth parameters
       mondayAuthUrl.searchParams.append('client_id', data.MONDAY_CLIENT_ID);
-      mondayAuthUrl.searchParams.append('redirect_uri', `${window.location.origin}/monday-oauth`);
+      
+      // Use the same redirect URI that's configured in the Supabase Edge Function
+      const redirectUri = `${window.location.origin}/monday-oauth`;
+      mondayAuthUrl.searchParams.append('redirect_uri', redirectUri);
       mondayAuthUrl.searchParams.append('response_type', 'code');
+      
+      console.log('Using redirect URI:', redirectUri);
       
       // Add required scopes
       const scopes = ['me:read', 'boards:read', 'boards:write', 'workspaces:read', 'users:read', 'updates:read', 'updates:write'];
