@@ -176,3 +176,54 @@ export async function fetchBoardsWithSDK(specificBoardId = null) {
     }
     
     return response;
+  } catch (error) {
+    console.error('Error fetching boards with SDK:', error);
+    throw error;
+  }
+}
+
+/**
+ * Fetches items from a specific board using the Monday SDK
+ */
+export async function fetchItemsWithSDK(boardId) {
+  try {
+    const mondayClient = getMondaySDK();
+    
+    console.log(`Fetching items from Monday.com board: ${boardId}`);
+    
+    const query = `
+      query {
+        boards(ids: ${boardId}) {
+          items {
+            id
+            name
+            column_values {
+              id
+              title
+              text
+              value
+              type
+            }
+          }
+        }
+      }
+    `;
+    
+    const response = await mondayClient.api(query);
+    console.log('Monday SDK items response:', response);
+    
+    if (response.errors) {
+      throw new Error(response.errors[0]?.message || 'Error fetching items');
+    }
+    
+    return response;
+  } catch (error) {
+    console.error('Error fetching items with SDK:', error);
+    throw error;
+  }
+}
+  } catch (error) {
+    console.error('Error fetching items with SDK:', error);
+    throw error;
+  }
+}
