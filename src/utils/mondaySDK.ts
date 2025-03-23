@@ -185,7 +185,7 @@ export async function fetchBoardsWithSDK(specificBoardId = null) {
 /**
  * Fetches items from a specific board using the Monday SDK
  */
-export async function fetchItemsWithSDK(boardId) {
+export async function fetchItemsWithSDK(boardId: string) {  // Add type annotation
   try {
     const mondayClient = getMondaySDK();
     
@@ -222,4 +222,4 @@ export async function fetchItemsWithSDK(boardId) {
     throw error;
   }
 }
-+ // Add final newline
+// Properly terminated file with newline
