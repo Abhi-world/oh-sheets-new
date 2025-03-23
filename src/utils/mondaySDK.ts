@@ -22,29 +22,62 @@ export async function setupMondaySDK() {
     // Initialize the SDK
     const mondayClient = initMondaySDK();
     
-    // Check if we're in Monday's environment
-    const context = await mondayClient.get('context');
-    console.log('Monday SDK context:', context);
+    // Check if we're in Monday's environment and get context
+    let context;
+    try {
+      context = await mondayClient.get('context');
+      console.log('Monday SDK context:', context);
+    } catch (contextError) {
+      console.warn('Error getting Monday context, will try alternative detection:', contextError);
+      context = { data: {} };
+    }
     
-    // More robust check for Monday.com environment
+    // Check URL parameters for board ID
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlBoardId = urlParams.get('boardId');
+    
+    // More robust environment detection
     const isInMondayEnvironment = !!(context.data && 
       (context.data.token || 
        context.data.instanceId || 
        context.data.boardId || 
-       context.data.theme));
+       context.data.theme ||
+       window.location.hostname.includes('monday.com'))) ||
+       urlBoardId !== null;
     
     if (isInMondayEnvironment) {
       console.log('Detected running inside Monday.com environment');
       
-      // We're inside Monday's environment, use the session token if available
+      // Use session token if available
       if (context.data.token) {
         mondayClient.setToken(context.data.token);
         console.log('Monday SDK initialized with session token');
-      } else {
-        console.log('Running in Monday.com but no token in context, will use stored token if available');
+        return { mondayClient, isInMonday: true, boardId: context.data.boardId || urlBoardId };
       }
       
-      return { mondayClient, isInMonday: true };
+      // If we have a boardId in the context or URL, store it for later use
+      const contextBoardId = context.data.boardId || urlBoardId;
+      if (contextBoardId) {
+        console.log('Detected board ID:', contextBoardId);
+      }
+      
+      // If no session token but we're in Monday environment, try to get stored token
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('monday_access_token')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile?.monday_access_token) {
+          mondayClient.setToken(profile.monday_access_token);
+          console.log('Monday SDK initialized with stored token while in Monday environment');
+          return { mondayClient, isInMonday: true, boardId: contextBoardId };
+        }
+      }
+      
+      return { mondayClient, isInMonday: true, boardId: contextBoardId };
     }
     
     // Not in Monday or no token available, try to use stored token
@@ -82,10 +115,42 @@ export function getMondaySDK() {
  * Fetches boards directly using the Monday SDK
  * This is more reliable when running inside Monday's environment
  */
-export async function fetchBoardsWithSDK() {
+export async function fetchBoardsWithSDK(specificBoardId = null) {
   try {
     const mondayClient = getMondaySDK();
     
+    // If we have a specific board ID, fetch just that board
+    if (specificBoardId) {
+      console.log(`Fetching specific Monday.com board: ${specificBoardId}`);
+      
+      const query = `
+        query {
+          boards(ids: ${specificBoardId}) {
+            id
+            name
+            workspace {
+              id
+              name
+            }
+            items {
+              id
+              name
+            }
+          }
+        }
+      `;
+      
+      const response = await mondayClient.api(query);
+      console.log('Monday SDK specific board response:', response);
+      
+      if (response.errors) {
+        throw new Error(response.errors[0]?.message || 'Error fetching specific board');
+      }
+      
+      return response;
+    }
+    
+    // Otherwise fetch all boards
     const query = `
       query {
         boards {
@@ -111,8 +176,3 @@ export async function fetchBoardsWithSDK() {
     }
     
     return response;
-  } catch (error) {
-    console.error('Error fetching boards with SDK:', error);
-    throw error;
-  }
-}

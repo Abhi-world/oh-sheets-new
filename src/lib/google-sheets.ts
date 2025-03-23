@@ -116,6 +116,30 @@ export async function fetchSpreadsheets() {
     );
 
     if (!response.ok) {
+      // Handle unauthorized error by attempting to refresh token
+      if (response.status === 401) {
+        console.log('Google Sheets token expired, attempting to refresh...');
+        // Force a new token refresh by clearing the current access token
+        const credentials = await getGoogleSheetsCredentials();
+        if (credentials) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await supabase
+              .from('profiles')
+              .update({
+                google_sheets_credentials: {
+                  ...credentials,
+                  access_token: null, // Clear the access token to force refresh
+                },
+              })
+              .eq('id', user.id);
+          }
+          
+          // Try again with a fresh token
+          return await fetchSpreadsheets();
+        }
+      }
+      
       throw new Error(`Failed to fetch spreadsheets: ${response.statusText}`);
     }
 
@@ -155,6 +179,30 @@ export async function fetchSheets(spreadsheetId: string) {
     );
 
     if (!response.ok) {
+      // Handle unauthorized error by attempting to refresh token
+      if (response.status === 401) {
+        console.log('Google Sheets token expired, attempting to refresh...');
+        // Force a new token refresh by clearing the current access token
+        const credentials = await getGoogleSheetsCredentials();
+        if (credentials) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await supabase
+              .from('profiles')
+              .update({
+                google_sheets_credentials: {
+                  ...credentials,
+                  access_token: null, // Clear the access token to force refresh
+                },
+              })
+              .eq('id', user.id);
+          }
+          
+          // Try again with a fresh token
+          return await fetchSheets(spreadsheetId);
+        }
+      }
+      
       throw new Error(`Failed to fetch sheets: ${response.statusText}`);
     }
 

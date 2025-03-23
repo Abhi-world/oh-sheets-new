@@ -132,25 +132,91 @@ class GoogleSheetsService {
    * Initializes the service with stored credentials
    */
   async initializeWithStoredCredentials() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return false;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('google_access_token, google_refresh_token, google_token_expiry')
-      .eq('id', user.id)
-      .single();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('google_access_token, google_refresh_token, google_token_expiry')
+        .eq('id', user.id)
+        .single();
 
-    if (profile?.google_access_token) {
-      this.auth.setCredentials({
-        access_token: profile.google_access_token,
-        refresh_token: profile.google_refresh_token,
-        expiry_date: profile.google_token_expiry
-      });
-      return true;
+      if (profile?.google_access_token) {
+        // Check if token is expired
+        const expiryDate = profile.google_token_expiry ? new Date(profile.google_token_expiry) : null;
+        const isExpired = expiryDate && (new Date() > expiryDate);
+        
+        this.auth.setCredentials({
+          access_token: profile.google_access_token,
+          refresh_token: profile.google_refresh_token,
+          expiry_date: profile.google_token_expiry
+        });
+        
+        // If token is expired, we'll still return true but the next API call will trigger a refresh
+        console.log('Google Sheets credentials loaded, token ' + (isExpired ? 'is expired' : 'is valid'));
+        return true;
+      }
+
+      console.log('No Google Sheets credentials found');
+      return false;
+    } catch (error) {
+      console.error('Error initializing with stored credentials:', error);
+      return false;
     }
-
-    return false;
+  }
+  
+  /**
+   * Gets the current access token
+   */
+  async getAccessToken() {
+    try {
+      const { credentials } = this.auth;
+      
+      if (credentials && credentials.access_token) {
+        // Check if token is expired or about to expire (within 5 minutes)
+        if (credentials.expiry_date && Date.now() >= (credentials.expiry_date - 5 * 60 * 1000)) {
+          console.log('Google Sheets token expired or about to expire, refreshing...');
+          try {
+            // Token is expired, refresh it
+            const { tokens } = await this.auth.refreshToken();
+            
+            // Update stored credentials
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              await supabase
+                .from('profiles')
+                .update({
+                  google_access_token: tokens.access_token,
+                  google_refresh_token: tokens.refresh_token || credentials.refresh_token,
+                  google_token_expiry: tokens.expiry_date
+                })
+                .eq('id', user.id);
+            }
+            
+            console.log('Successfully refreshed Google Sheets token');
+            return tokens.access_token;
+          } catch (refreshError) {
+            console.error('Error refreshing Google Sheets token:', refreshError);
+            // If refresh fails, try to use the existing token anyway
+            // This might fail, but it's better than returning null immediately
+            if (credentials.access_token) {
+              console.log('Using existing token despite refresh failure');
+              return credentials.access_token;
+            }
+            throw refreshError;
+          }
+        }
+        
+        return credentials.access_token;
+      }
+      
+      console.error('No access token available');
+      return null;
+    } catch (error) {
+      console.error('Error getting access token:', error);
+      return null;
+    }
   }
 }
 

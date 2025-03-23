@@ -72,10 +72,15 @@ async function refreshMondayToken(refreshToken: string, userId: string) {
 async function fetchMondayBoards() {
   try {
     // First try to use the Monday SDK if we're in Monday's environment
-    const { mondayClient, isInMonday } = await setupMondaySDK();
+    const { mondayClient, isInMonday, boardId } = await setupMondaySDK();
     
     if (isInMonday) {
       console.log("Using Monday SDK to fetch boards");
+      // If we have a specific board ID from the context, use it
+      if (boardId) {
+        console.log(`Using board ID from Monday.com context: ${boardId}`);
+        return await fetchBoardsWithSDK(boardId);
+      }
       return await fetchBoardsWithSDK();
     }
     

@@ -12,12 +12,16 @@ export function isMondayEnvironment(): boolean {
   const urlParams = new URLSearchParams(window.location.search);
   const hasMondayParams = urlParams.has('monday_token') || 
                          urlParams.has('instanceId') || 
+                         urlParams.has('boardId') || 
                          urlParams.has('app');
   
   // Check if the parent domain is monday.com
   const isMondayDomain = window.location.hostname.includes('monday.com');
   
-  return isInIframe || hasMondayParams || isMondayDomain;
+  // Check for Monday SDK global object
+  const hasMondaySDK = typeof window.monday !== 'undefined';
+  
+  return isInIframe || hasMondayParams || isMondayDomain || hasMondaySDK;
 }
 
 /**
