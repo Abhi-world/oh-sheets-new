@@ -221,4 +221,3 @@ export async function fetchItemsWithSDK(boardId) {
     console.error('Error fetching items with SDK:', error);
     throw error;
   }
-}}
