@@ -23,6 +23,11 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
   const { isConnected: isGoogleConnected, isLoading: isGoogleLoading } = useGoogleSheetsStatus();
   const boards = mondayData?.data?.boards || [];
   
+  useEffect(() => {
+    console.log('StatusChangeConfig - Monday data:', mondayData);
+    console.log('StatusChangeConfig - Boards:', boards);
+  }, [mondayData, boards]);
+  
   const {
     spreadsheets,
     sheets,
