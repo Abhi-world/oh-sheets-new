@@ -222,7 +222,7 @@ class GoogleSheetsService {
 
 // Create and export the service instance
 export const googleSheetsService = new GoogleSheetsService({
-  clientId: process.env.GOOGLE_CLIENT_ID || '',
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-  redirectUri: `${process.env.APP_URL}/auth/google/callback`
+  clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
+  clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '',
+  redirectUri: `${import.meta.env.VITE_APP_URL || ''}/auth/google/callback`
 });

@@ -9,7 +9,12 @@ const monday = mondaySdk();
  * This should be called when the application starts
  */
 export function initMondaySDK() {
-  monday.setToken(process.env.MONDAY_API_TOKEN || '');
+  // Use import.meta.env for Vite environment variables instead of process.env
+  // This ensures compatibility with Vite's production builds
+  const apiToken = typeof import.meta !== 'undefined' ? 
+    import.meta.env.VITE_MONDAY_API_TOKEN || '' : 
+    '';
+  monday.setToken(apiToken);
   return monday;
 }
 
@@ -19,6 +24,11 @@ export function initMondaySDK() {
  */
 export async function setupMondaySDK() {
   try {
+    // Client-side check
+    if (typeof window === 'undefined') {
+      return { mondayClient: monday, isInMonday: false };
+    }
+    
     // Initialize the SDK
     const mondayClient = initMondaySDK();
     
@@ -115,7 +125,7 @@ export function getMondaySDK() {
  * Fetches boards directly using the Monday SDK
  * This is more reliable when running inside Monday's environment
  */
-export async function fetchBoardsWithSDK(specificBoardId = null) {
+export async function fetchBoardsWithSDK(specificBoardId: string | null = null) {
   try {
     const mondayClient = getMondaySDK();
     
