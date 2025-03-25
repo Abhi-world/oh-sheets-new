@@ -28,4 +28,3 @@ dist-ssr
 # Environment variables
 # Add at bottom
 .env
-*.env.local
