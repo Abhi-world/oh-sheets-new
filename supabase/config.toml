@@ -1,15 +1,1 @@
-project_id = "epjslkaopmhwayfkqqps"
-
-[functions.get-monday-client-id]
-import_map = []
-environment = [
-  "MONDAY_CLIENT_ID=${MONDAY_CLIENT_ID}",
-  "MONDAY_CLIENT_SECRET=${MONDAY_CLIENT_SECRET}"
-]
-
-[functions.monday-oauth-callback]
-import_map = []
-environment = [
-  "MONDAY_CLIENT_ID=${MONDAY_CLIENT_ID}",
-  "MONDAY_CLIENT_SECRET=${MONDAY_CLIENT_SECRET}"
-]
+project_id = "tzgqqrphtppgxpfduecs"
