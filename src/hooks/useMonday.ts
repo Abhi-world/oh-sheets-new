@@ -75,17 +75,68 @@ async function fetchMondayBoards() {
     const { mondayClient, isInMonday, boardId, sessionToken, context } = await setupMondaySDK();
     
     if (isInMonday) {
-      console.log("Using Monday SDK to fetch boards");
+      console.log("Using Monday SDK to fetch boards in embedded mode");
       
-      // If we have a session token, we can make API calls directly
+      // If we have a session token, make direct API calls using the session token
       if (sessionToken) {
-        console.log("Using session token for API calls");
-        // If we have a specific board ID from the context, use it
-        if (boardId) {
-          console.log(`Using board ID from Monday.com context: ${boardId}`);
-          return await fetchBoardsWithSDK(boardId);
+        console.log("Making direct API call with session token");
+        
+        // Make direct API call to Monday with session token
+        const query = boardId ? `
+          query {
+            boards(ids: ${boardId}) {
+              id
+              name
+              workspace {
+                id
+                name
+              }
+              items {
+                id
+                name
+              }
+            }
+          }
+        ` : `
+          query {
+            boards {
+              id
+              name
+              workspace {
+                id
+                name
+              }
+              items {
+                id
+                name
+              }
+            }
+          }
+        `;
+
+        const response = await fetch('https://api.monday.com/v2', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${sessionToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ query })
+        });
+
+        if (!response.ok) {
+          console.error('Monday API response not ok:', response.status, response.statusText);
+          throw new Error(`Monday API error: ${response.status} ${response.statusText}`);
         }
-        return await fetchBoardsWithSDK();
+
+        const data = await response.json();
+        console.log('Monday API direct response:', data);
+        
+        if (data.errors && data.errors.length > 0) {
+          console.error('Monday API GraphQL errors:', data.errors);
+          throw new Error(data.errors[0]?.message || 'GraphQL error from Monday API');
+        }
+
+        return { data: data.data };
       }
       
       // If no session token but we have board context, create a mock response
