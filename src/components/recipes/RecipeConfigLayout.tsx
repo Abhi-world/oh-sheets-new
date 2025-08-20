@@ -8,7 +8,7 @@ import { getAutomationExplanation } from '@/utils/automationExplanations';
 interface RecipeConfigLayoutProps {
   title: string;
   subtitle?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   icon?: React.ReactNode;
   automationType?: 'status' | 'date' | 'button' | 'column' | 'person' | 'group' | 'item' | 'form' | 'periodic';
 }

@@ -8,6 +8,7 @@ interface RecipeCardProps {
   category: string;
   icon: React.ReactNode;
   onClick: () => void;
+  key?: string;
 }
 
 const RecipeCard = ({ title, description, category, icon, onClick }: RecipeCardProps) => {

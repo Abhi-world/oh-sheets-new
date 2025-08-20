@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react';
 
+declare global {
+  interface Window {
+    monday?: any;
+  }
+}
+
 /**
  * Checks if the application is running inside Monday.com's environment
  * by looking for Monday SDK or iframe environment indicators

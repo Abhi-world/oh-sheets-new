@@ -153,8 +153,8 @@ export async function fetchBoardsWithSDK(specificBoardId: string | null = null) 
       const response = await mondayClient.api(query);
       console.log('Monday SDK specific board response:', response);
       
-      if (response.errors) {
-        throw new Error(response.errors[0]?.message || 'Error fetching specific board');
+      if ((response as any).errors && (response as any).errors.length > 0) {
+        throw new Error((response as any).errors[0]?.message || 'Error fetching specific board');
       }
       
       return response;
@@ -181,8 +181,8 @@ export async function fetchBoardsWithSDK(specificBoardId: string | null = null) 
     const response = await mondayClient.api(query);
     console.log('Monday SDK boards response:', response);
     
-    if (response.errors) {
-      throw new Error(response.errors[0]?.message || 'Error fetching boards');
+    if ((response as any).errors) {
+      throw new Error((response as any).errors[0]?.message || 'Error fetching boards');
     }
     
     return response;
@@ -222,8 +222,8 @@ export async function fetchItemsWithSDK(boardId: string) {  // Add type annotati
     const response = await mondayClient.api(query);
     console.log('Monday SDK items response:', response);
     
-    if (response.errors) {
-      throw new Error(response.errors[0]?.message || 'Error fetching items');
+    if ((response as any).errors) {
+      throw new Error((response as any).errors[0]?.message || 'Error fetching items');
     }
     
     return response;

@@ -17,11 +17,18 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          default_sheet_id: string | null
+          default_spreadsheet_id: string | null
+          google_access_token: string | null
+          google_refresh_token: string | null
           google_sheets_credentials: Json | null
+          google_token_expiry: string | null
           id: string | null
           is_paid: boolean | null
           monday_access_token: string | null
           monday_api_key: string | null
+          monday_refresh_token: string | null
+          monday_token_expires_at: string | null
           monday_user_email: string | null
           monday_user_id: string
           trial_end_date: string | null
@@ -30,11 +37,18 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          default_sheet_id?: string | null
+          default_spreadsheet_id?: string | null
+          google_access_token?: string | null
+          google_refresh_token?: string | null
           google_sheets_credentials?: Json | null
+          google_token_expiry?: string | null
           id?: string | null
           is_paid?: boolean | null
           monday_access_token?: string | null
           monday_api_key?: string | null
+          monday_refresh_token?: string | null
+          monday_token_expires_at?: string | null
           monday_user_email?: string | null
           monday_user_id: string
           trial_end_date?: string | null
@@ -43,11 +57,18 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          default_sheet_id?: string | null
+          default_spreadsheet_id?: string | null
+          google_access_token?: string | null
+          google_refresh_token?: string | null
           google_sheets_credentials?: Json | null
+          google_token_expiry?: string | null
           id?: string | null
           is_paid?: boolean | null
           monday_access_token?: string | null
           monday_api_key?: string | null
+          monday_refresh_token?: string | null
+          monday_token_expires_at?: string | null
           monday_user_email?: string | null
           monday_user_id?: string
           trial_end_date?: string | null

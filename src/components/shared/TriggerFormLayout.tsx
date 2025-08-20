@@ -5,7 +5,7 @@ import { LucideIcon } from 'lucide-react';
 interface TriggerFormLayoutProps {
   icon: LucideIcon;
   title: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 const TriggerFormLayout = ({ icon: Icon, title, children }: TriggerFormLayoutProps) => {

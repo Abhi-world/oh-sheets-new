@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -24,7 +23,7 @@ const PageLoader = () => (
   </div>
 );
 
-const PageWrapper = ({ children }: { children: React.ReactNode }) => {
+const PageWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   
   return (
