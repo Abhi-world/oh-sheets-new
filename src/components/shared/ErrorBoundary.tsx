@@ -29,21 +29,26 @@ class ErrorBoundary extends React.Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#7B61FF] via-[#9B87F5] to-[#7E69AB] p-4">
-          <Alert variant="destructive" className="max-w-lg">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Something went wrong</AlertTitle>
-            <AlertDescription className="mt-2">
-              {this.state.error?.message || 'An unexpected error occurred'}
-            </AlertDescription>
-            <Button
-              variant="outline"
-              className="mt-4"
-              onClick={() => window.location.reload()}
-            >
-              Reload Page
-            </Button>
-          </Alert>
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <div className="max-w-md w-full">
+            <Alert className="border-red-200 bg-red-50">
+              <AlertTriangle className="h-4 w-4 text-red-600" />
+              <AlertTitle className="text-red-800">Something went wrong</AlertTitle>
+              <AlertDescription className="text-red-700">
+                {this.state.error?.message || 'An unexpected error occurred'}
+              </AlertDescription>
+            </Alert>
+            
+            <div className="mt-4 text-center">
+              <Button
+                onClick={() => window.location.reload()}
+                variant="outline"
+                className="w-full"
+              >
+                Reload Page
+              </Button>
+            </div>
+          </div>
         </div>
       );
     }

@@ -1,67 +1,87 @@
-import { GoogleAuth } from 'google-auth-library';
-import { google } from 'googleapis';
-import { supabase } from '@/integrations/supabase/client';
-
-const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
-
 interface GoogleSheetsConfig {
   clientId: string;
   clientSecret: string;
   redirectUri: string;
 }
 
+interface GoogleTokens {
+  access_token: string;
+  refresh_token?: string;
+  expires_in?: number;
+  expiry_date?: number;
+}
+
+interface GoogleSpreadsheet {
+  spreadsheetId: string;
+  properties: {
+    title: string;
+  };
+  sheets: Array<{
+    properties: {
+      sheetId: number;
+      title: string;
+    };
+  }>;
+}
+
 class GoogleSheetsService {
-  private auth: GoogleAuth;
-  private sheets: any;
   private config: GoogleSheetsConfig;
+  private accessToken: string | null = null;
 
   constructor(config: GoogleSheetsConfig) {
     this.config = config;
-    this.initializeClient();
-  }
-
-  private initializeClient() {
-    const oauth2Client = new google.auth.OAuth2(
-      this.config.clientId,
-      this.config.clientSecret,
-      this.config.redirectUri
-    );
-
-    this.auth = oauth2Client;
-    this.sheets = google.sheets({ version: 'v4', auth: oauth2Client });
   }
 
   /**
    * Generates the URL for OAuth2 authorization
    */
   getAuthUrl(): string {
-    return this.auth.generateAuthUrl({
+    const params = new URLSearchParams({
+      client_id: this.config.clientId,
+      redirect_uri: this.config.redirectUri,
+      scope: 'https://www.googleapis.com/auth/spreadsheets',
+      response_type: 'code',
       access_type: 'offline',
-      scope: SCOPES,
       prompt: 'consent'
     });
+
+    return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
   }
 
   /**
    * Handles the OAuth2 callback and exchanges the code for tokens
    */
-  async handleAuthCallback(code: string) {
+  async handleAuthCallback(code: string): Promise<GoogleTokens> {
     try {
-      const { tokens } = await this.auth.getToken(code);
-      this.auth.setCredentials(tokens);
+      const response = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          client_id: this.config.clientId,
+          client_secret: this.config.clientSecret,
+          code,
+          grant_type: 'authorization_code',
+          redirect_uri: this.config.redirectUri,
+        }),
+      });
 
-      // Store the tokens in Supabase for the current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase
-          .from('profiles')
-          .update({
-            google_access_token: tokens.access_token,
-            google_refresh_token: tokens.refresh_token,
-            google_token_expiry: tokens.expiry_date
-          })
-          .eq('id', user.id);
+      if (!response.ok) {
+        throw new Error(`OAuth error: ${response.status} ${response.statusText}`);
       }
+
+      const tokens: GoogleTokens = await response.json();
+      
+      // Calculate expiry date
+      if (tokens.expires_in) {
+        tokens.expiry_date = Date.now() + (tokens.expires_in * 1000);
+      }
+
+      this.accessToken = tokens.access_token;
+
+      // Store tokens in localStorage as fallback
+      localStorage.setItem('google_sheets_tokens', JSON.stringify(tokens));
 
       return tokens;
     } catch (error) {
@@ -71,19 +91,71 @@ class GoogleSheetsService {
   }
 
   /**
+   * Refreshes the access token using the refresh token
+   */
+  async refreshAccessToken(refreshToken: string): Promise<GoogleTokens> {
+    try {
+      const response = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          client_id: this.config.clientId,
+          client_secret: this.config.clientSecret,
+          refresh_token: refreshToken,
+          grant_type: 'refresh_token',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Token refresh error: ${response.status} ${response.statusText}`);
+      }
+
+      const tokens: GoogleTokens = await response.json();
+      
+      // Calculate expiry date
+      if (tokens.expires_in) {
+        tokens.expiry_date = Date.now() + (tokens.expires_in * 1000);
+      }
+
+      this.accessToken = tokens.access_token;
+
+      return tokens;
+    } catch (error) {
+      console.error('Error refreshing access token:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Creates a new Google Sheet
    */
-  async createSpreadsheet(title: string) {
+  async createSpreadsheet(title: string): Promise<GoogleSpreadsheet> {
     try {
-      const response = await this.sheets.spreadsheets.create({
-        requestBody: {
+      const token = await this.getAccessToken();
+      if (!token) {
+        throw new Error('No access token available');
+      }
+
+      const response = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           properties: {
             title
           }
-        }
+        }),
       });
 
-      return response.data;
+      if (!response.ok) {
+        throw new Error(`Spreadsheet creation error: ${response.status} ${response.statusText}`);
+      }
+
+      return await response.json();
     } catch (error) {
       console.error('Error creating spreadsheet:', error);
       throw error;
@@ -93,18 +165,32 @@ class GoogleSheetsService {
   /**
    * Updates values in a spreadsheet
    */
-  async updateValues(spreadsheetId: string, range: string, values: any[][]) {
+  async updateValues(spreadsheetId: string, range: string, values: any[][]): Promise<any> {
     try {
-      const response = await this.sheets.spreadsheets.values.update({
-        spreadsheetId,
-        range,
-        valueInputOption: 'USER_ENTERED',
-        requestBody: {
-          values
-        }
-      });
+      const token = await this.getAccessToken();
+      if (!token) {
+        throw new Error('No access token available');
+      }
 
-      return response.data;
+      const response = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            values
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Spreadsheet update error: ${response.status} ${response.statusText}`);
+      }
+
+      return await response.json();
     } catch (error) {
       console.error('Error updating spreadsheet values:', error);
       throw error;
@@ -114,14 +200,28 @@ class GoogleSheetsService {
   /**
    * Gets values from a spreadsheet
    */
-  async getValues(spreadsheetId: string, range: string) {
+  async getValues(spreadsheetId: string, range: string): Promise<any[][]> {
     try {
-      const response = await this.sheets.spreadsheets.values.get({
-        spreadsheetId,
-        range
-      });
+      const token = await this.getAccessToken();
+      if (!token) {
+        throw new Error('No access token available');
+      }
 
-      return response.data.values;
+      const response = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Spreadsheet read error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.values || [];
     } catch (error) {
       console.error('Error getting spreadsheet values:', error);
       throw error;
@@ -129,32 +229,65 @@ class GoogleSheetsService {
   }
 
   /**
+   * Gets a list of spreadsheets
+   */
+  async getSpreadsheets(): Promise<any[]> {
+    try {
+      const token = await this.getAccessToken();
+      if (!token) {
+        throw new Error('No access token available');
+      }
+
+      const response = await fetch(
+        "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'",
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Drive API error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.files || [];
+    } catch (error) {
+      console.error('Error getting spreadsheets:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Initializes the service with stored credentials
    */
-  async initializeWithStoredCredentials() {
+  async initializeWithStoredCredentials(): Promise<boolean> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('google_access_token, google_refresh_token, google_token_expiry')
-        .eq('id', user.id)
-        .single();
-
-      if (profile?.google_access_token) {
+      // Try to get stored tokens from localStorage
+      const storedTokens = localStorage.getItem('google_sheets_tokens');
+      if (storedTokens) {
+        const tokens: GoogleTokens = JSON.parse(storedTokens);
+        
         // Check if token is expired
-        const expiryDate = profile.google_token_expiry ? new Date(profile.google_token_expiry) : null;
-        const isExpired = expiryDate && (new Date() > expiryDate);
-        
-        this.auth.setCredentials({
-          access_token: profile.google_access_token,
-          refresh_token: profile.google_refresh_token,
-          expiry_date: profile.google_token_expiry
-        });
-        
-        // If token is expired, we'll still return true but the next API call will trigger a refresh
-        console.log('Google Sheets credentials loaded, token ' + (isExpired ? 'is expired' : 'is valid'));
+        if (tokens.expiry_date && Date.now() >= tokens.expiry_date) {
+          console.log('Stored Google Sheets token is expired');
+          if (tokens.refresh_token) {
+            try {
+              const newTokens = await this.refreshAccessToken(tokens.refresh_token);
+              localStorage.setItem('google_sheets_tokens', JSON.stringify(newTokens));
+              console.log('Successfully refreshed Google Sheets token');
+              return true;
+            } catch (error) {
+              console.error('Failed to refresh token:', error);
+              return false;
+            }
+          }
+          return false;
+        }
+
+        this.accessToken = tokens.access_token;
+        console.log('Google Sheets credentials loaded from localStorage');
         return true;
       }
 
@@ -169,48 +302,18 @@ class GoogleSheetsService {
   /**
    * Gets the current access token
    */
-  async getAccessToken() {
+  async getAccessToken(): Promise<string | null> {
     try {
-      const { credentials } = this.auth;
-      
-      if (credentials && credentials.access_token) {
-        // Check if token is expired or about to expire (within 5 minutes)
-        if (credentials.expiry_date && Date.now() >= (credentials.expiry_date - 5 * 60 * 1000)) {
-          console.log('Google Sheets token expired or about to expire, refreshing...');
-          try {
-            // Token is expired, refresh it
-            const { tokens } = await this.auth.refreshToken();
-            
-            // Update stored credentials
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-              await supabase
-                .from('profiles')
-                .update({
-                  google_access_token: tokens.access_token,
-                  google_refresh_token: tokens.refresh_token || credentials.refresh_token,
-                  google_token_expiry: tokens.expiry_date
-                })
-                .eq('id', user.id);
-            }
-            
-            console.log('Successfully refreshed Google Sheets token');
-            return tokens.access_token;
-          } catch (refreshError) {
-            console.error('Error refreshing Google Sheets token:', refreshError);
-            // If refresh fails, try to use the existing token anyway
-            // This might fail, but it's better than returning null immediately
-            if (credentials.access_token) {
-              console.log('Using existing token despite refresh failure');
-              return credentials.access_token;
-            }
-            throw refreshError;
-          }
-        }
-        
-        return credentials.access_token;
+      if (this.accessToken) {
+        return this.accessToken;
       }
-      
+
+      // Try to initialize with stored credentials
+      const hasCredentials = await this.initializeWithStoredCredentials();
+      if (hasCredentials && this.accessToken) {
+        return this.accessToken;
+      }
+
       console.error('No access token available');
       return null;
     } catch (error) {
@@ -218,11 +321,19 @@ class GoogleSheetsService {
       return null;
     }
   }
+
+  /**
+   * Clears stored credentials
+   */
+  clearCredentials(): void {
+    this.accessToken = null;
+    localStorage.removeItem('google_sheets_tokens');
+  }
 }
 
 // Create and export the service instance
 export const googleSheetsService = new GoogleSheetsService({
   clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
   clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '',
-  redirectUri: `${import.meta.env.VITE_APP_URL || ''}/auth/google/callback`
+  redirectUri: `${window.location.origin}/auth/google/callback`
 });
