@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { setupMondaySDK, fetchBoardsWithSDK } from "@/utils/mondaySDK";
+import { setupMondaySDK, fetchBoardsWithSDK, execMondayQuery } from "@/utils/mondaySDK";
 import { useState, useEffect } from "react";
 
 async function getMondayAccessToken() {
@@ -71,67 +71,8 @@ async function refreshMondayToken(refreshToken: string, userId: string) {
 
 async function fetchMondayBoards() {
   try {
-    // First try to use the Monday SDK if we're in Monday's environment
-    const { mondayClient, isInMonday, boardId, sessionToken, context } = await setupMondaySDK();
-    
-    if (isInMonday) {
-      console.log("Using Monday SDK to fetch boards in embedded mode");
-      
-      // Use centralized query execution for embedded mode
-      const query = boardId ? `
-        query {
-          boards(ids: ${boardId}) {
-            id
-            name
-            workspace {
-              id
-              name
-            }
-            items {
-              id
-              name
-            }
-          }
-        }
-      ` : `
-        query {
-          boards {
-            id
-            name
-            workspace {
-              id
-              name
-            }
-            items {
-              id
-              name
-            }
-          }
-        }
-      `;
-
-      const { execMondayQuery } = await import('@/utils/mondaySDK');
-      return await execMondayQuery(query);
-      
-      // If no session token but we have board context, create a mock response
-      if (boardId && context) {
-        console.log("Creating board data from context without API call");
-        return {
-          data: {
-            boards: [{
-              id: boardId,
-              name: context.boardName || `Board ${boardId}`,
-              workspace: context.workspace || { id: 'workspace', name: 'Main Workspace' },
-              items: []
-            }]
-          }
-        };
-      }
-    }
-    
-    // If not in Monday's environment, use the traditional API approach
-    const accessToken = await getMondayAccessToken();
-    console.log("Fetching Monday.com boards with access token");
+    // Use centralized query execution that handles both embedded and standalone modes
+    console.log("Using execMondayQuery to fetch boards");
 
     const query = `
       query {
@@ -150,45 +91,9 @@ async function fetchMondayBoards() {
       }
     `;
 
-    const response = await fetch('https://api.monday.com/v2', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`
-      },
-      body: JSON.stringify({ query })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Failed to fetch Monday.com boards:', errorText);
-      
-      if (response.status === 401) {
-        // Attempt token refresh
-        console.log('Received 401 unauthorized error, attempting to refresh token...');
-        try {
-          // Get a fresh token using our refresh mechanism
-          const newToken = await getMondayAccessToken(); // This will trigger the refresh if needed
-          
-          // Retry the request with the new token
-          console.log('Token refreshed, retrying request...');
-          return await fetchMondayBoards();
-        } catch (refreshError) {
-          console.error('Token refresh failed:', refreshError);
-          throw new Error('SESSION_EXPIRED');
-        }
-      }
-      throw new Error(`Monday API Error: ${response.status} - ${errorText}`);
-    }
-
-    const data = await response.json();
-    if (data.errors) {
-      console.error('Monday.com API errors:', data.errors);
-      throw new Error(data.errors[0]?.message || 'Error fetching boards from Monday.com');
-    }
-
-    console.log('Monday.com boards response:', data);
-    return data;
+    const result = await execMondayQuery(query);
+    console.log('Monday.com boards response:', result);
+    return result;
   } catch (error) {
     console.error('Error in fetchMondayBoards:', error);
     throw error;
