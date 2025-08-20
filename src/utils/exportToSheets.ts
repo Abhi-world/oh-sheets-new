@@ -145,7 +145,8 @@ export async function exportSingleItemToGoogleSheets(
       throw new Error('Monday.com access token not found');
     }
 
-    // Fetch the item details from Monday.com
+    // Fetch the item details from Monday.com using centralized query execution
+    const { execMondayQuery } = await import('@/utils/mondaySDK');
     const query = `
       query {
         items(ids: [${itemId}]) {
@@ -161,25 +162,12 @@ export async function exportSingleItemToGoogleSheets(
       }
     `;
 
-    const response = await fetch('https://api.monday.com/v2', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${profile.monday_access_token}`
-      },
-      body: JSON.stringify({ query })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Monday API Error: ${response.status}`);
+    const result = await execMondayQuery(query);
+    if (!result.data?.items) {
+      throw new Error('Item not found');
     }
 
-    const data = await response.json();
-    if (data.errors) {
-      throw new Error(data.errors[0]?.message || 'Error fetching item details');
-    }
-
-    const items = data.data.items;
+    const items = result.data.items;
     return await exportItemsToGoogleSheets(items, options);
   } catch (error) {
     console.error('Error exporting item to Google Sheets:', error);
@@ -215,7 +203,8 @@ export async function exportMultipleItemsToGoogleSheets(
       throw new Error('Monday.com access token not found');
     }
 
-    // Fetch the items details from Monday.com
+    // Fetch the items details from Monday.com using centralized query execution
+    const { execMondayQuery } = await import('@/utils/mondaySDK');
     const query = `
       query {
         items(ids: [${itemIds.join(',')}]) {
@@ -231,25 +220,12 @@ export async function exportMultipleItemsToGoogleSheets(
       }
     `;
 
-    const response = await fetch('https://api.monday.com/v2', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${profile.monday_access_token}`
-      },
-      body: JSON.stringify({ query })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Monday API Error: ${response.status}`);
+    const result = await execMondayQuery(query);
+    if (!result.data?.items) {
+      throw new Error('Items not found');
     }
 
-    const data = await response.json();
-    if (data.errors) {
-      throw new Error(data.errors[0]?.message || 'Error fetching items details');
-    }
-
-    const items = data.data.items;
+    const items = result.data.items;
     return await exportItemsToGoogleSheets(items, options);
   } catch (error) {
     console.error('Error exporting items to Google Sheets:', error);
@@ -283,7 +259,8 @@ export async function exportBoardToGoogleSheets(
       throw new Error('Monday.com access token not found');
     }
 
-    // Fetch the board details from Monday.com
+    // Fetch the board details from Monday.com using centralized query execution
+    const { execMondayQuery } = await import('@/utils/mondaySDK');
     const query = `
       query {
         boards(ids: ${boardId}) {
@@ -301,25 +278,12 @@ export async function exportBoardToGoogleSheets(
       }
     `;
 
-    const response = await fetch('https://api.monday.com/v2', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${profile.monday_access_token}`
-      },
-      body: JSON.stringify({ query })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Monday API Error: ${response.status}`);
+    const result = await execMondayQuery(query);
+    if (!result.data?.boards || result.data.boards.length === 0) {
+      throw new Error('Board not found');
     }
 
-    const data = await response.json();
-    if (data.errors) {
-      throw new Error(data.errors[0]?.message || 'Error fetching board details');
-    }
-
-    const items = data.data.boards[0].items;
+    const items = result.data.boards[0].items;
     return await exportItemsToGoogleSheets(items, options);
   } catch (error) {
     console.error('Error exporting board to Google Sheets:', error);

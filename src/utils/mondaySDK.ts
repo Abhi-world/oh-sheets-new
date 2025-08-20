@@ -251,4 +251,162 @@ export async function fetchItemsWithSDK(boardId: string) {  // Add type annotati
     throw error;
   }
 }
+
+/**
+ * Centralized Monday GraphQL query execution
+ * Uses Monday SDK in embedded mode, stored OAuth tokens in standalone mode
+ */
+export async function execMondayQuery(query: string, variables?: Record<string, any>) {
+  try {
+    console.log('Executing Monday GraphQL query:', query.substring(0, 100) + '...');
+    
+    // Get Monday SDK setup
+    const { mondayClient, isInMonday, sessionToken } = await setupMondaySDK();
+    
+    if (isInMonday && sessionToken) {
+      console.log('Using Monday SDK api() method in embedded mode');
+      
+      try {
+        const response = await mondayClient.api(query, { variables });
+        console.log('Monday SDK response:', response);
+        
+        if ((response as any).errors && (response as any).errors.length > 0) {
+          console.error('Monday SDK GraphQL errors:', (response as any).errors);
+          throw new Error((response as any).errors[0]?.message || 'GraphQL error from Monday SDK');
+        }
+        
+        return { data: (response as any).data };
+      } catch (sdkError) {
+        console.error('Monday SDK api() failed:', sdkError);
+        
+        // Fallback to direct API call with session token
+        console.log('Falling back to direct API call with session token');
+        const directResponse = await fetch('https://api.monday.com/v2', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${sessionToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ query, variables })
+        });
+        
+        if (!directResponse.ok) {
+          const errorText = await directResponse.text();
+          console.error('Direct fetch with session token failed:', directResponse.status, errorText);
+          throw new Error(`Monday API error: ${directResponse.status} - ${errorText}`);
+        }
+        
+        const directData = await directResponse.json();
+        console.log('Direct API response with session token:', directData);
+        
+        if (directData.errors && directData.errors.length > 0) {
+          throw new Error(directData.errors[0]?.message || 'GraphQL error from Monday API');
+        }
+        
+        return { data: directData.data };
+      }
+    }
+    
+    // Standalone mode: use stored OAuth token
+    console.log('Using stored OAuth token for Monday API call');
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      throw new Error('You must be logged in');
+    }
+    
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('monday_access_token, monday_refresh_token, monday_token_expires_at')
+      .eq('id', user.id)
+      .single();
+    
+    if (!profile?.monday_access_token) {
+      throw new Error('Monday.com access token not found. Please connect your Monday.com account.');
+    }
+    
+    // Make direct API call with stored token
+    const response = await fetch('https://api.monday.com/v2', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${profile.monday_access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query, variables })
+    });
+    
+    if (!response.ok) {
+      console.error('Monday API call failed:', response.status, response.statusText);
+      
+      // Handle 401 errors by attempting token refresh
+      if (response.status === 401 && profile.monday_refresh_token) {
+        console.log('Access token expired, attempting refresh...');
+        
+        try {
+          // Call token refresh function
+          const { data: tokenData } = await supabase.functions.invoke('monday-token-refresh', {
+            body: { refresh_token: profile.monday_refresh_token }
+          });
+          
+          if (tokenData?.access_token) {
+            // Update profile with new token
+            await supabase
+              .from('profiles')
+              .update({
+                monday_access_token: tokenData.access_token,
+                monday_refresh_token: tokenData.refresh_token || profile.monday_refresh_token,
+                monday_token_expires_at: new Date(Date.now() + (tokenData.expires_in * 1000)).toISOString(),
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', user.id);
+            
+            console.log('Token refreshed successfully, retrying query');
+            
+            // Retry the request with new token
+            const retryResponse = await fetch('https://api.monday.com/v2', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${tokenData.access_token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ query, variables })
+            });
+            
+            if (!retryResponse.ok) {
+              const errorText = await retryResponse.text();
+              throw new Error(`Monday API error after token refresh: ${retryResponse.status} - ${errorText}`);
+            }
+            
+            const retryData = await retryResponse.json();
+            if (retryData.errors && retryData.errors.length > 0) {
+              throw new Error(retryData.errors[0]?.message || 'GraphQL error from Monday API');
+            }
+            
+            return { data: retryData.data };
+          }
+        } catch (refreshError) {
+          console.error('Token refresh failed:', refreshError);
+          throw new Error('Your Monday.com session has expired. Please reconnect your account.');
+        }
+      }
+      
+      const errorText = await response.text();
+      throw new Error(`Monday API error: ${response.status} - ${errorText}`);
+    }
+    
+    const data = await response.json();
+    console.log('Monday API response:', data);
+    
+    if (data.errors && data.errors.length > 0) {
+      console.error('Monday API GraphQL errors:', data.errors);
+      throw new Error(data.errors[0]?.message || 'GraphQL error from Monday API');
+    }
+    
+    return { data: data.data };
+  } catch (error) {
+    console.error('Error executing Monday query:', error);
+    throw error;
+  }
+}
 // Properly terminated file with newline

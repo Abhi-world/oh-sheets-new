@@ -57,7 +57,8 @@ const BoardItemMenu = ({ itemId, boardId }: BoardItemMenuProps) => {
         throw new Error('Monday.com access token not found');
       }
 
-      // Fetch the item details from Monday.com
+      // Fetch the item details from Monday.com using centralized query execution
+      const { execMondayQuery } = await import('@/utils/mondaySDK');
       const query = `
         query {
           items(ids: [${itemId}]) {
@@ -73,61 +74,12 @@ const BoardItemMenu = ({ itemId, boardId }: BoardItemMenuProps) => {
         }
       `;
 
-      const response = await fetch('https://api.monday.com/v2', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${profile.monday_access_token}`
-        },
-        body: JSON.stringify({ query })
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Failed to fetch Monday.com item:', errorText);
-        
-        if (response.status === 401) {
-          // Attempt to refresh token and retry
-          toast.info('Refreshing connection to Monday.com...');
-          try {
-            // Get a fresh token using our refresh mechanism
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error('You must be logged in');
-            
-            // Call the token refresh edge function directly
-            const { data: tokenData } = await supabase.functions.invoke('monday-token-refresh', {
-              body: { refresh_token: profile.monday_refresh_token }
-            });
-            
-            if (tokenData?.access_token) {
-              // Update the profile with new token
-              await supabase
-                .from('profiles')
-                .update({
-                  monday_access_token: tokenData.access_token,
-                  monday_refresh_token: tokenData.refresh_token || profile.monday_refresh_token,
-                  monday_token_expires_at: new Date(Date.now() + (tokenData.expires_in * 1000)).toISOString(),
-                  updated_at: new Date().toISOString()
-                })
-                .eq('id', user.id);
-                
-              // Retry the request
-              return await handleSyncItem();
-            }
-          } catch (refreshError) {
-            console.error('Token refresh failed:', refreshError);
-            throw new Error('Your Monday.com session has expired. Please reconnect your account.');
-          }
-        }
-        throw new Error(`Monday API Error: ${response.status} - ${errorText}`);
+      const result = await execMondayQuery(query);
+      if (!result.data?.items || result.data.items.length === 0) {
+        throw new Error('Item not found');
       }
 
-      const data = await response.json();
-      if (data.errors) {
-        throw new Error(data.errors[0]?.message || 'Error fetching item details');
-      }
-
-      const itemData = data.data.items[0];
+      const itemData = result.data.items[0];
       
       // Export the item to Google Sheets using our utility function
       const success = await exportSingleItemToGoogleSheets(itemId, boardId, {

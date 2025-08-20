@@ -25,38 +25,12 @@ const DateTriggerForm = () => {
 
   const fetchMondayBoards = async () => {
     try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('monday_access_token, monday_user_id')
-        .single();
-
-      if (!profile?.monday_access_token) {
-        toast.error('Please connect your Monday.com account first');
-        return;
-      }
-
-      const response = await fetch('https://api.monday.com/v2', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${profile.monday_access_token}`
-        },
-        body: JSON.stringify({
-          query: `query { boards { id name } }`
-        })
-      });
-
-      if (!response.ok) {
-        const errorBody = await response.text();
-        throw new Error(`Monday API Error: ${response.status} - ${errorBody}`);
-      }
-      if (response.status === 401) {
-        throw new Error('Invalid or expired Monday.com access token');
-      }
-
-      const data = await response.json();
-      if (data.data?.boards) {
-        setBoards(data.data.boards);
+      const { execMondayQuery } = await import('@/utils/mondaySDK');
+      const query = `query { boards { id name } }`;
+      
+      const result = await execMondayQuery(query);
+      if (result.data?.boards) {
+        setBoards(result.data.boards);
       }
     } catch (error) {
       console.error('Error fetching Monday.com boards:', error);

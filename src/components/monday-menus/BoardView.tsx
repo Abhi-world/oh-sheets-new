@@ -42,19 +42,8 @@ const BoardView = () => {
   const fetchBoardDetails = async (boardId: string) => {
     try {
       setIsLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('You must be logged in');
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('monday_access_token')
-        .eq('id', user.id)
-        .single();
-
-      if (!profile?.monday_access_token) {
-        throw new Error('Monday.com access token not found');
-      }
-
+      
+      const { execMondayQuery } = await import('@/utils/mondaySDK');
       const query = `
         query {
           boards(ids: ${boardId}) {
@@ -74,25 +63,12 @@ const BoardView = () => {
         }
       `;
 
-      const response = await fetch('https://api.monday.com/v2', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${profile.monday_access_token}`
-        },
-        body: JSON.stringify({ query })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Monday API Error: ${response.status}`);
+      const result = await execMondayQuery(query);
+      if (!result.data?.boards || result.data.boards.length === 0) {
+        throw new Error('Board not found');
       }
 
-      const data = await response.json();
-      if (data.errors) {
-        throw new Error(data.errors[0]?.message || 'Error fetching board details');
-      }
-
-      setBoardData(data.data.boards[0]);
+      setBoardData(result.data.boards[0]);
     } catch (error) {
       console.error('Error fetching board details:', error);
       toast.error('Failed to fetch board details');

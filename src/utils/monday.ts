@@ -29,9 +29,8 @@ export async function getMondayApiKey(): Promise<string | null> {
 }
 
 export async function fetchMondayBoards() {
-  const apiKey = await getMondayApiKey();
-  if (!apiKey) throw new Error('Monday.com API key not found');
-
+  const { execMondayQuery } = await import('@/utils/mondaySDK');
+  
   const query = `
     query {
       boards {
@@ -50,28 +49,14 @@ export async function fetchMondayBoards() {
     }
   `;
 
-  const response = await fetch('https://api.monday.com/v2', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': apiKey
-    },
-    body: JSON.stringify({ query })
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch Monday.com boards');
-  }
-
-  const data = await response.json();
-  console.log('Monday.com boards data:', data);
-  return data.data.boards;
+  const result = await execMondayQuery(query);
+  console.log('Monday.com boards data:', result.data);
+  return result.data.boards;
 }
 
 export async function createMondayItem(boardId: string, itemName: string, columnValues: Record<string, any>) {
-  const apiKey = await getMondayApiKey();
-  if (!apiKey) throw new Error('Monday.com API key not found');
-
+  const { execMondayQuery } = await import('@/utils/mondaySDK');
+  
   const query = `
     mutation ($boardId: ID!, $itemName: String!, $columnValues: JSON!) {
       create_item (
@@ -84,35 +69,20 @@ export async function createMondayItem(boardId: string, itemName: string, column
     }
   `;
 
-  const response = await fetch('https://api.monday.com/v2', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': apiKey
-    },
-    body: JSON.stringify({
-      query,
-      variables: {
-        boardId,
-        itemName,
-        columnValues: JSON.stringify(columnValues)
-      }
-    })
-  });
+  const variables = {
+    boardId,
+    itemName,
+    columnValues: JSON.stringify(columnValues)
+  };
 
-  if (!response.ok) {
-    throw new Error('Failed to create Monday.com item');
-  }
-
-  const data = await response.json();
-  console.log('Created Monday.com item:', data);
-  return data.data.create_item;
+  const result = await execMondayQuery(query, variables);
+  console.log('Created Monday.com item:', result.data);
+  return result.data.create_item;
 }
 
 export async function updateMondayItem(itemId: string, boardId: string, columnValues: Record<string, any>) {
-  const apiKey = await getMondayApiKey();
-  if (!apiKey) throw new Error('Monday.com API key not found');
-
+  const { execMondayQuery } = await import('@/utils/mondaySDK');
+  
   const query = `
     mutation ($itemId: ID!, $boardId: ID!, $columnValues: JSON!) {
       change_multiple_column_values (
@@ -125,35 +95,20 @@ export async function updateMondayItem(itemId: string, boardId: string, columnVa
     }
   `;
 
-  const response = await fetch('https://api.monday.com/v2', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': apiKey
-    },
-    body: JSON.stringify({
-      query,
-      variables: {
-        itemId,
-        boardId,
-        columnValues: JSON.stringify(columnValues)
-      }
-    })
-  });
+  const variables = {
+    itemId,
+    boardId,
+    columnValues: JSON.stringify(columnValues)
+  };
 
-  if (!response.ok) {
-    throw new Error('Failed to update Monday.com item');
-  }
-
-  const data = await response.json();
-  console.log('Updated Monday.com item:', data);
-  return data.data.change_multiple_column_values;
+  const result = await execMondayQuery(query, variables);
+  console.log('Updated Monday.com item:', result.data);
+  return result.data.change_multiple_column_values;
 }
 
 export async function subscribeToBoardUpdates(boardId: string, callback: (item: MondayItem) => void) {
-  const apiKey = await getMondayApiKey();
-  if (!apiKey) throw new Error('Monday.com API key not found');
-
+  const { execMondayQuery } = await import('@/utils/mondaySDK');
+  
   // This is a simplified example. In a production environment,
   // you would typically use WebSockets or a webhook endpoint
   setInterval(async () => {
@@ -174,20 +129,11 @@ export async function subscribeToBoardUpdates(boardId: string, callback: (item: 
         }
       `;
 
-      const response = await fetch('https://api.monday.com/v2', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': apiKey
-        },
-        body: JSON.stringify({ query })
-      });
-
-      if (!response.ok) throw new Error('Failed to fetch board updates');
-
-      const data = await response.json();
-      const items = data.data.boards[0].items;
-      items.forEach(callback);
+      const result = await execMondayQuery(query);
+      if (result.data?.boards && result.data.boards.length > 0) {
+        const items = result.data.boards[0].items;
+        items.forEach(callback);
+      }
     } catch (error) {
       console.error('Error fetching board updates:', error);
     }
