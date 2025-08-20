@@ -26,87 +26,57 @@ export async function setupMondaySDK() {
   try {
     // Client-side check
     if (typeof window === 'undefined') {
-      return { mondayClient: monday, isInMonday: false };
+      return { mondayClient: monday, isInMonday: false, sessionToken: null };
     }
     
-    // Initialize the SDK
-    const mondayClient = initMondaySDK();
-    
-    // Check if we're in Monday's environment and get context + session token
-    let context, sessionToken;
-    try {
-      [context, sessionToken] = await Promise.all([
-        mondayClient.get('context'),
-        mondayClient.get('sessionToken')
-      ]);
-      console.log('Monday SDK context:', context);
-      console.log('Monday SDK session token available:', !!sessionToken?.data);
-    } catch (contextError) {
-      console.warn('Error getting Monday context/session, will try alternative detection:', contextError);
-      context = { data: {} };
-      sessionToken = { data: null };
-    }
+    // Initialize the Monday SDK without token for embedded mode
+    const mondayClient = mondaySdk();
     
     // Check URL parameters for board ID
     const urlParams = new URLSearchParams(window.location.search);
     const urlBoardId = urlParams.get('boardId');
     
-    // More robust environment detection
+    // Enhanced embedded mode detection
     const isInMondayEnvironment = !!(
       // Check if we're in an iframe (Monday embeds apps in iframes)
       window.self !== window.top ||
-      // Check for Monday context data
-      (context.data && (
-        context.data.instanceId || 
-        context.data.boardId || 
-        context.data.theme ||
-        context.data.user
-      )) ||
-      // Check URL indicators
-      urlBoardId !== null ||
-      // Check domain
+      // Check domain - any subdomain of monday.com
       window.location.hostname.includes('monday.com') ||
       // Check for Monday-specific URL params
       urlParams.has('instanceId') || 
-      urlParams.has('app')
+      urlParams.has('app') ||
+      urlBoardId !== null ||
+      // Check for Monday-style URLs
+      window.location.pathname.includes('/boards/') ||
+      window.location.pathname.includes('/views/')
     );
     
     if (isInMondayEnvironment) {
-      console.log('Detected running inside Monday.com environment');
+      console.log('🔵 Detected embedded mode - running inside Monday.com');
       
-      // Use session token if available (this is the preferred method for embedded apps)
-      if (sessionToken?.data) {
-        mondayClient.setToken(sessionToken.data);
-        console.log('Monday SDK initialized with session token');
+      // In embedded mode, DON'T set tokens manually
+      // The Monday SDK handles authentication automatically
+      try {
+        const context = await mondayClient.get('context');
+        console.log('Monday SDK context received:', context);
+        
         return { 
           mondayClient, 
           isInMonday: true, 
-          boardId: context.data.boardId || urlBoardId,
-          sessionToken: sessionToken.data,
-          context: context.data
+          boardId: (context?.data as any)?.boardId || urlBoardId,
+          context: context?.data || {},
+          sessionToken: null
         };
-      }
-      
-      // Fallback: Use context token if available
-      if (context.data.token) {
-        mondayClient.setToken(context.data.token);
-        console.log('Monday SDK initialized with context token');
+      } catch (contextError) {
+        console.warn('Could not get context, but still in embedded mode:', contextError);
         return { 
           mondayClient, 
           isInMonday: true, 
-          boardId: context.data.boardId || urlBoardId,
-          sessionToken: context.data.token,
-          context: context.data
+          boardId: urlBoardId,
+          context: {},
+          sessionToken: null
         };
       }
-      
-      console.log('Running in Monday environment but no session token available');
-      return { 
-        mondayClient, 
-        isInMonday: true, 
-        boardId: context.data.boardId || urlBoardId,
-        context: context.data
-      };
     }
     
     // Not in Monday or no token available, try to use stored token
@@ -125,10 +95,10 @@ export async function setupMondaySDK() {
       }
     }
     
-    return { mondayClient, isInMonday: false };
+    return { mondayClient, isInMonday: false, sessionToken: null };
   } catch (error) {
     console.error('Error setting up Monday SDK:', error);
-    return { mondayClient: monday, isInMonday: false };
+    return { mondayClient: monday, isInMonday: false, sessionToken: null };
   }
 }
 
