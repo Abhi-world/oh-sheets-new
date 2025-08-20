@@ -1,20 +1,15 @@
 import mondaySdk from 'monday-sdk-js';
 import { supabase } from '@/integrations/supabase/client';
 
-// Initialize the Monday SDK
+// Create a single, globally initialized Monday SDK instance
 const monday = mondaySdk();
+console.log('🚀 Monday SDK initialized globally');
 
 /**
- * Initializes the Monday SDK and returns the instance
- * This should be called when the application starts
+ * Gets the Monday SDK instance (already initialized in main.tsx)
+ * @returns The globally initialized Monday SDK instance
  */
-export function initMondaySDK() {
-  // Use import.meta.env for Vite environment variables instead of process.env
-  // This ensures compatibility with Vite's production builds
-  const apiToken = typeof import.meta !== 'undefined' ? 
-    import.meta.env.VITE_MONDAY_API_TOKEN || '' : 
-    '';
-  monday.setToken(apiToken);
+export function getMondaySDK() {
   return monday;
 }
 
@@ -29,8 +24,8 @@ export async function setupMondaySDK() {
       return { mondayClient: monday, isInMonday: false, sessionToken: null };
     }
     
-    // Initialize the Monday SDK without token for embedded mode
-    const mondayClient = mondaySdk();
+    // Use the globally initialized Monday SDK instance
+    const mondayClient = getMondaySDK();
     
     // Check URL parameters for board ID
     const urlParams = new URLSearchParams(window.location.search);
@@ -103,11 +98,22 @@ export async function setupMondaySDK() {
 }
 
 /**
- * Gets the Monday SDK instance
- * If not already initialized, it will initialize it
+ * Detects if the app is running in Monday.com embedded mode
+ * @returns boolean indicating if app is embedded
  */
-export function getMondaySDK() {
-  return monday;
+export function isEmbeddedMode(): boolean {
+  if (typeof window === 'undefined') return false;
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  return !!(
+    window.self !== window.top ||
+    window.location.hostname.includes('monday.com') ||
+    urlParams.has('instanceId') || 
+    urlParams.has('app') ||
+    urlParams.get('boardId') !== null ||
+    window.location.pathname.includes('/boards/') ||
+    window.location.pathname.includes('/views/')
+  );
 }
 
 /**
@@ -230,13 +236,12 @@ export async function execMondayQuery(query: string, variables?: Record<string, 
   try {
     console.log('Executing Monday GraphQL query:', query.substring(0, 100) + '...');
     
-    // Get Monday SDK setup
-    const { mondayClient, isInMonday, sessionToken } = await setupMondaySDK();
-    
-    if (isInMonday) {
-      console.log('Using Monday SDK api() method in embedded mode');
+    // Check if we're in embedded mode
+    if (isEmbeddedMode()) {
+      console.log('🔵 Using Monday SDK api() method in embedded mode');
       
       try {
+        const mondayClient = getMondaySDK();
         // ALWAYS use Monday SDK api() method in embedded mode - never fetch()
         const response = await mondayClient.api(query, { variables });
         console.log('Monday SDK response:', response);
