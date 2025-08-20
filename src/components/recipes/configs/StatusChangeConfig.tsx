@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { setupMondaySDK } from '@/utils/mondaySDK';
 
 const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boolean) => void }) => {
   const [selectedBoard, setSelectedBoard] = useState('');
@@ -19,7 +18,7 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
   const navigate = useNavigate();
   
   const { data: mondayData, isLoading: isMondayLoading, refetch: refetchMondayData } = useMonday();
-  const { isInMonday } = useMondayContext();
+  const { isInMonday, boardId, context } = useMondayContext();
   const { isConnected: isGoogleConnected, isLoading: isGoogleLoading } = useGoogleSheetsStatus();
   const boards = mondayData?.data?.boards || [];
   
@@ -41,23 +40,12 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
   
   // Detect board ID from Monday.com context when in Monday environment
   useEffect(() => {
-    const detectBoardFromContext = async () => {
-      if (isInMonday) {
-        try {
-          const { boardId } = await setupMondaySDK();
-          if (boardId) {
-            console.log('Detected board ID from Monday context:', boardId);
-            setDetectedBoardId(boardId);
-            setSelectedBoard(boardId);
-          }
-        } catch (error) {
-          console.error('Error detecting board from Monday context:', error);
-        }
-      }
-    };
-    
-    detectBoardFromContext();
-  }, [isInMonday]);
+    if (isInMonday && boardId && !selectedBoard) {
+      console.log('Auto-selecting board from Monday context:', boardId);
+      setSelectedBoard(boardId);
+      setDetectedBoardId(boardId);
+    }
+  }, [isInMonday, boardId, selectedBoard]);
   
   // Fetch spreadsheets when component mounts if connected to Google Sheets
   useEffect(() => {
@@ -121,21 +109,27 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
           <Info className="h-4 w-4 text-green-500" />
           <AlertTitle>Running inside Monday.com</AlertTitle>
           <AlertDescription className="flex flex-col gap-2">
-            <p>You're currently running the app inside Monday.com. {detectedBoardId ? 'Board has been automatically detected.' : 'Attempting to detect board...'}</p>
-            <Button 
-              onClick={handleRefreshBoards} 
-              variant="outline" 
-              size="sm"
-              className="self-start flex items-center gap-2"
-              disabled={isRefreshing || isMondayLoading}
-            >
-              {isRefreshing ? (
-                <RefreshCw className="h-3 w-3 animate-spin" />
-              ) : (
-                <RefreshCw className="h-3 w-3" />
-              )}
-              Refresh Boards
-            </Button>
+            <p>
+              You're currently running the app inside Monday.com. 
+              {boardId ? ` Board detected: ${boardId}` : ' Attempting to detect board...'}
+              {context?.boardName && ` (${context.boardName})`}
+            </p>
+            {!boardId && (
+              <Button 
+                onClick={handleRefreshBoards} 
+                variant="outline" 
+                size="sm"
+                className="self-start flex items-center gap-2"
+                disabled={isRefreshing || isMondayLoading}
+              >
+                {isRefreshing ? (
+                  <RefreshCw className="h-3 w-3 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-3 w-3" />
+                )}
+                Refresh Boards
+              </Button>
+            )}
           </AlertDescription>
         </Alert>
       )}
@@ -147,6 +141,8 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
             boards={boards}
             selectedBoard={selectedBoard}
             onBoardSelect={setSelectedBoard}
+            isEmbedded={isInMonday && !!boardId}
+            detectedBoardName={context?.boardName}
           />
           , automatically add a row with these{' '}
           <ValueSelector

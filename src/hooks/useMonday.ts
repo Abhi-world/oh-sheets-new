@@ -72,16 +72,36 @@ async function refreshMondayToken(refreshToken: string, userId: string) {
 async function fetchMondayBoards() {
   try {
     // First try to use the Monday SDK if we're in Monday's environment
-    const { mondayClient, isInMonday, boardId } = await setupMondaySDK();
+    const { mondayClient, isInMonday, boardId, sessionToken, context } = await setupMondaySDK();
     
     if (isInMonday) {
       console.log("Using Monday SDK to fetch boards");
-      // If we have a specific board ID from the context, use it
-      if (boardId) {
-        console.log(`Using board ID from Monday.com context: ${boardId}`);
-        return await fetchBoardsWithSDK(boardId);
+      
+      // If we have a session token, we can make API calls directly
+      if (sessionToken) {
+        console.log("Using session token for API calls");
+        // If we have a specific board ID from the context, use it
+        if (boardId) {
+          console.log(`Using board ID from Monday.com context: ${boardId}`);
+          return await fetchBoardsWithSDK(boardId);
+        }
+        return await fetchBoardsWithSDK();
       }
-      return await fetchBoardsWithSDK();
+      
+      // If no session token but we have board context, create a mock response
+      if (boardId && context) {
+        console.log("Creating board data from context without API call");
+        return {
+          data: {
+            boards: [{
+              id: boardId,
+              name: context.boardName || `Board ${boardId}`,
+              workspace: context.workspace || { id: 'workspace', name: 'Main Workspace' },
+              items: []
+            }]
+          }
+        };
+      }
     }
     
     // If not in Monday's environment, use the traditional API approach
@@ -174,17 +194,23 @@ export const useMondayWorkspaces = () => {
 
 export const useMondayContext = () => {
   const [isInMonday, setIsInMonday] = useState(false);
+  const [boardId, setBoardId] = useState<string | null>(null);
+  const [context, setContext] = useState<any>(null);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
   
   useEffect(() => {
     const checkMondayContext = async () => {
-      const { isInMonday: inMonday } = await setupMondaySDK();
+      const { isInMonday: inMonday, boardId: detectedBoardId, context: mondayContext, sessionToken: token } = await setupMondaySDK();
       setIsInMonday(inMonday);
+      setBoardId(detectedBoardId || null);
+      setContext(mondayContext || null);
+      setSessionToken(token || null);
     };
     
     checkMondayContext();
   }, []);
   
-  return { isInMonday };
+  return { isInMonday, boardId, context, sessionToken };
 };
 
 export const useMondayBoardsByWorkspace = (workspaceId: string) => {

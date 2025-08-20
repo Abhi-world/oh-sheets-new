@@ -13,9 +13,11 @@ interface BoardSelectorProps {
   boards: MondayBoard[];
   selectedBoard: string;
   onBoardSelect: (boardId: string) => void;
+  isEmbedded?: boolean;
+  detectedBoardName?: string;
 }
 
-const BoardSelector = ({ boards = [], selectedBoard, onBoardSelect }: BoardSelectorProps) => {
+const BoardSelector = ({ boards = [], selectedBoard, onBoardSelect, isEmbedded = false, detectedBoardName }: BoardSelectorProps) => {
   console.log('BoardSelector received boards:', boards);
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,8 +29,20 @@ const BoardSelector = ({ boards = [], selectedBoard, onBoardSelect }: BoardSelec
   }, [boards, selectedBoard]);
   
   // Safely find the selected board name, with fallback to 'board'
-  const selectedBoardName = boards && boards.length > 0 ? 
-    (boards.find(board => board.id === selectedBoard)?.name || 'board') : 'board';
+  const selectedBoardName = isEmbedded && detectedBoardName 
+    ? detectedBoardName
+    : boards && boards.length > 0 
+      ? (boards.find(board => board.id === selectedBoard)?.name || 'board') 
+      : 'board';
+  
+  // In embedded mode with detected board, show as text instead of clickable button
+  if (isEmbedded && selectedBoard && detectedBoardName) {
+    return (
+      <span className="text-2xl text-white underline decoration-dotted">
+        {selectedBoardName}
+      </span>
+    );
+  }
   
   // Only filter boards if the array exists and has items
   const filteredBoards = boards && boards.length > 0 ? 

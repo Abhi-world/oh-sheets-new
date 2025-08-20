@@ -10,7 +10,7 @@ import { AlertCircle, Info } from "lucide-react";
 
 const Index = () => {
   const { data, isLoading, error } = useMonday();
-  const { isInMonday } = useMondayContext();
+  const { isInMonday, boardId, context } = useMondayContext();
   const isMondayConnected = !!data?.data?.boards || isInMonday;
   
   return (
@@ -37,7 +37,9 @@ const Index = () => {
             <Info className="h-4 w-4" />
             <AlertTitle>Running inside Monday.com</AlertTitle>
             <AlertDescription>
-              You're currently running the app inside Monday.com. Boards will be automatically detected.
+              You're currently running the app inside Monday.com. 
+              {boardId && ` Board detected: ${boardId}`}
+              {context?.boardName && ` (${context.boardName})`}
             </AlertDescription>
           </Alert>
         )}
