@@ -263,10 +263,11 @@ export async function execMondayQuery(query: string, variables?: Record<string, 
     // Get Monday SDK setup
     const { mondayClient, isInMonday, sessionToken } = await setupMondaySDK();
     
-    if (isInMonday && sessionToken) {
+    if (isInMonday) {
       console.log('Using Monday SDK api() method in embedded mode');
       
       try {
+        // ALWAYS use Monday SDK api() method in embedded mode - never fetch()
         const response = await mondayClient.api(query, { variables });
         console.log('Monday SDK response:', response);
         
@@ -277,37 +278,12 @@ export async function execMondayQuery(query: string, variables?: Record<string, 
         
         return { data: (response as any).data };
       } catch (sdkError) {
-        console.error('Monday SDK api() failed:', sdkError);
-        
-        // Fallback to direct API call with session token
-        console.log('Falling back to direct API call with session token');
-        const directResponse = await fetch('https://api.monday.com/v2', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${sessionToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ query, variables })
-        });
-        
-        if (!directResponse.ok) {
-          const errorText = await directResponse.text();
-          console.error('Direct fetch with session token failed:', directResponse.status, errorText);
-          throw new Error(`Monday API error: ${directResponse.status} - ${errorText}`);
-        }
-        
-        const directData = await directResponse.json();
-        console.log('Direct API response with session token:', directData);
-        
-        if (directData.errors && directData.errors.length > 0) {
-          throw new Error(directData.errors[0]?.message || 'GraphQL error from Monday API');
-        }
-        
-        return { data: directData.data };
+        console.error('Monday SDK api() failed in embedded mode:', sdkError);
+        throw sdkError; // Don't fall back to fetch in embedded mode
       }
     }
     
-    // Standalone mode: use stored OAuth token
+    // Standalone mode: use stored OAuth token with direct API calls
     console.log('Using stored OAuth token for Monday API call');
     const { supabase } = await import('@/integrations/supabase/client');
     
@@ -409,4 +385,3 @@ export async function execMondayQuery(query: string, variables?: Record<string, 
     throw error;
   }
 }
-// Properly terminated file with newline
