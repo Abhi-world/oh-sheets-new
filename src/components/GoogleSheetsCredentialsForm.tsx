@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,79 +56,77 @@ export default function GoogleSheetsCredentialsForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="client_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Client ID</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter your Google Client ID" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Found in your Google Cloud Console credentials
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="client_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Client ID</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter your Google Client ID" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Found in your Google Cloud Console credentials
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="client_secret"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Client Secret</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="password"
-                      placeholder="Enter your Google Client Secret" 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Your Google OAuth 2.0 client secret
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="client_secret"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Client Secret</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="password"
+                    placeholder="Enter your Google Client Secret" 
+                    {...field} 
+                  />
+                </FormControl>
+                <FormDescription>
+                  Your Google OAuth 2.0 client secret
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="refresh_token"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Refresh Token</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="password"
-                      placeholder="Enter your Google Refresh Token" 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    The refresh token from OAuth 2.0 authorization
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="refresh_token"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Refresh Token</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="password"
+                    placeholder="Enter your Google Refresh Token" 
+                    {...field} 
+                  />
+                </FormControl>
+                <FormDescription>
+                  The refresh token from OAuth 2.0 authorization
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <div className="flex justify-end space-x-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate('/')}
-              >
-                Cancel
-              </Button>
-              <Button type="submit">Save Credentials</Button>
-            </div>
-          </form>
-        </Form>
+          <div className="flex justify-end space-x-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate('/')}
+            >
+              Cancel
+            </Button>
+            <Button type="submit">Save Credentials</Button>
+          </div>
+        </form>
       </CardContent>
     </Card>
   );
