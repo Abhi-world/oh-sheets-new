@@ -10,7 +10,10 @@ import { AlertCircle, Info } from "lucide-react";
 
 const Index = () => {
   const { data, isLoading, error } = useMonday();
-  const { isInMonday, boardId, context } = useMondayContext();
+  const { data: contextData } = useMondayContext();
+  const isInMonday = contextData?.isInMonday || false;
+  const boardId = contextData?.boardId;
+  const context = contextData?.context;
   const isMondayConnected = !!data?.data?.boards || isInMonday;
   
   return (

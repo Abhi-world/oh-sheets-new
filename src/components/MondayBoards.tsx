@@ -9,7 +9,8 @@ import MondayBoardSkeleton from './skeletons/MondayBoardSkeleton';
 
 const MondayBoards = () => {
   const { data, isLoading, error } = useMonday();
-  const { isInMonday } = useMondayContext();
+  const { data: contextData } = useMondayContext();
+  const isInMonday = contextData?.isInMonday || false;
   const boards = data?.data?.boards || [];
 
   console.log("Monday connection status:", {

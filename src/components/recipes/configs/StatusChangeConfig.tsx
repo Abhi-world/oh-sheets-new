@@ -18,7 +18,10 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
   const navigate = useNavigate();
   
   const { data: mondayData, isLoading: isMondayLoading, refetch: refetchMondayData } = useMonday();
-  const { isInMonday, boardId, context } = useMondayContext();
+  const { data: contextData } = useMondayContext();
+  const isInMonday = contextData?.isInMonday || false;
+  const boardId = contextData?.boardId;
+  const context = contextData?.context;
   const { isConnected: isGoogleConnected, isLoading: isGoogleLoading } = useGoogleSheetsStatus();
   const boards = mondayData?.data?.boards || [];
   

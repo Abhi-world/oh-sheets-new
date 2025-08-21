@@ -11,7 +11,8 @@ interface ConnectionStatusProps {
 
 const ConnectionStatus = ({ service, isConnected }: ConnectionStatusProps) => {
   const navigate = useNavigate();
-  const { isInMonday } = useMondayContext();
+  const { data: contextData } = useMondayContext();
+  const isInMonday = contextData?.isInMonday || false;
   
   // Handle click behavior differently based on environment and connection status
   const handleClick = () => {

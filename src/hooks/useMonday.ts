@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { setupMondaySDK, fetchBoardsWithSDK, execMondayQuery } from "@/utils/mondaySDK";
+import { getMondayContextInfo, fetchBoardsWithSDK, execMondayQuery } from "@/utils/mondaySDK";
 import { useState, useEffect } from "react";
 
 async function getMondayAccessToken() {
@@ -123,24 +123,17 @@ export const useMondayWorkspaces = () => {
 };
 
 export const useMondayContext = () => {
-  const [isInMonday, setIsInMonday] = useState(false);
-  const [boardId, setBoardId] = useState<string | null>(null);
-  const [context, setContext] = useState<any>(null);
-  const [sessionToken, setSessionToken] = useState<string | null>(null);
-  
-  useEffect(() => {
-    const checkMondayContext = async () => {
-      const { isInMonday: inMonday, boardId: detectedBoardId, context: mondayContext, sessionToken: token } = await setupMondaySDK();
-      setIsInMonday(inMonday);
-      setBoardId(detectedBoardId || null);
-      setContext(mondayContext || null);
-      setSessionToken(token || null);
-    };
-    
-    checkMondayContext();
-  }, []);
-  
-  return { isInMonday, boardId, context, sessionToken };
+  return useQuery({
+    queryKey: ['monday-context'],
+    queryFn: async () => {
+      console.log('🔍 Fetching Monday context info');
+      const contextInfo = await getMondayContextInfo();
+      console.log('📊 Monday context info:', contextInfo);
+      return contextInfo;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1,
+  });
 };
 
 export const useMondayBoardsByWorkspace = (workspaceId: string) => {

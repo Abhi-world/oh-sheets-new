@@ -5,6 +5,20 @@ import { supabase } from '@/integrations/supabase/client';
 const monday = mondaySdk();
 console.log('🚀 Monday SDK initialized globally');
 
+// Track context state
+let contextReceived = false;
+let contextData: any = null;
+
+// Initialize SDK and listen for context in embedded mode
+if (typeof window !== 'undefined') {
+  // Monday SDK doesn't need explicit init() call
+  monday.listen('context', (res: any) => {
+    console.log('📋 Monday context received:', res);
+    contextReceived = true;
+    contextData = res?.data;
+  });
+}
+
 /**
  * Gets the Monday SDK instance (already initialized in main.tsx)
  * @returns The globally initialized Monday SDK instance
@@ -14,87 +28,63 @@ export function getMondaySDK() {
 }
 
 /**
- * Checks if the application is running inside Monday.com's environment
- * and automatically gets the session token if available
+ * Wait for Monday context to be received in embedded mode
  */
-export async function setupMondaySDK() {
-  try {
-    // Client-side check
-    if (typeof window === 'undefined') {
-      return { mondayClient: monday, isInMonday: false, sessionToken: null };
-    }
-    
-    // Use the globally initialized Monday SDK instance
-    const mondayClient = getMondaySDK();
-    
-    // Check URL parameters for board ID
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlBoardId = urlParams.get('boardId');
-    
-    // Enhanced embedded mode detection
-    const isInMondayEnvironment = !!(
-      // Check if we're in an iframe (Monday embeds apps in iframes)
-      window.self !== window.top ||
-      // Check domain - any subdomain of monday.com
-      window.location.hostname.includes('monday.com') ||
-      // Check for Monday-specific URL params
-      urlParams.has('instanceId') || 
-      urlParams.has('app') ||
-      urlBoardId !== null ||
-      // Check for Monday-style URLs
-      window.location.pathname.includes('/boards/') ||
-      window.location.pathname.includes('/views/')
-    );
-    
-    if (isInMondayEnvironment) {
-      console.log('🔵 Detected embedded mode - running inside Monday.com');
-      
-      // In embedded mode, DON'T set tokens manually
-      // The Monday SDK handles authentication automatically
-      try {
-        const context = await mondayClient.get('context');
-        console.log('Monday SDK context received:', context);
-        
-        return { 
-          mondayClient, 
-          isInMonday: true, 
-          boardId: (context?.data as any)?.boardId || urlBoardId,
-          context: context?.data || {},
-          sessionToken: null
-        };
-      } catch (contextError) {
-        console.warn('Could not get context, but still in embedded mode:', contextError);
-        return { 
-          mondayClient, 
-          isInMonday: true, 
-          boardId: urlBoardId,
-          context: {},
-          sessionToken: null
-        };
-      }
-    }
-    
-    // Not in Monday or no token available, try to use stored token
-    console.log('Not running inside Monday.com, will use stored token if available');
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('monday_access_token')
-        .eq('id', user.id)
-        .single();
-      
-      if (profile?.monday_access_token) {
-        mondayClient.setToken(profile.monday_access_token);
-        console.log('Monday SDK initialized with stored token');
-      }
-    }
-    
-    return { mondayClient, isInMonday: false, sessionToken: null };
-  } catch (error) {
-    console.error('Error setting up Monday SDK:', error);
-    return { mondayClient: monday, isInMonday: false, sessionToken: null };
+export async function waitForMondayContext(timeout = 5000): Promise<any> {
+  if (!isEmbeddedMode()) {
+    return null;
   }
+
+  if (contextReceived) {
+    return contextData;
+  }
+
+  return new Promise((resolve) => {
+    let timeoutId: NodeJS.Timeout;
+    let listenerAdded = false;
+    
+    const contextListener = (res: any) => {
+      if (!listenerAdded) return; // Ignore if listener was removed
+      
+      clearTimeout(timeoutId);
+      contextReceived = true;
+      contextData = res?.data;
+      console.log('📋 Context received and stored:', contextData);
+      listenerAdded = false;
+      resolve(contextData);
+    };
+
+    monday.listen('context', contextListener);
+    listenerAdded = true;
+
+    timeoutId = setTimeout(() => {
+      listenerAdded = false;
+      console.warn('⏰ Timeout waiting for Monday context');
+      resolve(contextData); // Return whatever we have
+    }, timeout);
+  });
+}
+
+/**
+ * Gets context information including board ID
+ */
+export async function getMondayContextInfo() {
+  if (!isEmbeddedMode()) {
+    return { isInMonday: false, boardId: null, context: null };
+  }
+
+  // Wait for context if we don't have it yet
+  const context = await waitForMondayContext();
+  
+  // Also check URL parameters as fallback
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlBoardId = urlParams.get('boardId');
+  
+  return {
+    isInMonday: true,
+    boardId: context?.boardId || urlBoardId,
+    context: context || {},
+  };
 }
 
 /**
@@ -240,20 +230,24 @@ export async function execMondayQuery(query: string, variables?: Record<string, 
     if (isEmbeddedMode()) {
       console.log('🔵 Using Monday SDK api() method in embedded mode');
       
+      // Wait for context before making API calls
+      console.log('⏳ Waiting for Monday context before API call...');
+      await waitForMondayContext();
+      
       try {
         const mondayClient = getMondaySDK();
         // ALWAYS use Monday SDK api() method in embedded mode - never fetch()
         const response = await mondayClient.api(query, { variables });
-        console.log('Monday SDK response:', response);
+        console.log('✅ Monday SDK response:', response);
         
         if ((response as any).errors && (response as any).errors.length > 0) {
-          console.error('Monday SDK GraphQL errors:', (response as any).errors);
+          console.error('❌ Monday SDK GraphQL errors:', (response as any).errors);
           throw new Error((response as any).errors[0]?.message || 'GraphQL error from Monday SDK');
         }
         
         return { data: (response as any).data };
       } catch (sdkError) {
-        console.error('Monday SDK api() failed in embedded mode:', sdkError);
+        console.error('❌ Monday SDK api() failed in embedded mode:', sdkError);
         throw sdkError; // Don't fall back to fetch in embedded mode
       }
     }
