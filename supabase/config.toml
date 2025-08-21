@@ -1,1 +1,13 @@
 project_id = "tzgqqrphtppgxpfduecs"
+
+[functions.monday-oauth-callback]
+verify_jwt = false
+
+[functions.monday-token-refresh]
+verify_jwt = false
+
+[functions.get-monday-client-id]
+verify_jwt = false
+
+[functions.monday-session-verify]
+verify_jwt = false

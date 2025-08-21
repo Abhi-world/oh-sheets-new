@@ -120,7 +120,7 @@ export async function fetchBoardsWithSDK(specificBoardId: string | null = null) 
       
       const query = `
         query {
-          boards(ids: ${specificBoardId}) {
+          boards(ids: [${Number(specificBoardId)}]) {
             id
             name
             workspace {
@@ -180,16 +180,18 @@ export async function fetchItemsWithSDK(boardId: string) {  // Add type annotati
     
     const query = `
       query {
-        boards(ids: ${boardId}) {
-          items {
-            id
-            name
-            column_values {
+        boards(ids: [${Number(boardId)}]) {
+          items_page(limit: 50) {
+            items {
               id
-              title
-              text
-              value
-              type
+              name
+              column_values {
+                id
+                title
+                text
+                value
+                type
+              }
             }
           }
         }
@@ -233,7 +235,7 @@ export async function execMondayQuery(query: string, variables?: Record<string, 
         console.log('✅ Monday SDK response:', response);
         
         if ((response as any).errors && (response as any).errors.length > 0) {
-          console.error('❌ Monday SDK GraphQL errors:', (response as any).errors);
+          console.error('❌ Monday SDK GraphQL errors:', JSON.stringify((response as any).errors, null, 2));
           throw new Error((response as any).errors[0]?.message || 'GraphQL error from Monday SDK');
         }
         
@@ -336,7 +338,7 @@ export async function execMondayQuery(query: string, variables?: Record<string, 
     console.log('Monday API response:', data);
     
     if (data.errors && data.errors.length > 0) {
-      console.error('Monday API GraphQL errors:', data.errors);
+      console.error('Monday API GraphQL errors:', JSON.stringify(data.errors, null, 2));
       throw new Error(data.errors[0]?.message || 'GraphQL error from Monday API');
     }
     

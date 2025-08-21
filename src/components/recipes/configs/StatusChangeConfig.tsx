@@ -90,6 +90,30 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
 
   return (
     <div className="space-y-8">
+      {!boards.length && !isMondayLoading && (
+        <Alert className="mb-4 border-orange-500 bg-orange-500/10">
+          <Info className="h-4 w-4 text-orange-500" />
+          <AlertTitle>No boards found</AlertTitle>
+          <AlertDescription className="flex flex-col gap-2">
+            <p>🔄 No boards yet. Click "Refresh Boards" or reinstall the app to grant scopes.</p>
+            <Button 
+              onClick={handleRefreshBoards} 
+              variant="outline" 
+              size="sm"
+              className="self-start flex items-center gap-2"
+              disabled={isRefreshing || isMondayLoading}
+            >
+              {isRefreshing ? (
+                <RefreshCw className="h-3 w-3 animate-spin" />
+              ) : (
+                <RefreshCw className="h-3 w-3" />
+              )}
+              Refresh Boards
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+      
       {!isGoogleConnected && (
         <Alert className="mb-4 border-yellow-500 bg-yellow-500/10">
           <Info className="h-4 w-4 text-yellow-500" />
