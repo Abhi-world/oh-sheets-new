@@ -5,17 +5,51 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Info, RefreshCw } from 'lucide-react';
+import { Info, RefreshCw, ExternalLink } from 'lucide-react';
+import { isEmbeddedMode, getMondaySDK } from '@/utils/mondaySDK';
 
 export function GoogleSheetsConnect() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [isWaitingForAuth, setIsWaitingForAuth] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     checkConnection();
+    
+    // Listen for OAuth success from popup window
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'google_oauth_success') {
+        setIsWaitingForAuth(false);
+        localStorage.removeItem('google_oauth_success');
+        checkConnection();
+        toast({
+          title: 'Success',
+          description: 'Google Sheets connected successfully!',
+        });
+      }
+    };
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'GOOGLE_OAUTH_SUCCESS') {
+        setIsWaitingForAuth(false);
+        checkConnection();
+        toast({
+          title: 'Success', 
+          description: 'Google Sheets connected successfully!',
+        });
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('message', handleMessage);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('message', handleMessage);
+    };
   }, []);
 
   async function checkConnection() {
@@ -88,8 +122,23 @@ export function GoogleSheetsConnect() {
         `prompt=consent&` +
         `state=${encodeURIComponent(currentPath)}`;
       
-      // Redirect to Google OAuth
-      window.location.href = authUrl;
+      // Check if we're in Monday embedded mode
+      if (isEmbeddedMode()) {
+        console.log('Opening OAuth in new tab (Monday embedded mode)');
+        setIsWaitingForAuth(true);
+        
+        // Try Monday SDK first, then fallback to window.open
+        try {
+          const monday = getMondaySDK();
+          await monday.execute('openLink', { url: authUrl, external: true });
+        } catch (mondayError) {
+          console.log('Monday SDK openLink failed, using window.open fallback');
+          window.open(authUrl, '_blank', 'width=500,height=600');
+        }
+      } else {
+        // Regular redirect for non-embedded mode
+        window.location.href = authUrl;
+      }
     } catch (error) {
       console.error('Error connecting to Google Sheets:', error);
       setConnectionError('Failed to connect to Google Sheets. Please try again.');
@@ -176,6 +225,53 @@ export function GoogleSheetsConnect() {
               Refresh Connection
             </Button>
           </div>
+        ) : isWaitingForAuth ? (
+          <div className="flex flex-col items-center gap-4 w-full">
+            <div className="flex items-center gap-2 text-blue-600">
+              <svg
+                className="animate-spin h-5 w-5"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              <span>Waiting for authorization...</span>
+            </div>
+            
+            <Alert className="w-full border-blue-500 bg-blue-500/10">
+              <ExternalLink className="h-4 w-4 text-blue-500" />
+              <AlertTitle>Authorization in Progress</AlertTitle>
+              <AlertDescription>
+                A new tab has opened for Google authorization. Please complete the process there and then return to this page.
+                The connection will be automatically completed once you authorize.
+              </AlertDescription>
+            </Alert>
+
+            <Button
+              onClick={() => {
+                setIsWaitingForAuth(false);
+                checkConnection();
+              }}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Check Connection Status
+            </Button>
+          </div>
         ) : (
           <Button
             onClick={handleConnect}
@@ -190,7 +286,7 @@ export function GoogleSheetsConnect() {
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-              >
+               >
                 <circle
                   className="opacity-25"
                   cx="12"

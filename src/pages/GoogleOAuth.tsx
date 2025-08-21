@@ -40,7 +40,28 @@ const GoogleOAuth = () => {
 
         toast.success('Google Sheets connected successfully!');
         
-        // Navigate back to where the user came from or home
+        // Signal success to parent window (for Monday embedded mode)
+        try {
+          // Try localStorage first (same domain)
+          localStorage.setItem('google_oauth_success', 'true');
+          
+          // Try postMessage (works across tabs)
+          if (window.opener) {
+            window.opener.postMessage({ type: 'GOOGLE_OAUTH_SUCCESS' }, '*');
+          }
+          
+          // Try to close window if it was opened as popup
+          if (window.opener || window.name === 'oauth_popup') {
+            setTimeout(() => {
+              window.close();
+            }, 1000);
+            return;
+          }
+        } catch (e) {
+          console.log('Could not signal to parent window:', e);
+        }
+        
+        // Navigate back to where the user came from or home (for regular flow)
         const redirectTo = state ? decodeURIComponent(state) : '/';
         navigate(redirectTo);
       } catch (error) {
