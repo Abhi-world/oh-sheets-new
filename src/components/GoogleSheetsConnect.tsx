@@ -63,7 +63,22 @@ export function GoogleSheetsConnect() {
     try {
       setIsConnecting(true);
       setConnectionError(null);
-      const authUrl = googleSheetsService.getAuthUrl();
+      
+      // Store current page as state for redirect after OAuth
+      const currentPath = window.location.pathname + window.location.search;
+      
+      // Get Google OAuth URL
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({
+        client_id: '827815393395-7b1k4s81t65ivd0ak67gneh7ku8vdkl1.apps.googleusercontent.com',
+        redirect_uri: `${window.location.origin}/auth/google/callback`,
+        response_type: 'code',
+        scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly',
+        access_type: 'offline',
+        prompt: 'consent',
+        state: encodeURIComponent(currentPath)
+      })}`;
+      
+      // Redirect to Google OAuth
       window.location.href = authUrl;
     } catch (error) {
       console.error('Error connecting to Google Sheets:', error);
