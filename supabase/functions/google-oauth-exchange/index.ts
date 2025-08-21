@@ -54,7 +54,7 @@ serve(async (req) => {
         code,
         client_id: Deno.env.get('GOOGLE_CLIENT_ID')!,
         client_secret: Deno.env.get('GOOGLE_CLIENT_SECRET')!,
-        redirect_uri: `${Deno.env.get('APP_URL')}/auth/google/callback`,
+        redirect_uri: `${Deno.env.get('APP_URL')}/google-oauth`,
         grant_type: 'authorization_code',
       }),
     });
