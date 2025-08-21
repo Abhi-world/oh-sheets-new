@@ -65,11 +65,17 @@ const GoogleOAuth = () => {
         console.log('Token exchange successful');
         toast.success('Google Sheets connected successfully!');
         
-        // Signal success to parent window with multiple methods
+        // Signal success to parent window with enhanced Monday support
         const signalSuccess = () => {
-          console.log('🎉 OAuth Success - Signaling to parent windows...');
+          console.log('🎉 OAuth Success - Signaling to Monday iframe...');
           
-          // Method 1: localStorage (works for same domain)
+          const successMessage = {
+            type: 'GOOGLE_OAUTH_SUCCESS',
+            timestamp: Date.now(),
+            source: 'oauth-callback'
+          };
+          
+          // Method 1: localStorage (fallback)
           try {
             localStorage.setItem('google_oauth_success', 'true');
             localStorage.setItem('google_oauth_timestamp', Date.now().toString());
@@ -78,83 +84,70 @@ const GoogleOAuth = () => {
             console.log('❌ localStorage not available:', e);
           }
           
-          // Method 2: postMessage to opener (works for popups)
+          // Method 2: Enhanced Monday communication
           try {
-            if (window.opener && !window.opener.closed) {
-              console.log('📤 Sending success message to opener window');
-              window.opener.postMessage({ 
-                type: 'GOOGLE_OAUTH_SUCCESS',
-                timestamp: Date.now(),
-                source: 'oauth-callback'
-              }, '*');
-              console.log('✅ Message sent to opener');
-            } else {
-              console.log('❌ No valid opener window found');
+            // Try to find the Monday iframe by walking up the window hierarchy
+            let targetWindow = window.opener;
+            
+            // If no opener, try to find Monday's parent window
+            if (!targetWindow || targetWindow.closed) {
+              // Look for Monday.com in the referrer or parent
+              if (document.referrer.includes('monday.com')) {
+                targetWindow = window.parent;
+                console.log('📤 Using parent window (referrer suggests Monday)');
+              }
             }
-          } catch (e) {
-            console.log('❌ postMessage to opener failed:', e);
-          }
-          
-          // Method 3: postMessage to parent (works for iframes)
-          try {
-            if (window.parent && window.parent !== window) {
-              console.log('📤 Sending success message to parent window');
-              window.parent.postMessage({ 
-                type: 'GOOGLE_OAUTH_SUCCESS',
-                timestamp: Date.now(),
-                source: 'oauth-callback'
-              }, '*');
-              console.log('✅ Message sent to parent');
-            } else {
-              console.log('❌ No valid parent window found');
-            }
-          } catch (e) {
-            console.log('❌ postMessage to parent failed:', e);
-          }
-          
-          // Method 4: Try all possible parent windows
-          try {
-            const allWindows = [window.opener, window.parent, window.top];
-            allWindows.forEach((win, index) => {
-              if (win && win !== window) {
+            
+            if (targetWindow && !targetWindow.closed) {
+              // Send to all possible Monday origins
+              const mondayOrigins = [
+                '*', // Wildcard as fallback
+                'https://monday.com',
+                'https://auth.monday.com',
+                'https://app.monday.com',
+                window.location.origin // In case it's embedded in our own domain
+              ];
+              
+              mondayOrigins.forEach(origin => {
                 try {
-                  console.log(`📤 Sending to window ${index}`);
-                  win.postMessage({
-                    type: 'GOOGLE_OAUTH_SUCCESS',
-                    timestamp: Date.now(),
-                    source: 'oauth-callback',
-                    windowIndex: index
-                  }, '*');
+                  targetWindow.postMessage(successMessage, origin);
+                  console.log(`📤 Message sent to origin: ${origin}`);
                 } catch (e) {
-                  console.log(`❌ Failed to send to window ${index}:`, e);
+                  console.log(`❌ Failed to send to ${origin}:`, e);
+                }
+              });
+            } else {
+              console.log('❌ No valid target window found');
+            }
+            
+            // Also try broadcasting to all window references
+            const windowRefs = [window.opener, window.parent, window.top];
+            windowRefs.forEach((win, index) => {
+              if (win && win !== window && !win.closed) {
+                try {
+                  win.postMessage(successMessage, '*');
+                  console.log(`✅ Broadcasted to window ${index}`);
+                } catch (e) {
+                  console.log(`❌ Failed to broadcast to window ${index}:`, e);
                 }
               }
             });
           } catch (e) {
-            console.log('❌ Could not access parent windows:', e);
+            console.log('❌ Monday communication failed:', e);
           }
           
-          // Method 5: Special handling for Monday.com environment
+          // Method 3: Special handling for embedded iframe scenarios
           try {
-            // Try to communicate with Monday iframe
-            const mondayOrigin = 'https://monday.com';
-            const message = {
-              type: 'GOOGLE_OAUTH_SUCCESS',
-              timestamp: Date.now(),
-              source: 'oauth-callback'
-            };
-            
-            if (window.opener) {
-              window.opener.postMessage(message, mondayOrigin);
-              console.log('📤 Sent message to Monday origin via opener');
-            }
-            
-            if (window.parent && window.parent !== window) {
-              window.parent.postMessage(message, mondayOrigin);
-              console.log('📤 Sent message to Monday origin via parent');
+            if (window.parent !== window) {
+              window.parent.postMessage({
+                ...successMessage,
+                mondayApp: true,
+                embedContext: 'monday-iframe'
+              }, '*');
+              console.log('📤 Sent embedded iframe message');
             }
           } catch (e) {
-            console.log('❌ Monday-specific messaging failed:', e);
+            console.log('❌ Embedded iframe messaging failed:', e);
           }
         };
         

@@ -49,29 +49,57 @@ export function GoogleSheetsConnect() {
         type: event.data?.type,
         source: event.data?.source,
         timestamp: event.data?.timestamp,
-        origin: event.origin
+        origin: event.origin,
+        mondayApp: event.data?.mondayApp,
+        embedContext: event.data?.embedContext
       });
       
-      if (event.data.type === 'GOOGLE_OAUTH_SUCCESS') {
-        console.log('🎉 OAuth success detected via postMessage from:', event.data.source);
-        setIsWaitingForAuth(false);
-        setTimeout(() => {
-          checkConnection();
-        }, 1000); // Small delay to ensure tokens are stored
-        toast({
-          title: 'Success', 
-          description: 'Google Sheets connected successfully!',
-        });
-      } else if (event.data.type === 'GOOGLE_OAUTH_ERROR') {
-        console.log('❌ OAuth error detected via postMessage from:', event.data.source);
-        setIsWaitingForAuth(false);
-        const errorMsg = event.data.error || 'Unknown error';
-        setConnectionError(`OAuth error: ${errorMsg}`);
-        toast({
-          title: 'Authorization Error',
-          description: `OAuth failed: ${errorMsg}`,
-          variant: 'destructive'
-        });
+      // Enhanced message filtering for Monday environment
+      if (event.data && typeof event.data === 'object') {
+        if (event.data.type === 'GOOGLE_OAUTH_SUCCESS') {
+          console.log('🎉 OAuth success detected via postMessage from:', event.data.source || 'unknown');
+          setIsWaitingForAuth(false);
+          
+          // Clear any pending timeouts/intervals
+          setConnectionError(null);
+          
+          // Check connection with multiple attempts
+          const attemptConnection = async (attempt = 1) => {
+            try {
+              console.log(`📊 Connection check attempt ${attempt}`);
+              await checkConnection();
+              
+              if (!isConnected && attempt < 3) {
+                // Retry after a delay
+                setTimeout(() => attemptConnection(attempt + 1), 2000);
+              }
+            } catch (error) {
+              console.error(`Connection check ${attempt} failed:`, error);
+              if (attempt < 3) {
+                setTimeout(() => attemptConnection(attempt + 1), 2000);
+              }
+            }
+          };
+          
+          // Start connection check after a small delay
+          setTimeout(() => attemptConnection(), 1000);
+          
+          toast({
+            title: 'Success', 
+            description: 'Google Sheets connected successfully!',
+          });
+          
+        } else if (event.data.type === 'GOOGLE_OAUTH_ERROR') {
+          console.log('❌ OAuth error detected via postMessage from:', event.data.source || 'unknown');
+          setIsWaitingForAuth(false);
+          const errorMsg = event.data.error || 'Unknown error';
+          setConnectionError(`OAuth error: ${errorMsg}`);
+          toast({
+            title: 'Authorization Error',
+            description: `OAuth failed: ${errorMsg}`,
+            variant: 'destructive'
+          });
+        }
       }
     };
 
