@@ -127,10 +127,6 @@ export async function fetchBoardsWithSDK(specificBoardId: string | null = null) 
               id
               name
             }
-            items {
-              id
-              name
-            }
           }
         }
       `;
@@ -145,17 +141,13 @@ export async function fetchBoardsWithSDK(specificBoardId: string | null = null) 
       return response;
     }
     
-    // Otherwise fetch all boards
+    // Otherwise fetch all boards - simplified query without items
     const query = `
       query {
         boards {
           id
           name
           workspace {
-            id
-            name
-          }
-          items {
             id
             name
           }

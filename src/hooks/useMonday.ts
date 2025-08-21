@@ -74,16 +74,13 @@ async function fetchMondayBoards() {
     // Use centralized query execution that handles both embedded and standalone modes
     console.log("Using execMondayQuery to fetch boards");
 
+    // Simplified query without items to avoid GraphQL validation errors
     const query = `
       query {
         boards {
           id
           name
           workspace {
-            id
-            name
-          }
-          items {
             id
             name
           }

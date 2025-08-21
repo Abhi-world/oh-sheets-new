@@ -43,12 +43,12 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
   
   // Detect board ID from Monday.com context when in Monday environment
   useEffect(() => {
-    if (isInMonday && boardId && !selectedBoard) {
+    if (isInMonday && boardId) {
       console.log('Auto-selecting board from Monday context:', boardId);
       setSelectedBoard(boardId);
       setDetectedBoardId(boardId);
     }
-  }, [isInMonday, boardId, selectedBoard]);
+  }, [isInMonday, boardId]);
   
   // Fetch spreadsheets when component mounts if connected to Google Sheets
   useEffect(() => {
@@ -145,7 +145,7 @@ const StatusChangeConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boole
             selectedBoard={selectedBoard}
             onBoardSelect={setSelectedBoard}
             isEmbedded={isInMonday && !!boardId}
-            detectedBoardName={context?.boardName}
+            detectedBoardName={context?.boardName || `Board ${boardId}`}
           />
           , automatically add a row with these{' '}
           <ValueSelector
