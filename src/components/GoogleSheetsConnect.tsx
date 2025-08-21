@@ -45,18 +45,25 @@ export function GoogleSheetsConnect() {
     };
 
     const handleMessage = (event: MessageEvent) => {
-      console.log('Received message:', event.data);
+      console.log('🔄 Received message in GoogleSheetsConnect:', {
+        type: event.data?.type,
+        source: event.data?.source,
+        timestamp: event.data?.timestamp,
+        origin: event.origin
+      });
       
       if (event.data.type === 'GOOGLE_OAUTH_SUCCESS') {
-        console.log('OAuth success detected via postMessage');
+        console.log('🎉 OAuth success detected via postMessage from:', event.data.source);
         setIsWaitingForAuth(false);
-        checkConnection();
+        setTimeout(() => {
+          checkConnection();
+        }, 1000); // Small delay to ensure tokens are stored
         toast({
           title: 'Success', 
           description: 'Google Sheets connected successfully!',
         });
       } else if (event.data.type === 'GOOGLE_OAUTH_ERROR') {
-        console.log('OAuth error detected via postMessage');
+        console.log('❌ OAuth error detected via postMessage from:', event.data.source);
         setIsWaitingForAuth(false);
         const errorMsg = event.data.error || 'Unknown error';
         setConnectionError(`OAuth error: ${errorMsg}`);
@@ -85,19 +92,21 @@ export function GoogleSheetsConnect() {
         const oauthTimestamp = localStorage.getItem('google_oauth_timestamp');
         
         if (oauthSuccess) {
-          console.log('OAuth success found in polling');
+          console.log('🎉 OAuth success found in polling - clearing wait state');
           setIsWaitingForAuth(false);
           localStorage.removeItem('google_oauth_success');
           localStorage.removeItem('google_oauth_timestamp');
           clearInterval(oauthPollingInterval!);
           oauthPollingInterval = null;
-          checkConnection();
+          setTimeout(() => {
+            checkConnection();
+          }, 1000); // Small delay to ensure tokens are stored
           toast({
             title: 'Success',
             description: 'Google Sheets connected successfully!',
           });
         } else if (oauthError) {
-          console.log('OAuth error found in polling');
+          console.log('❌ OAuth error found in polling');
           setIsWaitingForAuth(false);
           const errorMsg = oauthError;
           localStorage.removeItem('google_oauth_error');

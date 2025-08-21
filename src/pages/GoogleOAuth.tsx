@@ -67,45 +67,94 @@ const GoogleOAuth = () => {
         
         // Signal success to parent window with multiple methods
         const signalSuccess = () => {
+          console.log('🎉 OAuth Success - Signaling to parent windows...');
+          
           // Method 1: localStorage (works for same domain)
           try {
             localStorage.setItem('google_oauth_success', 'true');
             localStorage.setItem('google_oauth_timestamp', Date.now().toString());
+            console.log('✅ localStorage success signal set');
           } catch (e) {
-            console.log('localStorage not available:', e);
+            console.log('❌ localStorage not available:', e);
           }
           
           // Method 2: postMessage to opener (works for popups)
           try {
             if (window.opener && !window.opener.closed) {
+              console.log('📤 Sending success message to opener window');
               window.opener.postMessage({ 
                 type: 'GOOGLE_OAUTH_SUCCESS',
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                source: 'oauth-callback'
               }, '*');
+              console.log('✅ Message sent to opener');
+            } else {
+              console.log('❌ No valid opener window found');
             }
           } catch (e) {
-            console.log('postMessage to opener failed:', e);
+            console.log('❌ postMessage to opener failed:', e);
           }
           
           // Method 3: postMessage to parent (works for iframes)
           try {
             if (window.parent && window.parent !== window) {
+              console.log('📤 Sending success message to parent window');
               window.parent.postMessage({ 
                 type: 'GOOGLE_OAUTH_SUCCESS',
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                source: 'oauth-callback'
               }, '*');
+              console.log('✅ Message sent to parent');
+            } else {
+              console.log('❌ No valid parent window found');
             }
           } catch (e) {
-            console.log('postMessage to parent failed:', e);
+            console.log('❌ postMessage to parent failed:', e);
           }
           
-          // Method 4: Try to access Monday SDK in parent
+          // Method 4: Try all possible parent windows
           try {
-            if (window.opener && window.opener.monday) {
-              console.log('Found Monday SDK in opener, signaling success');
+            const allWindows = [window.opener, window.parent, window.top];
+            allWindows.forEach((win, index) => {
+              if (win && win !== window) {
+                try {
+                  console.log(`📤 Sending to window ${index}`);
+                  win.postMessage({
+                    type: 'GOOGLE_OAUTH_SUCCESS',
+                    timestamp: Date.now(),
+                    source: 'oauth-callback',
+                    windowIndex: index
+                  }, '*');
+                } catch (e) {
+                  console.log(`❌ Failed to send to window ${index}:`, e);
+                }
+              }
+            });
+          } catch (e) {
+            console.log('❌ Could not access parent windows:', e);
+          }
+          
+          // Method 5: Special handling for Monday.com environment
+          try {
+            // Try to communicate with Monday iframe
+            const mondayOrigin = 'https://monday.com';
+            const message = {
+              type: 'GOOGLE_OAUTH_SUCCESS',
+              timestamp: Date.now(),
+              source: 'oauth-callback'
+            };
+            
+            if (window.opener) {
+              window.opener.postMessage(message, mondayOrigin);
+              console.log('📤 Sent message to Monday origin via opener');
+            }
+            
+            if (window.parent && window.parent !== window) {
+              window.parent.postMessage(message, mondayOrigin);
+              console.log('📤 Sent message to Monday origin via parent');
             }
           } catch (e) {
-            console.log('Could not access Monday SDK:', e);
+            console.log('❌ Monday-specific messaging failed:', e);
           }
         };
         
