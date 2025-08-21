@@ -17,18 +17,42 @@ const GoogleOAuth = () => {
       if (error) {
         console.error('OAuth error:', error);
         toast.error('Google authorization failed');
-        navigate('/');
+        
+        // Signal error to parent window
+        try {
+          if (window.opener) {
+            window.opener.postMessage({ type: 'GOOGLE_OAUTH_ERROR', error }, '*');
+          }
+          localStorage.setItem('google_oauth_error', error);
+        } catch (e) {
+          console.log('Could not signal error to parent window:', e);
+        }
+        
+        setTimeout(() => window.close(), 2000);
         return;
       }
 
       if (!code) {
         console.error('No authorization code received');
         toast.error('Authorization failed');
-        navigate('/');
+        
+        // Signal error to parent window
+        try {
+          if (window.opener) {
+            window.opener.postMessage({ type: 'GOOGLE_OAUTH_ERROR', error: 'No code received' }, '*');
+          }
+          localStorage.setItem('google_oauth_error', 'No code received');
+        } catch (e) {
+          console.log('Could not signal error to parent window:', e);
+        }
+        
+        setTimeout(() => window.close(), 2000);
         return;
       }
 
       try {
+        console.log('Starting token exchange...');
+        
         // Exchange code for tokens using edge function
         const { data, error: exchangeError } = await supabase.functions.invoke('google-oauth-exchange', {
           body: { code }
@@ -38,36 +62,90 @@ const GoogleOAuth = () => {
           throw exchangeError;
         }
 
+        console.log('Token exchange successful');
         toast.success('Google Sheets connected successfully!');
         
-        // Signal success to parent window (for Monday embedded mode)
-        try {
-          // Try localStorage first (same domain)
-          localStorage.setItem('google_oauth_success', 'true');
-          
-          // Try postMessage (works across tabs)
-          if (window.opener) {
-            window.opener.postMessage({ type: 'GOOGLE_OAUTH_SUCCESS' }, '*');
+        // Signal success to parent window with multiple methods
+        const signalSuccess = () => {
+          // Method 1: localStorage (works for same domain)
+          try {
+            localStorage.setItem('google_oauth_success', 'true');
+            localStorage.setItem('google_oauth_timestamp', Date.now().toString());
+          } catch (e) {
+            console.log('localStorage not available:', e);
           }
           
-          // Try to close window if it was opened as popup
-          if (window.opener || window.name === 'oauth_popup') {
-            setTimeout(() => {
-              window.close();
-            }, 1000);
-            return;
+          // Method 2: postMessage to opener (works for popups)
+          try {
+            if (window.opener && !window.opener.closed) {
+              window.opener.postMessage({ 
+                type: 'GOOGLE_OAUTH_SUCCESS',
+                timestamp: Date.now()
+              }, '*');
+            }
+          } catch (e) {
+            console.log('postMessage to opener failed:', e);
           }
-        } catch (e) {
-          console.log('Could not signal to parent window:', e);
-        }
+          
+          // Method 3: postMessage to parent (works for iframes)
+          try {
+            if (window.parent && window.parent !== window) {
+              window.parent.postMessage({ 
+                type: 'GOOGLE_OAUTH_SUCCESS',
+                timestamp: Date.now()
+              }, '*');
+            }
+          } catch (e) {
+            console.log('postMessage to parent failed:', e);
+          }
+          
+          // Method 4: Try to access Monday SDK in parent
+          try {
+            if (window.opener && window.opener.monday) {
+              console.log('Found Monday SDK in opener, signaling success');
+            }
+          } catch (e) {
+            console.log('Could not access Monday SDK:', e);
+          }
+        };
         
-        // Navigate back to where the user came from or home (for regular flow)
-        const redirectTo = state ? decodeURIComponent(state) : '/';
-        navigate(redirectTo);
+        signalSuccess();
+        
+        // Keep signaling for a few seconds to ensure parent receives it
+        const signalInterval = setInterval(signalSuccess, 500);
+        setTimeout(() => {
+          clearInterval(signalInterval);
+        }, 5000);
+        
+        // Close the window after a short delay
+        setTimeout(() => {
+          try {
+            window.close();
+          } catch (e) {
+            console.log('Could not close window:', e);
+            // If we can't close, navigate to success page
+            navigate('/connect-sheets?success=true');
+          }
+        }, 2000);
+        
       } catch (error) {
         console.error('Token exchange error:', error);
         toast.error('Failed to connect Google Sheets');
-        navigate('/');
+        
+        // Signal error to parent window
+        try {
+          if (window.opener) {
+            window.opener.postMessage({ 
+              type: 'GOOGLE_OAUTH_ERROR', 
+              error: error.message || 'Token exchange failed' 
+            }, '*');
+          }
+          localStorage.setItem('google_oauth_error', error.message || 'Token exchange failed');
+        } catch (e) {
+          console.log('Could not signal error to parent window:', e);
+        }
+        
+        setTimeout(() => window.close(), 2000);
       }
     };
 

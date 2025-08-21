@@ -22,6 +22,7 @@ export function GoogleSheetsConnect() {
     // Listen for OAuth success from popup window
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'google_oauth_success') {
+        console.log('OAuth success detected via localStorage');
         setIsWaitingForAuth(false);
         localStorage.removeItem('google_oauth_success');
         checkConnection();
@@ -29,16 +30,40 @@ export function GoogleSheetsConnect() {
           title: 'Success',
           description: 'Google Sheets connected successfully!',
         });
+      } else if (e.key === 'google_oauth_error') {
+        console.log('OAuth error detected via localStorage');
+        setIsWaitingForAuth(false);
+        const errorMsg = localStorage.getItem('google_oauth_error') || 'Unknown error';
+        localStorage.removeItem('google_oauth_error');
+        setConnectionError(`OAuth error: ${errorMsg}`);
+        toast({
+          title: 'Authorization Error',
+          description: `OAuth failed: ${errorMsg}`,
+          variant: 'destructive'
+        });
       }
     };
 
     const handleMessage = (event: MessageEvent) => {
+      console.log('Received message:', event.data);
+      
       if (event.data.type === 'GOOGLE_OAUTH_SUCCESS') {
+        console.log('OAuth success detected via postMessage');
         setIsWaitingForAuth(false);
         checkConnection();
         toast({
           title: 'Success', 
           description: 'Google Sheets connected successfully!',
+        });
+      } else if (event.data.type === 'GOOGLE_OAUTH_ERROR') {
+        console.log('OAuth error detected via postMessage');
+        setIsWaitingForAuth(false);
+        const errorMsg = event.data.error || 'Unknown error';
+        setConnectionError(`OAuth error: ${errorMsg}`);
+        toast({
+          title: 'Authorization Error',
+          description: `OAuth failed: ${errorMsg}`,
+          variant: 'destructive'
         });
       }
     };
@@ -46,11 +71,78 @@ export function GoogleSheetsConnect() {
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('message', handleMessage);
 
+    // Polling mechanism to check for OAuth completion
+    let oauthPollingInterval: NodeJS.Timeout | null = null;
+    
+    const startOAuthPolling = () => {
+      if (oauthPollingInterval) return;
+      
+      console.log('Starting OAuth polling...');
+      oauthPollingInterval = setInterval(() => {
+        // Check localStorage for OAuth status
+        const oauthSuccess = localStorage.getItem('google_oauth_success');
+        const oauthError = localStorage.getItem('google_oauth_error');
+        const oauthTimestamp = localStorage.getItem('google_oauth_timestamp');
+        
+        if (oauthSuccess) {
+          console.log('OAuth success found in polling');
+          setIsWaitingForAuth(false);
+          localStorage.removeItem('google_oauth_success');
+          localStorage.removeItem('google_oauth_timestamp');
+          clearInterval(oauthPollingInterval!);
+          oauthPollingInterval = null;
+          checkConnection();
+          toast({
+            title: 'Success',
+            description: 'Google Sheets connected successfully!',
+          });
+        } else if (oauthError) {
+          console.log('OAuth error found in polling');
+          setIsWaitingForAuth(false);
+          const errorMsg = oauthError;
+          localStorage.removeItem('google_oauth_error');
+          localStorage.removeItem('google_oauth_timestamp');
+          clearInterval(oauthPollingInterval!);
+          oauthPollingInterval = null;
+          setConnectionError(`OAuth error: ${errorMsg}`);
+          toast({
+            title: 'Authorization Error',
+            description: `OAuth failed: ${errorMsg}`,
+            variant: 'destructive'
+          });
+        }
+      }, 1000);
+      
+      // Stop polling after 5 minutes
+      setTimeout(() => {
+        if (oauthPollingInterval) {
+          console.log('OAuth polling timeout');
+          clearInterval(oauthPollingInterval);
+          oauthPollingInterval = null;
+          setIsWaitingForAuth(false);
+          setConnectionError('OAuth timeout - please try again');
+          toast({
+            title: 'Timeout',
+            description: 'OAuth process took too long. Please try again.',
+            variant: 'destructive'
+          });
+        }
+      }, 300000); // 5 minutes
+    };
+
+    // Start polling if we're waiting for auth
+    if (isWaitingForAuth) {
+      startOAuthPolling();
+    }
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('message', handleMessage);
+      if (oauthPollingInterval) {
+        clearInterval(oauthPollingInterval);
+      }
     };
-  }, []);
+  }, [isWaitingForAuth]);
 
   async function checkConnection() {
     try {

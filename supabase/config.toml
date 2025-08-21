@@ -3,7 +3,7 @@ project_id = "tzgqqrphtppgxpfduecs"
 [functions.monday-oauth-callback]
 verify_jwt = false
 
-[functions.monday-token-refresh]
+[functions.monday-token-refresh]  
 verify_jwt = false
 
 [functions.get-monday-client-id]
@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.google-oauth-exchange]
 verify_jwt = false
+
+[functions.get-google-client-id]
+verify_jwt = false
+
+[env]
+APP_URL = "https://ohsheets.netlify.app"
