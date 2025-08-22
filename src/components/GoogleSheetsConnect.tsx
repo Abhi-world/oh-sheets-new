@@ -85,8 +85,9 @@ export function GoogleSheetsConnect() {
         setIsWaitingForAuth(false);
         setConnectionError(null);
         
-        // Check connection with delay
-        setTimeout(() => {
+        // Retrieve tokens from Supabase and store in localStorage
+        setTimeout(async () => {
+          await retrieveAndStoreTokens();
           checkConnection();
         }, 2000);
         
@@ -144,9 +145,10 @@ export function GoogleSheetsConnect() {
           oauthPollingInterval = null;
           
           // Check connection with delay
-          setTimeout(() => {
-            checkConnection();
-          }, 2000);
+        setTimeout(async () => {
+          await retrieveAndStoreTokens();  
+          checkConnection();
+        }, 2000);
           
           toast({
             title: 'Success',
@@ -202,6 +204,43 @@ export function GoogleSheetsConnect() {
       }
     };
   }, [isWaitingForAuth]);
+
+  async function retrieveAndStoreTokens() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('No authenticated user to retrieve tokens for');
+        return false;
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('google_sheets_credentials')
+        .eq('id', user.id)
+        .single();
+
+      if (profile?.google_sheets_credentials) {
+        const credentials = profile.google_sheets_credentials as any;
+        
+        // Store tokens in the format expected by GoogleSheetsService
+        const tokens = {
+          access_token: credentials.access_token,
+          refresh_token: credentials.refresh_token,
+          expires_in: credentials.expires_in,
+          expiry_date: new Date(credentials.created_at).getTime() + (credentials.expires_in * 1000)
+        };
+        
+        localStorage.setItem('google_sheets_tokens', JSON.stringify(tokens));
+        console.log('✅ Tokens retrieved from Supabase and stored in localStorage');
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Error retrieving tokens from Supabase:', error);
+      return false;
+    }
+  }
 
   async function checkConnection() {
     try {
