@@ -51,7 +51,7 @@ function App() {
               <Route path="/connect-monday" element={<PageWrapper><ConnectMonday /></PageWrapper>} />
               <Route path="/connect-sheets" element={<PageWrapper><ConnectSheets /></PageWrapper>} />
               <Route path="/monday-oauth" element={<PageWrapper><MondayOAuth /></PageWrapper>} />
-              <Route path="/auth/google/callback" element={<PageWrapper><GoogleOAuth /></PageWrapper>} />
+              <Route path="/google-oauth" element={<PageWrapper><GoogleOAuth /></PageWrapper>} />
               <Route path="/recipe/:recipeId" element={<PageWrapper><RecipeConfig /></PageWrapper>} />
               <Route path="/install" element={<PageWrapper><InstallationFlow /></PageWrapper>} />
               <Route path="/recipe/item-menu" element={<PageWrapper><ItemMenu /></PageWrapper>} />
