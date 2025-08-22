@@ -63,39 +63,48 @@ export function GoogleSheetsConnect() {
     };
 
     const handleMessage = (event: MessageEvent) => {
-      console.log('🔄 Received postMessage:', {
-        type: event.data?.type,
-        timestamp: event.data?.timestamp,
+      // Filter out non-OAuth messages
+      if (!event.data || typeof event.data !== 'object') {
+        return;
+      }
+      
+      // Only process messages with valid OAuth structure
+      if (!event.data.type || typeof event.data.type !== 'string') {
+        return;
+      }
+      
+      console.log('🔄 Received valid postMessage:', {
+        type: event.data.type,
+        timestamp: event.data.timestamp,
+        source: event.data.source,
         origin: event.origin
       });
       
-      if (event.data && typeof event.data === 'object') {
-        if (event.data.type === 'GOOGLE_OAUTH_SUCCESS') {
-          console.log('✅ OAuth success via postMessage');
-          setIsWaitingForAuth(false);
-          setConnectionError(null);
-          
-          // Check connection with delay
-          setTimeout(() => {
-            checkConnection();
-          }, 2000);
-          
-          toast({
-            title: 'Success', 
-            description: 'Google Sheets connected successfully!',
-          });
-          
-        } else if (event.data.type === 'GOOGLE_OAUTH_ERROR') {
-          console.log('❌ OAuth error via postMessage');
-          setIsWaitingForAuth(false);
-          const errorMsg = event.data.error || 'Unknown error';
-          setConnectionError(`OAuth error: ${errorMsg}`);
-          toast({
-            title: 'Authorization Error',
-            description: `OAuth failed: ${errorMsg}`,
-            variant: 'destructive'
-          });
-        }
+      if (event.data.type === 'GOOGLE_OAUTH_SUCCESS') {
+        console.log('✅ OAuth success via postMessage');
+        setIsWaitingForAuth(false);
+        setConnectionError(null);
+        
+        // Check connection with delay
+        setTimeout(() => {
+          checkConnection();
+        }, 2000);
+        
+        toast({
+          title: 'Success', 
+          description: 'Google Sheets connected successfully!',
+        });
+        
+      } else if (event.data.type === 'GOOGLE_OAUTH_ERROR') {
+        console.log('❌ OAuth error via postMessage');
+        setIsWaitingForAuth(false);
+        const errorMsg = event.data.error || 'Unknown error';
+        setConnectionError(`OAuth error: ${errorMsg}`);
+        toast({
+          title: 'Authorization Error',
+          description: `OAuth failed: ${errorMsg}`,
+          variant: 'destructive'
+        });
       }
     };
 
