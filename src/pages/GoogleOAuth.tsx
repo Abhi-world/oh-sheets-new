@@ -5,8 +5,14 @@ import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
 const GoogleOAuth = () => {
+  console.log('🚀 GoogleOAuth component mounted');
+  console.log('🌐 Current location:', window.location.href);
+  
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  console.log('🔗 SearchParams object:', searchParams);
+  console.log('📋 All search params as string:', searchParams.toString());
 
   useEffect(() => {
     const handleOAuthCallback = async () => {
