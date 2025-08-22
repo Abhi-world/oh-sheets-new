@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { googleSheetsService } from '@/integrations/google/sheets';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info, RefreshCw, ExternalLink } from 'lucide-react';

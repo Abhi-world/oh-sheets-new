@@ -103,10 +103,17 @@ const GoogleOAuth = () => {
         console.log('🔄 Starting token exchange with code length:', code.length);
         console.log('🔄 Code preview:', code.substring(0, 20) + '...');
         
+        // Get current session for auth context
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('🔐 Current session:', session ? 'Available' : 'Not available');
+        
         // Exchange code for tokens using edge function
         console.log('🔄 Calling edge function: google-oauth-exchange');
         const { data, error: exchangeError } = await supabase.functions.invoke('google-oauth-exchange', {
-          body: { code }
+          body: { code },
+          headers: session?.access_token ? {
+            Authorization: `Bearer ${session.access_token}`
+          } : {}
         });
 
         console.log('📋 Edge function response:', { data, error: exchangeError });
