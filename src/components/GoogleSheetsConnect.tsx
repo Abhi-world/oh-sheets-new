@@ -207,20 +207,30 @@ export function GoogleSheetsConnect() {
 
   async function retrieveAndStoreTokens() {
     try {
+      console.log('🔄 Attempting to retrieve tokens from Supabase...');
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.log('No authenticated user to retrieve tokens for');
+        console.log('❌ No authenticated user to retrieve tokens for');
         return false;
       }
 
-      const { data: profile } = await supabase
+      console.log('✅ Found authenticated user:', user.id);
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('google_sheets_credentials')
         .eq('id', user.id)
         .single();
 
+      if (error) {
+        console.error('❌ Error fetching profile:', error);
+        return false;
+      }
+
+      console.log('📄 Profile data:', profile);
+      
       if (profile?.google_sheets_credentials) {
         const credentials = profile.google_sheets_credentials as any;
+        console.log('🔑 Found credentials in profile:', Object.keys(credentials));
         
         // Store tokens in the format expected by GoogleSheetsService
         const tokens = {
@@ -231,13 +241,14 @@ export function GoogleSheetsConnect() {
         };
         
         localStorage.setItem('google_sheets_tokens', JSON.stringify(tokens));
-        console.log('✅ Tokens retrieved from Supabase and stored in localStorage');
+        console.log('✅ Tokens stored in localStorage:', tokens);
         return true;
       }
       
+      console.log('❌ No Google Sheets credentials found in profile');
       return false;
     } catch (error) {
-      console.error('Error retrieving tokens from Supabase:', error);
+      console.error('❌ Error retrieving tokens from Supabase:', error);
       return false;
     }
   }
