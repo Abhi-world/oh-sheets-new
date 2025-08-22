@@ -58,7 +58,8 @@ serve(async (req) => {
 
     // Exchange authorization code for tokens  
     const appUrl = Deno.env.get('APP_URL') || 'https://ohsheets.netlify.app';
-    console.log('Using redirect_uri:', `${appUrl}/google-oauth`);
+    const redirectUri = appUrl.endsWith('/') ? `${appUrl}google-oauth` : `${appUrl}/google-oauth`;
+    console.log('Using redirect_uri:', redirectUri);
     
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -69,7 +70,7 @@ serve(async (req) => {
         code,
         client_id: Deno.env.get('GOOGLE_CLIENT_ID')!,
         client_secret: Deno.env.get('GOOGLE_CLIENT_SECRET')!,
-        redirect_uri: `${appUrl}/google-oauth`,
+        redirect_uri: redirectUri,
         grant_type: 'authorization_code',
       }),
     });
