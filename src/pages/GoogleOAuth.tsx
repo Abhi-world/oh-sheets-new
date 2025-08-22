@@ -15,9 +15,22 @@ const GoogleOAuth = () => {
       console.log('🔗 Referrer:', document.referrer);
       console.log('🪟 Window opener available:', !!window.opener);
       
+      // Log all URL parameters for debugging
+      const allParams = {};
+      for (const [key, value] of searchParams.entries()) {
+        allParams[key] = value;
+      }
+      console.log('📋 All URL parameters:', allParams);
+      
       const code = searchParams.get('code');
       const error = searchParams.get('error');
       const state = searchParams.get('state');
+      
+      console.log('🔍 Extracted parameters:', {
+        code: code ? `${code.substring(0, 20)}...` : null,
+        error,
+        state
+      });
 
       if (error) {
         console.error('❌ OAuth error:', error);
@@ -82,18 +95,27 @@ const GoogleOAuth = () => {
 
       try {
         console.log('🔄 Starting token exchange with code length:', code.length);
+        console.log('🔄 Code preview:', code.substring(0, 20) + '...');
         
         // Exchange code for tokens using edge function
+        console.log('🔄 Calling edge function: google-oauth-exchange');
         const { data, error: exchangeError } = await supabase.functions.invoke('google-oauth-exchange', {
           body: { code }
         });
+
+        console.log('📋 Edge function response:', { data, error: exchangeError });
 
         if (exchangeError) {
           console.error('❌ Edge function error:', exchangeError);
           throw exchangeError;
         }
 
-        console.log('✅ Token exchange successful');
+        if (!data) {
+          console.error('❌ No data returned from edge function');
+          throw new Error('No data returned from token exchange');
+        }
+
+        console.log('✅ Token exchange successful:', data);
         toast.success('Google Sheets connected successfully!');
         
         // Signal success immediately and persistently
