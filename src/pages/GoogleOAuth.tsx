@@ -111,7 +111,7 @@ const GoogleOAuth = () => {
         console.log('🔄 Calling edge function: google-oauth-exchange');
         const { data, error: exchangeError } = await supabase.functions.invoke('google-oauth-exchange', {
           body: { code },
-          headers: session?.access_token ? {
+          headers: session ? {
             Authorization: `Bearer ${session.access_token}`
           } : {}
         });
