@@ -532,6 +532,22 @@ export function GoogleSheetsConnect() {
           </Button>
         )}
         
+        {/* Always show check connection button for debugging */}
+        {!isConnected && !isWaitingForAuth && (
+          <Button
+            onClick={() => {
+              console.log('🔍 Manual connection check requested');
+              checkConnection();
+            }}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Check Connection Status
+          </Button>
+        )}
+        
         <div className="text-sm text-gray-500 mt-4 text-center">
           <p>Connecting to Google Sheets allows you to automatically export data from Monday.com boards.</p>
           <p className="mt-1">Your connection is secure and you can disconnect at any time.</p>
