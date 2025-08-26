@@ -124,7 +124,7 @@ export function GoogleSheetsConnect() {
       
       console.log('🔄 Starting OAuth polling...');
       let pollAttempts = 0;
-      const maxAttempts = 150; // 5 minutes at 2-second intervals
+      const maxAttempts = 60; // 5 minutes at 5-second intervals
       
       oauthPollingInterval = setInterval(() => {
         pollAttempts++;
@@ -137,6 +137,7 @@ export function GoogleSheetsConnect() {
         if (oauthStatus === 'success' || oauthSuccess) {
           console.log('✅ OAuth success found in polling');
           setIsWaitingForAuth(false);
+          setIsConnecting(false);
           setConnectionError(null);
           
           // Clean up localStorage
@@ -149,10 +150,10 @@ export function GoogleSheetsConnect() {
           oauthPollingInterval = null;
           
           // Check connection with delay
-        setTimeout(async () => {
-          await retrieveAndStoreTokens();  
-          checkConnection();
-        }, 2000);
+          setTimeout(async () => {
+            await retrieveAndStoreTokens();  
+            checkConnection();
+          }, 2000);
           
           toast({
             title: 'Success',
@@ -162,6 +163,7 @@ export function GoogleSheetsConnect() {
         } else if (oauthStatus === 'error' || oauthError) {
           console.log('❌ OAuth error found in polling');
           setIsWaitingForAuth(false);
+          setIsConnecting(false);
           const errorMsg = oauthError || 'OAuth failed';
           
           // Clean up localStorage
@@ -185,6 +187,7 @@ export function GoogleSheetsConnect() {
           clearInterval(oauthPollingInterval!);
           oauthPollingInterval = null;
           setIsWaitingForAuth(false);
+          setIsConnecting(false);
           setConnectionError('OAuth timeout - please try again');
           toast({
             title: 'Timeout',
@@ -192,7 +195,7 @@ export function GoogleSheetsConnect() {
             variant: 'destructive'
           });
         }
-      }, 2000); // Check every 2 seconds
+      }, 5000); // Check every 5 seconds
     };
 
     // Start polling when waiting for auth
@@ -236,12 +239,19 @@ export function GoogleSheetsConnect() {
         const credentials = profile.google_sheets_credentials as any;
         console.log('🔑 Found credentials in profile:', Object.keys(credentials));
         
+        // Add validation for required fields
+        if (!credentials.access_token || !credentials.refresh_token) {
+          console.log('❌ Incomplete credentials in profile');
+          return false;
+        }
+        
         // Store tokens in the format expected by GoogleSheetsService
         const tokens = {
           access_token: credentials.access_token,
           refresh_token: credentials.refresh_token,
-          expires_in: credentials.expires_in,
-          expiry_date: new Date(credentials.created_at).getTime() + (credentials.expires_in * 1000)
+          expires_in: credentials.expires_in || 3600,
+          expiry_date: credentials.expiry_date || 
+            (new Date(credentials.created_at || Date.now()).getTime() + ((credentials.expires_in || 3600) * 1000))
         };
         
         localStorage.setItem('google_sheets_tokens', JSON.stringify(tokens));
