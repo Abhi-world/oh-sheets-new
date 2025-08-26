@@ -27,6 +27,7 @@ export function GoogleSheetsConnect() {
         if (e.newValue === 'success') {
           console.log('✅ OAuth success detected via localStorage');
           setIsWaitingForAuth(false);
+          setIsConnecting(false);
           setConnectionError(null);
           
           // Clear all OAuth-related localStorage items
@@ -46,6 +47,7 @@ export function GoogleSheetsConnect() {
         } else if (e.newValue === 'error') {
           console.log('❌ OAuth error detected via localStorage');
           setIsWaitingForAuth(false);
+          setIsConnecting(false);
           const errorMsg = localStorage.getItem('google_oauth_error') || 'Unknown error';
           
           // Clear error items
@@ -83,6 +85,7 @@ export function GoogleSheetsConnect() {
       if (event.data.type === 'GOOGLE_OAUTH_SUCCESS') {
         console.log('✅ OAuth success via postMessage');
         setIsWaitingForAuth(false);
+        setIsConnecting(false);
         setConnectionError(null);
         
         // Retrieve tokens from Supabase and store in localStorage
@@ -99,6 +102,7 @@ export function GoogleSheetsConnect() {
       } else if (event.data.type === 'GOOGLE_OAUTH_ERROR') {
         console.log('❌ OAuth error via postMessage');
         setIsWaitingForAuth(false);
+        setIsConnecting(false);
         const errorMsg = event.data.error || 'Unknown error';
         setConnectionError(`OAuth error: ${errorMsg}`);
         toast({
@@ -325,17 +329,40 @@ export function GoogleSheetsConnect() {
       
       // Check if we're in Monday embedded mode
       if (isEmbeddedMode()) {
-        console.log('Opening OAuth in new tab (Monday embedded mode)');
+        console.log('🚀 Opening OAuth popup (Monday embedded mode)');
         setIsWaitingForAuth(true);
         
-        // Try Monday SDK first, then fallback to window.open
-        try {
-          const monday = getMondaySDK();
-          await monday.execute('openLink', { url: authUrl, external: true });
-        } catch (mondayError) {
-          console.log('Monday SDK openLink failed, using window.open fallback');
-          window.open(authUrl, '_blank', 'width=500,height=600');
+        // Always use popup for proper communication
+        const popup = window.open(
+          authUrl, 
+          'google-oauth-popup', 
+          'width=500,height=600,scrollbars=yes,resizable=yes'
+        );
+        
+        if (!popup) {
+          throw new Error('Popup blocked. Please allow popups and try again.');
         }
+        
+        console.log('✅ Popup opened successfully');
+        
+        // Monitor popup for closure without success
+        const checkClosed = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(checkClosed);
+            console.log('🔄 Popup was closed');
+            
+            // Give a brief delay for any pending messages
+            setTimeout(() => {
+              if (isWaitingForAuth) {
+                console.log('⚠️ Popup closed without success message');
+                setIsWaitingForAuth(false);
+                setIsConnecting(false);
+                // Don't show error toast here as user might have just cancelled
+              }
+            }, 1000);
+          }
+        }, 1000);
+        
       } else {
         // Regular redirect for non-embedded mode
         window.location.href = authUrl;
@@ -343,13 +370,18 @@ export function GoogleSheetsConnect() {
     } catch (error) {
       console.error('Error connecting to Google Sheets:', error);
       setConnectionError('Failed to connect to Google Sheets. Please try again.');
+      setIsWaitingForAuth(false);
       toast({
         title: 'Connection Error',
-        description: 'Failed to connect to Google Sheets. Please try again.',
+        description: error.message || 'Failed to connect to Google Sheets. Please try again.',
         variant: 'destructive'
       });
     } finally {
-      setIsConnecting(false);
+      if (!isEmbeddedMode()) {
+        setIsConnecting(false);
+      }
+      // Don't set isConnecting to false in embedded mode here, 
+      // let the success/error handlers do it
     }
   }
   
