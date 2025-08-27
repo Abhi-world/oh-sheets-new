@@ -12,6 +12,7 @@ export function GoogleSheetsConnect() {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [isExchangingTokens, setIsExchangingTokens] = useState(false);
   const { toast } = useToast();
 
   const checkConnection = useCallback(async () => {
@@ -45,34 +46,6 @@ export function GoogleSheetsConnect() {
     }
   }, []);
 
-  const retrieveAndStoreTokens = useCallback(async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('google_sheets_credentials')
-        .eq('id', user.id)
-        .single();
-      
-      if (profile?.google_sheets_credentials) {
-        const creds = profile.google_sheets_credentials as any;
-        if (creds.access_token && creds.refresh_token) {
-          localStorage.setItem('google_sheets_tokens', JSON.stringify({
-            access_token: creds.access_token,
-            refresh_token: creds.refresh_token,
-            expiry_date: creds.expiry_date,
-          }));
-          return true;
-        }
-      }
-      return false;
-    } catch {
-      return false;
-    }
-  }, []);
-
   useEffect(() => {
     checkConnection();
 
@@ -80,16 +53,24 @@ export function GoogleSheetsConnect() {
       if (event.origin !== window.location.origin) return;
 
       if (event.data?.type === 'GOOGLE_OAUTH_SUCCESS') {
+        // Prevent duplicate token exchanges
+        if (isExchangingTokens) {
+          console.log('⏳ Already exchanging tokens, skipping duplicate request');
+          return;
+        }
+        
+        setIsExchangingTokens(true);
         toast({ title: 'Authorization successful!', description: 'Exchanging tokens...' });
         
         const { code } = event.data;
         if (!code) {
           setConnectionError('Authorization code not received.');
+          setIsExchangingTokens(false);
           return;
         }
 
         try {
-          // Now call the edge function from main window (which has session)
+          // Call the edge function from main window (which has session)
           const { data, error: exchangeError } = await supabase.functions.invoke('google-oauth-exchange', {
             body: { code }
           });
@@ -102,7 +83,10 @@ export function GoogleSheetsConnect() {
           console.log('✅ Token exchange successful:', data);
           toast({ title: 'Success!', description: 'Google Sheets connected successfully!' });
           
-          // Now check connection status
+          // Clear any previous errors
+          setConnectionError(null);
+          
+          // Check connection status
           await checkConnection();
         } catch (error) {
           console.error('❌ Token exchange failed:', error);
@@ -112,6 +96,8 @@ export function GoogleSheetsConnect() {
             description: 'Failed to complete the connection process.',
             variant: 'destructive',
           });
+        } finally {
+          setIsExchangingTokens(false);
         }
       } else if (event.data?.type === 'GOOGLE_OAUTH_ERROR') {
         setConnectionError(event.data.error || 'An unknown error occurred during authorization.');
@@ -125,7 +111,7 @@ export function GoogleSheetsConnect() {
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [checkConnection, retrieveAndStoreTokens]);
+  }, [checkConnection, isExchangingTokens]);
 
 
   const handleConnect = async () => {

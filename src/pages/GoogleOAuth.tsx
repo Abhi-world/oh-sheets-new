@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
@@ -8,7 +7,6 @@ const GoogleOAuth = () => {
   console.log('🚀 GoogleOAuth component mounted');
   console.log('🌐 Current location:', window.location.href);
   
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   console.log('🔗 SearchParams object:', searchParams);
@@ -217,7 +215,7 @@ const GoogleOAuth = () => {
     };
 
     handleOAuthCallback();
-  }, [searchParams, navigate]);
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
