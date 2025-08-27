@@ -100,40 +100,16 @@ const GoogleOAuth = () => {
       }
 
       try {
-        console.log('🔄 Starting token exchange with code length:', code.length);
+        console.log('✅ Authorization code received, passing to main window');
         console.log('🔄 Code preview:', code.substring(0, 20) + '...');
         
-        // Get current session for auth context
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log('🔐 Current session:', session ? 'Available' : 'Not available');
+        // Don't call the edge function from popup - pass code to main window instead
+        toast.success('Authorization successful! Finalizing connection...');
         
-        // Exchange code for tokens using edge function
-        console.log('🔄 Calling edge function: google-oauth-exchange');
-        const { data, error: exchangeError } = await supabase.functions.invoke('google-oauth-exchange', {
-          body: { code },
-          headers: session ? {
-            Authorization: `Bearer ${session.access_token}`
-          } : {}
-        });
-
-        console.log('📋 Edge function response:', { data, error: exchangeError });
-
-        if (exchangeError) {
-          console.error('❌ Edge function error:', exchangeError);
-          throw exchangeError;
-        }
-
-        if (!data) {
-          console.error('❌ No data returned from edge function');
-          throw new Error('No data returned from token exchange');
-        }
-
-        console.log('✅ Token exchange successful:', data);
-        toast.success('Google Sheets connected successfully!');
-        
-        // Signal success immediately and persistently
+        // Signal success with the authorization code
         const successMessage = {
           type: 'GOOGLE_OAUTH_SUCCESS',
+          code: code,
           timestamp: Date.now(),
           source: 'oauth-callback'
         };

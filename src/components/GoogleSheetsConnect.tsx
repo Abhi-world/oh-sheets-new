@@ -80,12 +80,38 @@ export function GoogleSheetsConnect() {
       if (event.origin !== window.location.origin) return;
 
       if (event.data?.type === 'GOOGLE_OAUTH_SUCCESS') {
-        toast({ title: 'Authorization successful!', description: 'Finalizing connection...' });
-        const stored = await retrieveAndStoreTokens();
-        if (stored) {
+        toast({ title: 'Authorization successful!', description: 'Exchanging tokens...' });
+        
+        const { code } = event.data;
+        if (!code) {
+          setConnectionError('Authorization code not received.');
+          return;
+        }
+
+        try {
+          // Now call the edge function from main window (which has session)
+          const { data, error: exchangeError } = await supabase.functions.invoke('google-oauth-exchange', {
+            body: { code }
+          });
+
+          if (exchangeError) {
+            console.error('❌ Edge function error:', exchangeError);
+            throw exchangeError;
+          }
+
+          console.log('✅ Token exchange successful:', data);
+          toast({ title: 'Success!', description: 'Google Sheets connected successfully!' });
+          
+          // Now check connection status
           await checkConnection();
-        } else {
-          setConnectionError('Failed to retrieve credentials after authorization.');
+        } catch (error) {
+          console.error('❌ Token exchange failed:', error);
+          setConnectionError('Failed to exchange authorization code for tokens.');
+          toast({
+            title: 'Connection Error',
+            description: 'Failed to complete the connection process.',
+            variant: 'destructive',
+          });
         }
       } else if (event.data?.type === 'GOOGLE_OAUTH_ERROR') {
         setConnectionError(event.data.error || 'An unknown error occurred during authorization.');
