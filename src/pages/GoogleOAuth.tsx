@@ -1,30 +1,25 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 
 const GoogleOAuth = () => {
-  console.log('🚀 GoogleOAuth component mounted');
-  console.log('🌐 Current location:', window.location.href);
-  
   const [searchParams] = useSearchParams();
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [message, setMessage] = useState('Processing authorization...');
 
-  console.log('🔗 SearchParams object:', searchParams);
-  console.log('📋 All search params as string:', searchParams.toString());
+  console.log('🚀 GoogleOAuth component mounted');
+  console.log('🌐 Current URL:', window.location.href);
+  
+  const allParams = {};
+  for (const [key, value] of searchParams.entries()) {
+    allParams[key] = value;
+  }
+  console.log('📋 All URL parameters:', allParams);
 
   useEffect(() => {
     const handleOAuthCallback = async () => {
-      console.log('🔄 OAuth callback page loaded');
-      console.log('📍 Current URL:', window.location.href);
-      console.log('🔗 Referrer:', document.referrer);
-      console.log('🪟 Window opener available:', !!window.opener);
-      
-      // Log all URL parameters for debugging
-      const allParams = {};
-      for (const [key, value] of searchParams.entries()) {
-        allParams[key] = value;
-      }
-      console.log('📋 All URL parameters:', allParams);
+      console.log('🔄 OAuth callback processing started');
       
       const code = searchParams.get('code');
       const error = searchParams.get('error');
@@ -33,36 +28,32 @@ const GoogleOAuth = () => {
       console.log('🔍 Extracted parameters:', {
         code: code ? `${code.substring(0, 20)}...` : null,
         error,
-        state
+        state,
+        hasOpener: !!window.opener,
+        origin: window.location.origin
       });
 
       if (error) {
         console.error('❌ OAuth error:', error);
+        setStatus('error');
+        setMessage(`Authorization failed: ${error}`);
         toast.error('Google authorization failed');
         
-        // Signal error immediately and persistently
-        const errorMessage = { type: 'GOOGLE_OAUTH_ERROR', error, timestamp: Date.now() };
+        // Send error to parent
+        const errorMessage = { 
+          type: 'GOOGLE_OAUTH_ERROR', 
+          error, 
+          timestamp: Date.now() 
+        };
         
-        // localStorage fallback
-        try {
-          localStorage.setItem('google_oauth_error', error);
-          localStorage.setItem('google_oauth_status', 'error');
-        } catch (e) {
-          console.log('❌ localStorage not available:', e);
-        }
-        
-        // PostMessage to all possible targets
-        const targets = [window.opener, window.parent, window.top];
-        targets.forEach((target, index) => {
-          if (target && target !== window) {
-            try {
-              target.postMessage(errorMessage, '*');
-              console.log(`📤 Error message sent to target ${index}`);
-            } catch (e) {
-              console.log(`❌ Failed to send error to target ${index}:`, e);
-            }
+        if (window.opener) {
+          try {
+            window.opener.postMessage(errorMessage, window.location.origin);
+            console.log('📤 Error message sent to parent window');
+          } catch (e) {
+            console.error('❌ Failed to send error message:', e);
           }
-        });
+        }
         
         setTimeout(() => window.close(), 3000);
         return;
@@ -70,147 +61,89 @@ const GoogleOAuth = () => {
 
       if (!code) {
         console.error('❌ No authorization code received');
+        setStatus('error');
+        setMessage('No authorization code received');
         toast.error('Authorization failed - no code received');
         
-        const errorMessage = { type: 'GOOGLE_OAUTH_ERROR', error: 'No code received', timestamp: Date.now() };
+        const errorMessage = { 
+          type: 'GOOGLE_OAUTH_ERROR', 
+          error: 'No authorization code received', 
+          timestamp: Date.now() 
+        };
         
-        try {
-          localStorage.setItem('google_oauth_error', 'No code received');
-          localStorage.setItem('google_oauth_status', 'error');
-        } catch (e) {
-          console.log('❌ localStorage not available:', e);
-        }
-        
-        const targets = [window.opener, window.parent, window.top];
-        targets.forEach((target, index) => {
-          if (target && target !== window) {
-            try {
-              target.postMessage(errorMessage, '*');
-              console.log(`📤 Error message sent to target ${index}`);
-            } catch (e) {
-              console.log(`❌ Failed to send error to target ${index}:`, e);
-            }
+        if (window.opener) {
+          try {
+            window.opener.postMessage(errorMessage, window.location.origin);
+            console.log('📤 Error message sent to parent window');
+          } catch (e) {
+            console.error('❌ Failed to send error message:', e);
           }
-        });
+        }
         
         setTimeout(() => window.close(), 3000);
         return;
       }
 
-      try {
-        console.log('✅ Authorization code received, passing to main window');
-        console.log('🔄 Code preview:', code.substring(0, 20) + '...');
-        
-        // Don't call the edge function from popup - pass code to main window instead
-        toast.success('Authorization successful! Finalizing connection...');
-        
-        // Signal success with the authorization code
-        const successMessage = {
-          type: 'GOOGLE_OAUTH_SUCCESS',
-          code: code,
-          timestamp: Date.now(),
-          source: 'oauth-callback'
-        };
-        
-        // localStorage signal
+      // Success case
+      console.log('✅ Authorization code received successfully');
+      setStatus('success');
+      setMessage('Authorization successful! Connecting to Google Sheets...');
+      toast.success('Authorization successful! Finalizing connection...');
+      
+      // Send success message with code to parent window
+      const successMessage = {
+        type: 'GOOGLE_OAUTH_SUCCESS',
+        code: code,
+        timestamp: Date.now(),
+        source: 'oauth-callback'
+      };
+      
+      if (window.opener) {
         try {
-          localStorage.setItem('google_oauth_success', 'true');
-          localStorage.setItem('google_oauth_status', 'success');
-          localStorage.setItem('google_oauth_timestamp', Date.now().toString());
-          console.log('✅ localStorage success signal set');
-        } catch (e) {
-          console.log('❌ localStorage not available:', e);
-        }
-        
-        // PostMessage to all possible targets
-        const targets = [window.opener, window.parent, window.top];
-        let messagesSent = 0;
-        
-        targets.forEach((target, index) => {
-          if (target && target !== window) {
-            try {
-              target.postMessage(successMessage, '*');
-              messagesSent++;
-              console.log(`✅ Success message sent to target ${index}`);
-            } catch (e) {
-              console.log(`❌ Failed to send success to target ${index}:`, e);
-            }
-          }
-        });
-        
-        console.log(`📊 Total messages sent: ${messagesSent}`);
-        
-        // Keep signaling for better reliability
-        let attempts = 0;
-        const maxAttempts = 20;
-        const signalInterval = setInterval(() => {
-          attempts++;
+          window.opener.postMessage(successMessage, window.location.origin);
+          console.log('✅ Success message sent to parent window');
           
-          targets.forEach((target, index) => {
-            if (target && target !== window) {
+          // Keep sending the message for reliability
+          let attempts = 0;
+          const maxAttempts = 10;
+          const interval = setInterval(() => {
+            attempts++;
+            try {
+              window.opener.postMessage(successMessage, window.location.origin);
+              console.log(`✅ Retry message ${attempts} sent`);
+            } catch (e) {
+              console.error(`❌ Failed retry ${attempts}:`, e);
+            }
+            
+            if (attempts >= maxAttempts) {
+              clearInterval(interval);
+              console.log('🔄 Finished retry attempts');
+            }
+          }, 200);
+          
+          // Stop retrying after 3 seconds and close window
+          setTimeout(() => {
+            clearInterval(interval);
+            setMessage('Connection complete! This window will close automatically.');
+            setTimeout(() => {
               try {
-                target.postMessage(successMessage, '*');
+                window.close();
               } catch (e) {
-                // Silent fail on repeated attempts
+                console.log('❌ Could not close window:', e);
+                setMessage('You can close this window now.');
               }
-            }
-          });
+            }, 1000);
+          }, 3000);
           
-          if (attempts >= maxAttempts) {
-            clearInterval(signalInterval);
-            console.log('🔄 Finished signaling attempts');
-          }
-        }, 200);
-        
-        // Close window after delay
-        setTimeout(() => {
-          try {
-            window.close();
-          } catch (e) {
-            console.log('❌ Could not close window:', e);
-            // Show success message if window won't close
-            document.body.innerHTML = `
-              <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: sans-serif; background: #f0f9ff;">
-                <div style="text-align: center; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                  <div style="color: #10b981; font-size: 48px; margin-bottom: 1rem;">✅</div>
-                  <h2 style="color: #1f2937; margin-bottom: 0.5rem;">Connected Successfully!</h2>
-                  <p style="color: #6b7280;">You can close this window and return to Monday.com</p>
-                </div>
-              </div>
-            `;
-          }
-        }, 3000);
-        
-      } catch (error) {
-        console.error('❌ Token exchange error:', error);
-        toast.error('Failed to connect Google Sheets');
-        
-        const errorMessage = { 
-          type: 'GOOGLE_OAUTH_ERROR', 
-          error: error.message || 'Token exchange failed',
-          timestamp: Date.now()
-        };
-        
-        try {
-          localStorage.setItem('google_oauth_error', error.message || 'Token exchange failed');
-          localStorage.setItem('google_oauth_status', 'error');
         } catch (e) {
-          console.log('❌ localStorage not available:', e);
+          console.error('❌ Failed to send success message:', e);
+          setStatus('error');
+          setMessage('Failed to communicate with parent window');
         }
-        
-        const targets = [window.opener, window.parent, window.top];
-        targets.forEach((target, index) => {
-          if (target && target !== window) {
-            try {
-              target.postMessage(errorMessage, '*');
-              console.log(`📤 Error message sent to target ${index}`);
-            } catch (e) {
-              console.log(`❌ Failed to send error to target ${index}:`, e);
-            }
-          }
-        });
-        
-        setTimeout(() => window.close(), 3000);
+      } else {
+        console.warn('⚠️ No opener window found');
+        setStatus('error');
+        setMessage('Parent window not found. Please try again.');
       }
     };
 
@@ -218,11 +151,47 @@ const GoogleOAuth = () => {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg text-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">Connecting to Google Sheets</h2>
-        <p className="text-gray-600">Please wait while we complete the authorization...</p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50">
+      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
+        <div className="text-center">
+          {status === 'loading' && (
+            <>
+              <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                Connecting to Google Sheets
+              </h2>
+            </>
+          )}
+          
+          {status === 'success' && (
+            <>
+              <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                Success!
+              </h2>
+            </>
+          )}
+          
+          {status === 'error' && (
+            <>
+              <XCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                Connection Failed
+              </h2>
+            </>
+          )}
+          
+          <p className="text-gray-600">{message}</p>
+          
+          {status === 'error' && (
+            <button 
+              onClick={() => window.close()}
+              className="mt-4 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+            >
+              Close Window
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
