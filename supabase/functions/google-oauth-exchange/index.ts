@@ -70,7 +70,18 @@ serve(async (req) => {
     console.log('Exchanging code for tokens...');
 
     // Exchange authorization code for tokens  
-    const appUrl = Deno.env.get('APP_URL') || 'https://ohsheets.netlify.app';
+    const appUrl = Deno.env.get('APP_URL');
+    if (!appUrl) {
+      console.error('APP_URL environment variable not set');
+      return new Response(
+        JSON.stringify({ error: 'Server configuration error' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+    
     const redirectUri = appUrl.endsWith('/') ? `${appUrl}google-oauth` : `${appUrl}/google-oauth`;
     console.log('Using redirect_uri:', redirectUri);
     

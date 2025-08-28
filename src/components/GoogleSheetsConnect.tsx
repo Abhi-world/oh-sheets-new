@@ -50,7 +50,17 @@ export function GoogleSheetsConnect() {
     checkConnection();
 
     const handleMessage = async (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
+      console.log('🔄 Received postMessage:', {
+        origin: event.origin,
+        windowOrigin: window.location.origin,
+        data: event.data
+      });
+
+      // Allow messages from popup (different origin in Monday.com iframe)
+      if (!event.data?.type?.startsWith('GOOGLE_OAUTH_')) {
+        console.log('❌ Ignoring non-Google OAuth message');
+        return;
+      }
 
       if (event.data?.type === 'GOOGLE_OAUTH_SUCCESS') {
         // Prevent duplicate token exchanges

@@ -12,25 +12,46 @@ const GoogleOAuthCallback = () => {
     const error = searchParams.get('error');
 
     // --- This is the main logic ---
+    console.log('🔄 OAuth callback processing:', { code: !!code, error });
+    
     if (window.opener) {
+      // For Monday.com iframe context, send to all possible origins
+      const sendMessage = (messageData: any) => {
+        console.log('📤 Sending message to parent:', messageData);
+        
+        // Send to multiple possible origins for Monday.com compatibility
+        const origins = [
+          window.location.origin,
+          '*', // Allow all origins as fallback
+        ];
+        
+        origins.forEach(origin => {
+          try {
+            window.opener.postMessage(messageData, origin);
+            console.log(`✅ Message sent to origin: ${origin}`);
+          } catch (e) {
+            console.warn(`❌ Failed to send to origin ${origin}:`, e);
+          }
+        });
+      };
+
       if (error) {
         setStatus('error');
         setMessage(`Authorization failed: ${error}`);
-        // FIX: No backslashes in the type
-        window.opener.postMessage({ type: 'GOOGLE_OAUTH_ERROR', error }, window.location.origin);
+        sendMessage({ type: 'GOOGLE_OAUTH_ERROR', error });
       } else if (code) {
         setStatus('success');
         setMessage('Success! Finalizing connection...');
-        // FIX: No backslashes in the type
-        window.opener.postMessage({ type: 'GOOGLE_OAUTH_SUCCESS', code }, window.location.origin);
+        sendMessage({ type: 'GOOGLE_OAUTH_SUCCESS', code });
       } else {
         setStatus('error');
         setMessage('No authorization code was received.');
-        window.opener.postMessage({ type: 'GOOGLE_OAUTH_ERROR', error: 'No code received' }, window.location.origin);
+        sendMessage({ type: 'GOOGLE_OAUTH_ERROR', error: 'No code received' });
       }
     } else {
       setStatus('error');
       setMessage('Parent window could not be found. Please try again.');
+      console.error('❌ No window.opener found');
     }
     
     // Close the popup after giving the message time to send
