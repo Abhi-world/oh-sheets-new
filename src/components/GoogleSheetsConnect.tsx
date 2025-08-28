@@ -48,68 +48,80 @@ export function GoogleSheetsConnect() {
 
   useEffect(() => {
     checkConnection();
+  }, [checkConnection]);
 
+  useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
       console.log('🔄 Received postMessage:', {
         origin: event.origin,
         windowOrigin: window.location.origin,
-        data: event.data
+        data: event.data,
+        type: event.data?.type
       });
 
       // Allow messages from popup (different origin in Monday.com iframe)
       if (!event.data?.type?.startsWith('GOOGLE_OAUTH_')) {
-        console.log('❌ Ignoring non-Google OAuth message');
+        console.log('❌ Ignoring non-Google OAuth message, type:', event.data?.type);
         return;
       }
 
+      console.log('✅ Processing Google OAuth message:', event.data.type);
+
       if (event.data?.type === 'GOOGLE_OAUTH_SUCCESS') {
         // Prevent duplicate token exchanges
-        if (isExchangingTokens) {
-          console.log('⏳ Already exchanging tokens, skipping duplicate request');
-          return;
-        }
-        
-        setIsExchangingTokens(true);
-        toast({ title: 'Authorization successful!', description: 'Exchanging tokens...' });
-        
-        const { code } = event.data;
-        if (!code) {
-          setConnectionError('Authorization code not received.');
-          setIsExchangingTokens(false);
-          return;
-        }
-
-        try {
-          // Call the edge function from main window (which has session)
-          const { data, error: exchangeError } = await supabase.functions.invoke('google-oauth-exchange', {
-            body: { code }
-          });
-
-          if (exchangeError) {
-            console.error('❌ Edge function error:', exchangeError);
-            throw exchangeError;
+        setIsExchangingTokens(current => {
+          if (current) {
+            console.log('⏳ Already exchanging tokens, skipping duplicate request');
+            return current;
+          }
+          
+          console.log('🚀 Starting token exchange process');
+          toast({ title: 'Authorization successful!', description: 'Exchanging tokens...' });
+          
+          const { code } = event.data;
+          if (!code) {
+            setConnectionError('Authorization code not received.');
+            return false;
           }
 
-          console.log('✅ Token exchange successful:', data);
-          toast({ title: 'Success!', description: 'Google Sheets connected successfully!' });
+          // Start token exchange
+          (async () => {
+            try {
+              console.log('📞 Calling edge function with code');
+              const { data, error: exchangeError } = await supabase.functions.invoke('google-oauth-exchange', {
+                body: { code }
+              });
+
+              if (exchangeError) {
+                console.error('❌ Edge function error:', exchangeError);
+                throw exchangeError;
+              }
+
+              console.log('✅ Token exchange successful:', data);
+              toast({ title: 'Success!', description: 'Google Sheets connected successfully!' });
+              
+              // Clear any previous errors
+              setConnectionError(null);
+              
+              // Check connection status
+              await checkConnection();
+            } catch (error) {
+              console.error('❌ Token exchange failed:', error);
+              setConnectionError('Failed to exchange authorization code for tokens.');
+              toast({
+                title: 'Connection Error',
+                description: 'Failed to complete the connection process.',
+                variant: 'destructive',
+              });
+            } finally {
+              setIsExchangingTokens(false);
+            }
+          })();
           
-          // Clear any previous errors
-          setConnectionError(null);
-          
-          // Check connection status
-          await checkConnection();
-        } catch (error) {
-          console.error('❌ Token exchange failed:', error);
-          setConnectionError('Failed to exchange authorization code for tokens.');
-          toast({
-            title: 'Connection Error',
-            description: 'Failed to complete the connection process.',
-            variant: 'destructive',
-          });
-        } finally {
-          setIsExchangingTokens(false);
-        }
+          return true;
+        });
       } else if (event.data?.type === 'GOOGLE_OAUTH_ERROR') {
+        console.log('❌ OAuth error received:', event.data.error);
         setConnectionError(event.data.error || 'An unknown error occurred during authorization.');
         toast({
             title: 'Authorization Error',
@@ -119,9 +131,13 @@ export function GoogleSheetsConnect() {
       }
     };
 
+    console.log('📡 Setting up message listener');
     window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [checkConnection, isExchangingTokens]);
+    return () => {
+      console.log('🧹 Cleaning up message listener');
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [toast, checkConnection]);
 
 
   const handleConnect = async () => {

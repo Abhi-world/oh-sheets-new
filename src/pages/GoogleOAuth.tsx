@@ -11,36 +11,50 @@ const GoogleOAuthCallback = () => {
     const code = searchParams.get('code');
     const error = searchParams.get('error');
 
+    console.log('🔍 OAuth callback loaded:', { code: !!code, error, hasOpener: !!window.opener });
+
     const sendMessage = (payload: any) => {
-      if (!window.opener) return;
+      if (!window.opener) {
+        console.log('❌ No window.opener found');
+        return;
+      }
       try {
+        console.log('📤 Sending message to parent:', payload);
         // In monday iframe contexts, use wildcard to ensure delivery
         window.opener.postMessage(payload, '*');
-      } catch {
-        // noop
+        console.log('✅ Message sent successfully');
+      } catch (err) {
+        console.error('❌ Failed to send message:', err);
       }
     };
 
     if (window.opener) {
       if (error) {
+        console.log('❌ OAuth error detected:', error);
         setStatus('error');
         setMessage(`Authorization failed: ${error}`);
         sendMessage({ type: 'GOOGLE_OAUTH_ERROR', error });
       } else if (code) {
+        console.log('✅ OAuth code received, sending success message');
         setStatus('success');
         setMessage('Success! Finalizing connection...');
         sendMessage({ type: 'GOOGLE_OAUTH_SUCCESS', code });
       } else {
+        console.log('❌ No code or error received');
         setStatus('error');
         setMessage('No authorization code was received.');
         sendMessage({ type: 'GOOGLE_OAUTH_ERROR', error: 'No code received' });
       }
     } else {
+      console.log('❌ No window.opener - popup not opened correctly');
       setStatus('error');
       setMessage('Parent window could not be found. Please try again.');
     }
 
-    setTimeout(() => window.close(), 2000);
+    setTimeout(() => {
+      console.log('🚪 Closing popup window');
+      window.close();
+    }, 2000);
   }, [searchParams]);
 
   return (
