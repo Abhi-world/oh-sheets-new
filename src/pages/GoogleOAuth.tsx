@@ -11,44 +11,37 @@ const GoogleOAuthCallback = () => {
     const code = searchParams.get('code');
     const error = searchParams.get('error');
 
-    console.log('🔍 OAuth callback loaded:', { code: !!code, error, hasOpener: !!window.opener });
+    console.log('🔍 OAuth callback loaded:', { code: !!code, error });
 
-    const sendMessage = (payload: any) => {
-      if (!window.opener) {
-        console.log('❌ No window.opener found');
-        return;
-      }
-      try {
-        console.log('📤 Sending message to parent:', payload);
-        // In monday iframe contexts, use wildcard to ensure delivery
-        window.opener.postMessage(payload, '*');
-        console.log('✅ Message sent successfully');
-      } catch (err) {
-        console.error('❌ Failed to send message:', err);
-      }
-    };
-
-    if (window.opener) {
-      if (error) {
-        console.log('❌ OAuth error detected:', error);
-        setStatus('error');
-        setMessage(`Authorization failed: ${error}`);
-        sendMessage({ type: 'GOOGLE_OAUTH_ERROR', error });
-      } else if (code) {
-        console.log('✅ OAuth code received, sending success message');
-        setStatus('success');
-        setMessage('Success! Finalizing connection...');
-        sendMessage({ type: 'GOOGLE_OAUTH_SUCCESS', code });
-      } else {
-        console.log('❌ No code or error received');
-        setStatus('error');
-        setMessage('No authorization code was received.');
-        sendMessage({ type: 'GOOGLE_OAUTH_ERROR', error: 'No code received' });
-      }
-    } else {
-      console.log('❌ No window.opener - popup not opened correctly');
+    if (error) {
+      console.log('❌ OAuth error detected:', error);
       setStatus('error');
-      setMessage('Parent window could not be found. Please try again.');
+      setMessage(`Authorization failed: ${error}`);
+      // Store error in localStorage for main app to pick up
+      localStorage.setItem('google_oauth_result', JSON.stringify({ 
+        type: 'error', 
+        error,
+        timestamp: Date.now()
+      }));
+    } else if (code) {
+      console.log('✅ OAuth code received');
+      setStatus('success');
+      setMessage('Success! Finalizing connection...');
+      // Store success result in localStorage for main app to pick up
+      localStorage.setItem('google_oauth_result', JSON.stringify({ 
+        type: 'success', 
+        code,
+        timestamp: Date.now()
+      }));
+    } else {
+      console.log('❌ No code or error received');
+      setStatus('error');
+      setMessage('No authorization code was received.');
+      localStorage.setItem('google_oauth_result', JSON.stringify({ 
+        type: 'error', 
+        error: 'No code received',
+        timestamp: Date.now()
+      }));
     }
 
     setTimeout(() => {

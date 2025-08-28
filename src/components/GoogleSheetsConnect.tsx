@@ -51,45 +51,40 @@ export function GoogleSheetsConnect() {
   }, [checkConnection]);
 
   useEffect(() => {
-    const handleMessage = async (event: MessageEvent) => {
-      console.log('🔄 Received postMessage:', {
-        origin: event.origin,
-        windowOrigin: window.location.origin,
-        data: event.data,
-        type: event.data?.type
-      });
+    // Polling mechanism to check for OAuth results in localStorage
+    const pollForOAuthResult = () => {
+      const resultStr = localStorage.getItem('google_oauth_result');
+      if (!resultStr) return;
 
-      // Allow messages from popup (different origin in Monday.com iframe)
-      if (!event.data?.type?.startsWith('GOOGLE_OAUTH_')) {
-        console.log('❌ Ignoring non-Google OAuth message, type:', event.data?.type);
-        return;
-      }
+      try {
+        const result = JSON.parse(resultStr);
+        const isRecent = Date.now() - result.timestamp < 30000; // 30 seconds
 
-      console.log('✅ Processing Google OAuth message:', event.data.type);
+        if (!isRecent) {
+          localStorage.removeItem('google_oauth_result');
+          return;
+        }
 
-      if (event.data?.type === 'GOOGLE_OAUTH_SUCCESS') {
-        // Prevent duplicate token exchanges
-        setIsExchangingTokens(current => {
-          if (current) {
-            console.log('⏳ Already exchanging tokens, skipping duplicate request');
-            return current;
+        console.log('🔄 Found OAuth result in localStorage:', result);
+        
+        // Clear the result so we don't process it again
+        localStorage.removeItem('google_oauth_result');
+
+        if (result.type === 'success' && result.code) {
+          if (isExchangingTokens) {
+            console.log('⏳ Already exchanging tokens, skipping');
+            return;
           }
-          
+
           console.log('🚀 Starting token exchange process');
+          setIsExchangingTokens(true);
           toast({ title: 'Authorization successful!', description: 'Exchanging tokens...' });
-          
-          const { code } = event.data;
-          if (!code) {
-            setConnectionError('Authorization code not received.');
-            return false;
-          }
 
-          // Start token exchange
           (async () => {
             try {
               console.log('📞 Calling edge function with code');
               const { data, error: exchangeError } = await supabase.functions.invoke('google-oauth-exchange', {
-                body: { code }
+                body: { code: result.code }
               });
 
               if (exchangeError) {
@@ -100,10 +95,7 @@ export function GoogleSheetsConnect() {
               console.log('✅ Token exchange successful:', data);
               toast({ title: 'Success!', description: 'Google Sheets connected successfully!' });
               
-              // Clear any previous errors
               setConnectionError(null);
-              
-              // Check connection status
               await checkConnection();
             } catch (error) {
               console.error('❌ Token exchange failed:', error);
@@ -117,27 +109,30 @@ export function GoogleSheetsConnect() {
               setIsExchangingTokens(false);
             }
           })();
-          
-          return true;
-        });
-      } else if (event.data?.type === 'GOOGLE_OAUTH_ERROR') {
-        console.log('❌ OAuth error received:', event.data.error);
-        setConnectionError(event.data.error || 'An unknown error occurred during authorization.');
-        toast({
+
+        } else if (result.type === 'error') {
+          console.log('❌ OAuth error from popup:', result.error);
+          setConnectionError(result.error || 'An unknown error occurred during authorization.');
+          toast({
             title: 'Authorization Error',
-            description: event.data.error || 'Failed to connect.',
+            description: result.error || 'Failed to connect.',
             variant: 'destructive',
-        });
+          });
+        }
+      } catch (err) {
+        console.error('❌ Failed to parse OAuth result:', err);
+        localStorage.removeItem('google_oauth_result');
       }
     };
 
-    console.log('📡 Setting up message listener');
-    window.addEventListener('message', handleMessage);
-    return () => {
-      console.log('🧹 Cleaning up message listener');
-      window.removeEventListener('message', handleMessage);
-    };
-  }, [toast, checkConnection]);
+    // Poll every 500ms for OAuth results
+    const interval = setInterval(pollForOAuthResult, 500);
+    
+    // Also check immediately
+    pollForOAuthResult();
+
+    return () => clearInterval(interval);
+  }, [toast, checkConnection, isExchangingTokens]);
 
 
   const handleConnect = async () => {
