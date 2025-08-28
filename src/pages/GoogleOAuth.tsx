@@ -11,30 +11,17 @@ const GoogleOAuthCallback = () => {
     const code = searchParams.get('code');
     const error = searchParams.get('error');
 
-    // --- This is the main logic ---
-    console.log('🔄 OAuth callback processing:', { code: !!code, error });
-    
-    if (window.opener) {
-      // For Monday.com iframe context, send to all possible origins
-      const sendMessage = (messageData: any) => {
-        console.log('📤 Sending message to parent:', messageData);
-        
-        // Send to multiple possible origins for Monday.com compatibility
-        const origins = [
-          window.location.origin,
-          '*', // Allow all origins as fallback
-        ];
-        
-        origins.forEach(origin => {
-          try {
-            window.opener.postMessage(messageData, origin);
-            console.log(`✅ Message sent to origin: ${origin}`);
-          } catch (e) {
-            console.warn(`❌ Failed to send to origin ${origin}:`, e);
-          }
-        });
-      };
+    const sendMessage = (payload: any) => {
+      if (!window.opener) return;
+      try {
+        // In monday iframe contexts, use wildcard to ensure delivery
+        window.opener.postMessage(payload, '*');
+      } catch {
+        // noop
+      }
+    };
 
+    if (window.opener) {
       if (error) {
         setStatus('error');
         setMessage(`Authorization failed: ${error}`);
@@ -51,12 +38,9 @@ const GoogleOAuthCallback = () => {
     } else {
       setStatus('error');
       setMessage('Parent window could not be found. Please try again.');
-      console.error('❌ No window.opener found');
     }
-    
-    // Close the popup after giving the message time to send
-    setTimeout(() => window.close(), 2000);
 
+    setTimeout(() => window.close(), 2000);
   }, [searchParams]);
 
   return (
@@ -65,7 +49,7 @@ const GoogleOAuthCallback = () => {
         {status === 'loading' && <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />}
         {status === 'success' && <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />}
         {status === 'error' && <XCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />}
-        
+
         <h2 className="text-xl font-semibold text-gray-800 mb-2">
           {status.charAt(0).toUpperCase() + status.slice(1)}
         </h2>
@@ -76,3 +60,4 @@ const GoogleOAuthCallback = () => {
 };
 
 export default GoogleOAuthCallback;
+
