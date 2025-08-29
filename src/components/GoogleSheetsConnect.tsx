@@ -16,33 +16,50 @@ export function GoogleSheetsConnect() {
   const { toast } = useToast();
 
   const checkConnection = useCallback(async () => {
+    console.log('🔄 Starting connection check...');
     setIsLoading(true);
     setConnectionError(null);
     try {
-      const hasStoredCredentials = await googleSheetsService.initializeWithStoredCredentials();
-      if (!hasStoredCredentials) {
+      // Get the current user session
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('❌ No authenticated user found');
         setIsConnected(false);
         setIsLoading(false);
         return;
       }
-      
-      const accessToken = await googleSheetsService.getAccessToken();
-      const response = await fetch(`https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&pageSize=1`, {
-        headers: { 'Authorization': `Bearer ${accessToken}` },
-      });
 
-      if (response.ok) {
-        setIsConnected(true);
-      } else {
+      // Check if user has Google Sheets credentials in their profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('google_sheets_credentials')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        console.error('❌ Error fetching profile:', profileError);
         setIsConnected(false);
-        setConnectionError('Your connection has expired. Please reconnect.');
-        localStorage.removeItem('google_sheets_tokens');
+        setConnectionError('Failed to check connection status.');
+        setIsLoading(false);
+        return;
       }
+
+      if (!profile?.google_sheets_credentials) {
+        console.log('❌ No Google Sheets credentials found in profile');
+        setIsConnected(false);
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('✅ Google Sheets credentials found in profile');
+      setIsConnected(true);
     } catch (error) {
+      console.error('❌ Connection check failed:', error);
       setIsConnected(false);
       setConnectionError('Failed to verify connection.');
     } finally {
       setIsLoading(false);
+      console.log('🏁 Connection check completed');
     }
   }, []);
 
