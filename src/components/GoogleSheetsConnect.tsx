@@ -30,16 +30,31 @@ export function GoogleSheetsConnect() {
         return;
       }
 
-      // Get Monday user using the existing utility
-      const { getMondaySDK, execMondayQuery } = await import('@/utils/mondaySDK');
+      console.log('✅ Running in Monday.com embedded mode');
+
+      // Import Monday SDK utilities
+      const { getMondaySDK, execMondayQuery, waitForMondayContext } = await import('@/utils/mondaySDK');
+      
+      console.log('⏳ Waiting for Monday context...');
+      
+      // Wait for Monday context with shorter timeout and better error handling
+      try {
+        await waitForMondayContext(3000); // 3 second timeout
+        console.log('✅ Monday context received');
+      } catch (contextError) {
+        console.warn('⚠️ Monday context timeout, continuing anyway:', contextError);
+      }
+      
+      console.log('📞 Executing Monday user query...');
       
       try {
         const userResponse = await execMondayQuery('query { me { id email } }');
+        console.log('📋 Monday user response:', userResponse);
         
         if (!userResponse?.data?.me?.id) {
-          console.error('❌ No Monday user found');
+          console.error('❌ No Monday user found in response');
           setIsConnected(false);
-          setConnectionError('No Monday user found');
+          setConnectionError('Unable to get Monday user information');
           setIsLoading(false);
           return;
         }
@@ -53,6 +68,8 @@ export function GoogleSheetsConnect() {
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6Z3FxcnBodHBwZ3hwZmR1ZWNzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTYxNjkzNSwiZXhwIjoyMDcxMTkyOTM1fQ.dOFRx8mmZi-nDJBJKBuwE5ih5gh5z6coElkn0tEJq5s'
         );
 
+        console.log('🔍 Checking profile in Supabase for monday_user_id:', mondayUserId);
+
         // Check if user has Google Sheets credentials in their profile
         const { data: profile, error: profileError } = await supabaseServiceRole
           .from('profiles')
@@ -60,10 +77,20 @@ export function GoogleSheetsConnect() {
           .eq('monday_user_id', mondayUserId)
           .single();
 
+        console.log('📊 Profile query result:', { profile, profileError });
+
         if (profileError && profileError.code !== 'PGRST116') {
           console.error('❌ Error fetching profile:', profileError);
           setIsConnected(false);
-          setConnectionError('Failed to check connection status.');
+          setConnectionError(`Database error: ${profileError.message}`);
+          setIsLoading(false);
+          return;
+        }
+
+        if (!profile) {
+          console.log('❌ No profile found for Monday user');
+          setIsConnected(false);
+          setConnectionError('No user profile found. Please try connecting again.');
           setIsLoading(false);
           return;
         }
@@ -80,12 +107,12 @@ export function GoogleSheetsConnect() {
       } catch (mondayError) {
         console.error('❌ Monday API error:', mondayError);
         setIsConnected(false);
-        setConnectionError('Failed to get Monday user information');
+        setConnectionError(`Monday API error: ${mondayError.message || mondayError}`);
       }
     } catch (error) {
       console.error('❌ Connection check failed:', error);
       setIsConnected(false);
-      setConnectionError('Failed to verify connection.');
+      setConnectionError(`Connection error: ${error.message || error}`);
     } finally {
       setIsLoading(false);
       console.log('🏁 Connection check completed');
