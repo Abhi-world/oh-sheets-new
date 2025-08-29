@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { googleSheetsService } from '@/integrations/google/sheets';
 import { supabase } from '@/integrations/supabase/client';
+import { createClient } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
@@ -19,40 +20,68 @@ export function GoogleSheetsConnect() {
     console.log('🔄 Starting connection check...');
     setIsLoading(true);
     setConnectionError(null);
+    
     try {
-      // Get the current user session
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log('❌ No authenticated user found');
+      if (!isEmbeddedMode()) {
+        console.log('❌ Not running in Monday.com embedded mode');
         setIsConnected(false);
+        setConnectionError('Not running in Monday.com');
         setIsLoading(false);
         return;
       }
 
-      // Check if user has Google Sheets credentials in their profile
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('google_sheets_credentials')
-        .eq('id', user.id)
-        .single();
+      // Get Monday user using the existing utility
+      const { getMondaySDK, execMondayQuery } = await import('@/utils/mondaySDK');
+      
+      try {
+        const userResponse = await execMondayQuery('query { me { id email } }');
+        
+        if (!userResponse?.data?.me?.id) {
+          console.error('❌ No Monday user found');
+          setIsConnected(false);
+          setConnectionError('No Monday user found');
+          setIsLoading(false);
+          return;
+        }
 
-      if (profileError) {
-        console.error('❌ Error fetching profile:', profileError);
+        const mondayUserId = userResponse.data.me.id;
+        console.log('✅ Monday user ID:', mondayUserId);
+
+        // Create a Supabase client with service role for server-side operations
+        const supabaseServiceRole = createClient(
+          'https://tzgqqrphtppgxpfduecs.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6Z3FxcnBodHBwZ3hwZmR1ZWNzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTYxNjkzNSwiZXhwIjoyMDcxMTkyOTM1fQ.dOFRx8mmZi-nDJBJKBuwE5ih5gh5z6coElkn0tEJq5s'
+        );
+
+        // Check if user has Google Sheets credentials in their profile
+        const { data: profile, error: profileError } = await supabaseServiceRole
+          .from('profiles')
+          .select('google_sheets_credentials')
+          .eq('monday_user_id', mondayUserId)
+          .single();
+
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('❌ Error fetching profile:', profileError);
+          setIsConnected(false);
+          setConnectionError('Failed to check connection status.');
+          setIsLoading(false);
+          return;
+        }
+
+        if (!profile?.google_sheets_credentials) {
+          console.log('❌ No Google Sheets credentials found in profile');
+          setIsConnected(false);
+          setIsLoading(false);
+          return;
+        }
+
+        console.log('✅ Google Sheets credentials found in profile');
+        setIsConnected(true);
+      } catch (mondayError) {
+        console.error('❌ Monday API error:', mondayError);
         setIsConnected(false);
-        setConnectionError('Failed to check connection status.');
-        setIsLoading(false);
-        return;
+        setConnectionError('Failed to get Monday user information');
       }
-
-      if (!profile?.google_sheets_credentials) {
-        console.log('❌ No Google Sheets credentials found in profile');
-        setIsConnected(false);
-        setIsLoading(false);
-        return;
-      }
-
-      console.log('✅ Google Sheets credentials found in profile');
-      setIsConnected(true);
     } catch (error) {
       console.error('❌ Connection check failed:', error);
       setIsConnected(false);
@@ -100,8 +129,21 @@ export function GoogleSheetsConnect() {
           (async () => {
             try {
               console.log('📞 Calling edge function with code');
+              // Get Monday user ID first
+              const { execMondayQuery } = await import('@/utils/mondaySDK');
+              const userResponse = await execMondayQuery('query { me { id email } }');
+              
+              if (!userResponse?.data?.me?.id) {
+                throw new Error('Unable to get Monday user information');
+              }
+
+              const mondayUserId = userResponse.data.me.id;
+              
               const { data, error: exchangeError } = await supabase.functions.invoke('google-oauth-exchange', {
-                body: { code: result.code }
+                body: { 
+                  code: result.code,
+                  monday_user_id: mondayUserId 
+                }
               });
 
               if (exchangeError) {
@@ -156,6 +198,21 @@ export function GoogleSheetsConnect() {
     setIsLoading(true);
     setConnectionError(null);
     try {
+      if (!isEmbeddedMode()) {
+        throw new Error('Not running in Monday.com embedded mode');
+      }
+
+      // Get Monday user ID first
+      const { execMondayQuery } = await import('@/utils/mondaySDK');
+      const userResponse = await execMondayQuery('query { me { id email } }');
+      
+      if (!userResponse?.data?.me?.id) {
+        throw new Error('Unable to get Monday user information');
+      }
+
+      const mondayUserId = userResponse.data.me.id;
+      console.log('✅ Monday user ID for connection:', mondayUserId);
+
       const { data, error } = await supabase.functions.invoke('get-google-client-id');
       if (error) throw error;
 
@@ -167,17 +224,14 @@ export function GoogleSheetsConnect() {
         `redirect_uri=${encodeURIComponent(redirectUri)}&` +
         `response_type=code&` +
         `scope=${encodeURIComponent(scope)}&` +
-        `access_type=offline&prompt=consent`;
+        `access_type=offline&prompt=consent&` +
+        `state=${encodeURIComponent(mondayUserId)}`;
 
-      if (isEmbeddedMode()) {
-        const popup = window.open(authUrl, 'google-oauth-popup', 'width=500,height=600');
-        if (!popup) {
-            throw new Error('Popup blocked. Please allow popups.');
-        }
-        popup.focus();
-      } else {
-        window.location.href = authUrl;
+      const popup = window.open(authUrl, 'google-oauth-popup', 'width=500,height=600');
+      if (!popup) {
+          throw new Error('Popup blocked. Please allow popups.');
       }
+      popup.focus();
     } catch (err: any) {
       setConnectionError(err.message || 'Failed to start connection.');
       toast({
