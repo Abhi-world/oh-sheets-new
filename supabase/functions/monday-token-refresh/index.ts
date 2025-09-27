@@ -79,9 +79,11 @@ serve(async (req) => {
       },
     )
   } catch (error) {
-    console.error('Token refresh error:', error.message)
+    const err = error as any;
+    const message = err?.message ?? String(error);
+    console.error('Token refresh error:', message)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: message }),
       {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

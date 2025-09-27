@@ -89,10 +89,11 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('❌ Connection check error:', error);
+    const err = error as any;
     return new Response(
       JSON.stringify({ 
         error: 'Internal server error', 
-        details: error.message
+        details: err?.message ?? String(error)
       }),
       { 
         status: 500, 
