@@ -15,6 +15,7 @@ serve(async (req) => {
   try {
     console.log('🚀 [google-oauth-exchange] Starting OAuth exchange');
     const { code, monday_user_id } = await req.json();
+    const mondayUserId = String(monday_user_id || '').trim();
 
     if (!code) {
       console.error('❌ Missing authorization code');
@@ -24,7 +25,7 @@ serve(async (req) => {
       );
     }
 
-    if (!monday_user_id) {
+    if (!mondayUserId) {
       console.error('❌ Missing monday_user_id');
       return new Response(
         JSON.stringify({ error: 'monday_user_id is required' }),
@@ -32,7 +33,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('ℹ️ Code length:', String(code).length, 'Monday User:', monday_user_id);
+    console.log('ℹ️ Code length:', String(code).length, 'Monday User:', mondayUserId);
 
     // Initialize Supabase client with SERVICE ROLE (bypasses RLS for this server env)
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -93,13 +94,13 @@ serve(async (req) => {
     };
 
     // Upsert by monday_user_id (no Supabase Auth required in Monday embedded apps)
-    console.log('🗄️ Upserting credentials for monday_user_id:', monday_user_id);
+    console.log('🗄️ Upserting credentials for monday_user_id:', mondayUserId);
 
     // Check if profile exists for this monday_user_id
     const { data: existingProfile, error: fetchErr } = await supabase
       .from('profiles')
       .select('id, monday_user_id')
-      .eq('monday_user_id', monday_user_id)
+      .eq('monday_user_id', mondayUserId)
       .maybeSingle();
 
     if (fetchErr) {
@@ -121,11 +122,11 @@ serve(async (req) => {
           google_token_expiry: expiryIso,
           updated_at: new Date().toISOString(),
         })
-        .eq('monday_user_id', monday_user_id);
+        .eq('monday_user_id', mondayUserId);
       dbError = error;
     } else {
       const { error } = await supabase.from('profiles').insert({
-        monday_user_id,
+        monday_user_id: mondayUserId,
         google_sheets_credentials: credentials,
         google_access_token: tokens.access_token,
         google_refresh_token: tokens.refresh_token,
@@ -145,7 +146,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('✅ Credentials stored successfully for monday_user_id:', monday_user_id);
+    console.log('✅ Credentials stored successfully for monday_user_id:', mondayUserId);
 
     return new Response(
       JSON.stringify({ success: true, message: 'Google Sheets connected successfully' }),

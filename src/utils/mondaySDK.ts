@@ -224,9 +224,13 @@ export async function execMondayQuery(query: string, variables?: Record<string, 
     if (isEmbeddedMode()) {
       console.log('🔵 Using Monday SDK api() method in embedded mode');
       
-      // Wait for context before making API calls
-      console.log('⏳ Waiting for Monday context before API call...');
-      await waitForMondayContext();
+      // Try to wait briefly for context, but don't block API calls
+      console.log('⏳ Attempting short wait for Monday context (1.5s max)...');
+      try {
+        await waitForMondayContext(1500);
+      } catch (e) {
+        console.warn('⚠️ Skipping context wait due to timeout');
+      }
       
       try {
         const mondayClient = getMondaySDK();

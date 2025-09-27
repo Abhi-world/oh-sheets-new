@@ -15,8 +15,9 @@ serve(async (req) => {
   try {
     console.log('🔍 Starting connection check...');
     const { monday_user_id } = await req.json();
+    const mondayUserId = String(monday_user_id || '').trim();
     
-    if (!monday_user_id) {
+    if (!mondayUserId) {
       console.error('❌ No Monday user ID provided');
       return new Response(
         JSON.stringify({ error: 'Monday user ID is required' }),
@@ -27,7 +28,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('🔍 Checking connection for Monday user:', monday_user_id);
+    console.log('🔍 Checking connection for Monday user:', mondayUserId);
 
     // Initialize Supabase client with service role
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -40,7 +41,7 @@ serve(async (req) => {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('google_sheets_credentials')
-      .eq('monday_user_id', monday_user_id)
+      .eq('monday_user_id', mondayUserId)
       .maybeSingle();
 
     console.log('📊 Profile query result:', { profile, profileError });

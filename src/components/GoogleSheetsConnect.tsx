@@ -46,7 +46,11 @@ export function GoogleSheetsConnect() {
       console.log('📞 Executing Monday user query...');
       
       try {
-        const userResponse = await execMondayQuery('query { me { id email } }');
+        const mondayQuery = 'query { me { id email } }';
+        const userResponse = await Promise.race([
+          execMondayQuery(mondayQuery) as Promise<any>,
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Monday API timeout')), 7000)) as Promise<never>
+        ]) as any;
         console.log('📋 Monday user response:', userResponse);
         
         if (!userResponse?.data?.me?.id) {
@@ -63,7 +67,7 @@ export function GoogleSheetsConnect() {
         // Use edge function to check connection status
         console.log('🔍 Calling connection check edge function...');
         const { data: connectionResult, error: connectionError } = await supabase.functions.invoke('check-google-connection', {
-          body: { monday_user_id: mondayUserId }
+          body: { monday_user_id: String(mondayUserId) }
         });
 
         console.log('📊 Connection check result:', { connectionResult, connectionError });
@@ -150,7 +154,7 @@ export function GoogleSheetsConnect() {
               const { data, error: exchangeError } = await supabase.functions.invoke('google-oauth-exchange', {
                 body: { 
                   code: result.code,
-                  monday_user_id: mondayUserId 
+                  monday_user_id: String(mondayUserId) 
                 }
               });
 
