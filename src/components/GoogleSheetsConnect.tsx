@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { googleSheetsService } from '@/integrations/google/sheets';
 import { supabase } from '@/integrations/supabase/client';
-import { createClient } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
@@ -62,47 +60,30 @@ export function GoogleSheetsConnect() {
         const mondayUserId = userResponse.data.me.id;
         console.log('✅ Monday user ID:', mondayUserId);
 
-        // Create a Supabase client with service role for server-side operations
-        const supabaseServiceRole = createClient(
-          'https://tzgqqrphtppgxpfduecs.supabase.co',
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6Z3FxcnBodHBwZ3hwZmR1ZWNzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTYxNjkzNSwiZXhwIjoyMDcxMTkyOTM1fQ.dOFRx8mmZi-nDJBJKBuwE5ih5gh5z6coElkn0tEJq5s'
-        );
+        // Use edge function to check connection status
+        console.log('🔍 Calling connection check edge function...');
+        const { data: connectionResult, error: connectionError } = await supabase.functions.invoke('check-google-connection', {
+          body: { monday_user_id: mondayUserId }
+        });
 
-        console.log('🔍 Checking profile in Supabase for monday_user_id:', mondayUserId);
+        console.log('📊 Connection check result:', { connectionResult, connectionError });
 
-        // Check if user has Google Sheets credentials in their profile
-        const { data: profile, error: profileError } = await supabaseServiceRole
-          .from('profiles')
-          .select('google_sheets_credentials')
-          .eq('monday_user_id', mondayUserId)
-          .single();
-
-        console.log('📊 Profile query result:', { profile, profileError });
-
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.error('❌ Error fetching profile:', profileError);
+        if (connectionError) {
+          console.error('❌ Connection check error:', connectionError);
           setIsConnected(false);
-          setConnectionError(`Database error: ${profileError.message}`);
+          setConnectionError(`Connection check failed: ${connectionError.message}`);
           setIsLoading(false);
           return;
         }
 
-        if (!profile) {
-          console.log('❌ No profile found for Monday user');
-          setIsConnected(false);
-          setConnectionError('No user profile found. Please try connecting again.');
-          setIsLoading(false);
-          return;
-        }
-
-        if (!profile?.google_sheets_credentials) {
-          console.log('❌ No Google Sheets credentials found in profile');
+        if (!connectionResult?.connected) {
+          console.log('❌ Not connected to Google Sheets');
           setIsConnected(false);
           setIsLoading(false);
           return;
         }
 
-        console.log('✅ Google Sheets credentials found in profile');
+        console.log('✅ Connected to Google Sheets');
         setIsConnected(true);
       } catch (mondayError) {
         console.error('❌ Monday API error:', mondayError);
