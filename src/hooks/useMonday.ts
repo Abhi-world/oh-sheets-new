@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { getMondayContextInfo, fetchBoardsWithSDK, execMondayQuery } from "@/utils/mondaySDK";
+import { fetchBoardsWithSDK, execMondayQuery, isEmbeddedMode } from "@/utils/mondaySDK";
 import { useState, useEffect } from "react";
 
 async function getMondayAccessToken() {
@@ -123,10 +123,10 @@ export const useMondayContext = () => {
   return useQuery({
     queryKey: ['monday-context'],
     queryFn: async () => {
-      console.log('🔍 Fetching Monday context info');
-      const contextInfo = await getMondayContextInfo();
-      console.log('📊 Monday context info:', contextInfo);
-      return contextInfo;
+      console.log('🔍 Checking if in Monday embedded mode');
+      const isInMonday = isEmbeddedMode();
+      console.log('📊 Monday context info:', { isInMonday, boardId: null, context: {}, boardName: null });
+      return { isInMonday, boardId: null, context: {}, boardName: null };
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,
