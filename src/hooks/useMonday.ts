@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchBoardsWithSDK, execMondayQuery, isEmbeddedMode } from "@/utils/mondaySDK";
-import { useState, useEffect } from "react";
+import { getMondaySDK, execMondayQuery, isEmbeddedMode } from "@/utils/mondaySDK";
 
 async function getMondayAccessToken() {
   const { data: { user } } = await supabase.auth.getUser();
@@ -121,7 +120,7 @@ export const useMondayWorkspaces = () => {
 
 interface MondayContextData {
   isInMonday: boolean;
-  boardId: string | null;
+  boardId: number | null;
   context: {
     boardName?: string;
   };
@@ -132,18 +131,30 @@ export const useMondayContext = () => {
   return useQuery<MondayContextData>({
     queryKey: ['monday-context'],
     queryFn: async (): Promise<MondayContextData> => {
-      console.log('🔍 Checking if in Monday embedded mode');
       const isInMonday = isEmbeddedMode();
-      console.log('📊 Monday context info:', { isInMonday, boardId: null, context: {}, boardName: null });
-      return { 
-        isInMonday, 
-        boardId: null, 
-        context: {}, 
-        boardName: null 
-      };
+      if (!isInMonday) {
+        return { isInMonday: false, boardId: null, context: {}, boardName: null };
+      }
+
+      // CORRECTED: Actually fetch the context from the SDK
+      try {
+        const monday = getMondaySDK();
+        const contextResponse: any = await monday.get('context');
+        const contextData = contextResponse?.data || {};
+        console.log('✅ Fetched Monday Context:', contextData);
+        return {
+          isInMonday: true,
+          boardId: contextData.boardId || null,
+          context: { boardName: contextData.boardName || undefined },
+          boardName: contextData.boardName || null,
+        };
+      } catch (error) {
+        console.error("Failed to get Monday context:", error);
+        return { isInMonday: true, boardId: null, context: {}, boardName: null }; // Return default state on error
+      }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 1,
+    staleTime: Infinity, // Context rarely changes, cache it forever
+    enabled: isEmbeddedMode(), // Only run this query if we are in Monday
   });
 };
 

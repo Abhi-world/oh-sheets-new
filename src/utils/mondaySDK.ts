@@ -1,8 +1,8 @@
 import mondaySdk from 'monday-sdk-js';
+import { supabase } from '@/integrations/supabase/client';
 
 // Create a single, globally initialized Monday SDK instance
 const monday = mondaySdk();
-console.log('🚀 Monday SDK initialized globally');
 
 /**
  * Gets the Monday SDK instance
@@ -86,7 +86,7 @@ export async function fetchBoardsWithSDK(specificBoardId: string | null = null) 
 /**
  * Fetches items from a specific board using the Monday SDK
  */
-export async function fetchItemsWithSDK(boardId: string) {  // Add type annotation
+export async function fetchItemsWithSDK(boardId: string) {
   try {
     const mondayClient = getMondaySDK();
     
@@ -128,32 +128,67 @@ export async function fetchItemsWithSDK(boardId: string) {  // Add type annotati
 
 /**
  * Centralized Monday GraphQL query execution
- * SIMPLIFIED: Removed explicit waitForMondayContext. Let the SDK queue the request.
+ * This function now correctly handles both embedded and standalone modes.
  */
 export async function execMondayQuery(query: string, variables?: Record<string, any>) {
-  console.log('🔵 [execMondayQuery] Using Monday SDK in embedded mode.');
-  try {
-    const mondayClient = getMondaySDK();
-    // The SDK will internally wait for initialization before sending the API call.
-    // This is much more reliable than manual waiting.
-    const response = (await mondayClient.api(query, { variables })) as any;
+  if (isEmbeddedMode()) {
+    console.log('🔵 [execMondayQuery] Using Monday SDK in embedded mode.');
+    try {
+      const mondayClient = getMondaySDK();
+      const response = (await mondayClient.api(query, { variables })) as any;
 
-    console.log('✅ [execMondayQuery] SDK response:', response);
+      console.log('✅ [execMondayQuery] SDK response:', response);
 
-    if (response.errors && response.errors.length > 0) {
-      console.error('❌ [execMondayQuery] GraphQL errors:', response.errors);
-      throw new Error(response.errors[0]?.message || 'GraphQL error from Monday SDK');
+      if (response.errors && response.errors.length > 0) {
+        throw new Error(response.errors[0]?.message || 'GraphQL error from Monday SDK');
+      }
+      if (response.data) {
+        return { data: response.data };
+      }
+      throw new Error('Invalid response structure from Monday API');
+
+    } catch (sdkError) {
+      console.error('❌ [execMondayQuery] SDK api() method failed:', sdkError);
+      throw sdkError;
     }
+  } else {
+    // Standalone mode: use stored OAuth token with direct API calls
+    console.log('⚪️ [execMondayQuery] Using stored token in standalone mode.');
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('You must be logged in.');
+        
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('monday_access_token')
+            .eq('id', user.id)
+            .single();
 
-    if (response.data) {
-      return { data: response.data };
+        if (!profile?.monday_access_token) {
+            throw new Error('Monday.com access token not found. Please connect your account.');
+        }
+
+        const response = await fetch('https://api.monday.com/v2', {
+            method: 'POST',
+            headers: {
+                'Authorization': profile.monday_access_token,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query, variables }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Monday API error: ${response.status} ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        if (result.errors && result.errors.length > 0) {
+            throw new Error(result.errors[0]?.message || 'GraphQL error from Monday API');
+        }
+        return { data: result.data };
+    } catch (error) {
+        console.error('❌ [execMondayQuery] Standalone API call failed:', error);
+        throw error;
     }
-    
-    // Handle cases where the response might be malformed
-    throw new Error('Invalid response structure from Monday API');
-
-  } catch (sdkError) {
-    console.error('❌ [execMondayQuery] SDK api() method failed:', sdkError);
-    throw sdkError;
   }
 }
