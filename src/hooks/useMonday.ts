@@ -119,14 +119,28 @@ export const useMondayWorkspaces = () => {
   return { workspaces };
 };
 
+interface MondayContextData {
+  isInMonday: boolean;
+  boardId: string | null;
+  context: {
+    boardName?: string;
+  };
+  boardName: string | null;
+}
+
 export const useMondayContext = () => {
-  return useQuery({
+  return useQuery<MondayContextData>({
     queryKey: ['monday-context'],
-    queryFn: async () => {
+    queryFn: async (): Promise<MondayContextData> => {
       console.log('🔍 Checking if in Monday embedded mode');
       const isInMonday = isEmbeddedMode();
       console.log('📊 Monday context info:', { isInMonday, boardId: null, context: {}, boardName: null });
-      return { isInMonday, boardId: null, context: {}, boardName: null };
+      return { 
+        isInMonday, 
+        boardId: null, 
+        context: {}, 
+        boardName: null 
+      };
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,
