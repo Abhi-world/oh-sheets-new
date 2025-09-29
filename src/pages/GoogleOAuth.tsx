@@ -11,43 +11,57 @@ const GoogleOAuthCallback = () => {
     const code = searchParams.get('code');
     const error = searchParams.get('error');
 
-    console.log('🔍 OAuth callback loaded:', { code: !!code, error });
+    console.log('🔍 [GoogleOAuth] Callback loaded:', { 
+      code: code ? `${code.substring(0, 20)}...` : null, 
+      error,
+      fullUrl: window.location.href 
+    });
 
     if (error) {
-      console.log('❌ OAuth error detected:', error);
+      console.log('❌ [GoogleOAuth] Error detected:', error);
       setStatus('error');
       setMessage(`Authorization failed: ${error}`);
-      // Store error in localStorage for main app to pick up
-      localStorage.setItem('google_oauth_result', JSON.stringify({ 
+      const errorResult = { 
         type: 'error', 
         error,
         timestamp: Date.now()
-      }));
+      };
+      console.log('💾 [GoogleOAuth] Storing error in localStorage:', errorResult);
+      localStorage.setItem('google_oauth_result', JSON.stringify(errorResult));
+      console.log('✅ [GoogleOAuth] Error stored, localStorage now has:', localStorage.getItem('google_oauth_result'));
     } else if (code) {
-      console.log('✅ OAuth code received');
+      console.log('✅ [GoogleOAuth] Code received successfully');
       setStatus('success');
       setMessage('Success! Finalizing connection...');
-      // Store success result in localStorage for main app to pick up
-      localStorage.setItem('google_oauth_result', JSON.stringify({ 
+      const successResult = { 
         type: 'success', 
         code,
         timestamp: Date.now()
-      }));
+      };
+      console.log('💾 [GoogleOAuth] Storing success in localStorage:', { ...successResult, code: `${code.substring(0, 20)}...` });
+      localStorage.setItem('google_oauth_result', JSON.stringify(successResult));
+      console.log('✅ [GoogleOAuth] Success stored, localStorage now has:', localStorage.getItem('google_oauth_result')?.substring(0, 100) + '...');
     } else {
-      console.log('❌ No code or error received');
+      console.log('❌ [GoogleOAuth] No code or error received');
       setStatus('error');
       setMessage('No authorization code was received.');
-      localStorage.setItem('google_oauth_result', JSON.stringify({ 
+      const errorResult = { 
         type: 'error', 
         error: 'No code received',
         timestamp: Date.now()
-      }));
+      };
+      console.log('💾 [GoogleOAuth] Storing no-code error:', errorResult);
+      localStorage.setItem('google_oauth_result', JSON.stringify(errorResult));
     }
 
+    // Give more time for localStorage to sync before closing
     setTimeout(() => {
-      console.log('🚪 Closing popup window');
-      window.close();
-    }, 2000);
+      console.log('🚪 [GoogleOAuth] Closing popup window in 3 seconds...');
+      setTimeout(() => {
+        console.log('👋 [GoogleOAuth] Closing now!');
+        window.close();
+      }, 3000);
+    }, 100);
   }, [searchParams]);
 
   return (

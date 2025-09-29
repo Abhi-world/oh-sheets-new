@@ -110,26 +110,38 @@ export function GoogleSheetsConnect() {
         const resultStr = localStorage.getItem('google_oauth_result');
         if (!resultStr) return;
 
+        console.log('🔔 [handleOAuthResult] Found OAuth result in localStorage:', resultStr);
         localStorage.removeItem('google_oauth_result'); // Process only once
 
         try {
             const result = JSON.parse(resultStr);
-            if (Date.now() - result.timestamp > 30000) return; // Ignore old results
+            console.log('📦 [handleOAuthResult] Parsed result:', result);
+            
+            if (Date.now() - result.timestamp > 30000) {
+                console.log('⏰ [handleOAuthResult] Result too old, ignoring');
+                return; // Ignore old results
+            }
 
             if (result.type === 'success' && result.code) {
+                console.log('✅ [handleOAuthResult] Success! Calling exchangeCodeForTokens...');
                 exchangeCodeForTokens(result.code);
             } else if (result.type === 'error') {
+                console.error('❌ [handleOAuthResult] Error result:', result.error);
                 throw new Error(result.error || 'Authorization failed in popup.');
             }
         } catch (err: any) {
-            console.error('Error handling OAuth result:', err);
+            console.error('💥 [handleOAuthResult] Error handling OAuth result:', err);
             setConnectionError(err.message);
             toast({ title: 'Authorization Error', description: err.message, variant: 'destructive' });
         }
     };
 
+    console.log('🔄 Starting localStorage polling...');
     const intervalId = setInterval(handleOAuthResult, 500);
-    return () => clearInterval(intervalId);
+    return () => {
+        console.log('🛑 Stopping localStorage polling');
+        clearInterval(intervalId);
+    };
   }, [checkConnection, exchangeCodeForTokens, toast]);
 
 
