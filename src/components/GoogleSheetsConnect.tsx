@@ -156,7 +156,16 @@ export function GoogleSheetsConnect() {
       const { data, error } = await supabase.functions.invoke('get-google-client-id');
       if (error) throw error;
 
-      const redirectUri = `${window.location.origin}/google-oauth`;
+      // CRITICAL FIX: Use the current window location, not just origin
+      // This ensures we're using the exact same domain as the main app
+      const currentUrl = window.location.href.split('?')[0]; // Remove query params
+      const baseUrl = currentUrl.endsWith('/') ? currentUrl.slice(0, -1) : currentUrl;
+      const redirectUri = `${baseUrl}/google-oauth`;
+      
+      console.log('🔗 [handleConnect] Current URL:', window.location.href);
+      console.log('🔗 [handleConnect] Base URL:', baseUrl);
+      console.log('🔗 [handleConnect] Redirect URI:', redirectUri);
+      
       const scope = "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly";
       
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
@@ -167,6 +176,7 @@ export function GoogleSheetsConnect() {
         `access_type=offline&prompt=consent&` +
         `state=${encodeURIComponent(mondayUserId)}`; // Pass mondayUserId in state
 
+      console.log('🚀 [handleConnect] Opening OAuth popup with URL:', authUrl.substring(0, 150) + '...');
       const popup = window.open(authUrl, 'google-oauth-popup', 'width=500,height=600');
       if (!popup) throw new Error('Popup blocked. Please allow popups for this site.');
 
