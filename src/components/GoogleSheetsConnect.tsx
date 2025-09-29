@@ -58,6 +58,7 @@ export function GoogleSheetsConnect() {
   }, []);
 
   const exchangeCodeForTokens = useCallback(async (code: string) => {
+    console.log('🔄 [exchangeCodeForTokens] Starting token exchange...');
     setIsAuthorizing(true);
     toast({ title: 'Authorization successful', description: 'Finalizing connection...' });
     try {
@@ -66,12 +67,26 @@ export function GoogleSheetsConnect() {
         if (!mondayUserId) {
             throw new Error('Could not retrieve Monday.com user to link account.');
         }
+        console.log('✅ [exchangeCodeForTokens] Got Monday User ID:', mondayUserId);
 
-        const { error } = await supabase.functions.invoke('google-oauth-exchange', {
+        console.log('📤 [exchangeCodeForTokens] Calling google-oauth-exchange edge function...');
+        const { data, error } = await supabase.functions.invoke('google-oauth-exchange', {
             body: { code, monday_user_id: String(mondayUserId) }
         });
-        if (error) throw error;
+        
+        console.log('📥 [exchangeCodeForTokens] Edge function response:', { data, error });
+        
+        if (error) {
+            console.error('❌ [exchangeCodeForTokens] Edge function error:', error);
+            throw error;
+        }
 
+        if (data?.error) {
+            console.error('❌ [exchangeCodeForTokens] Edge function returned error:', data.error);
+            throw new Error(data.error);
+        }
+
+        console.log('✅ [exchangeCodeForTokens] Token exchange successful!');
         toast({ title: 'Success!', description: 'Google Sheets connected successfully!' });
         await checkConnection(); // Re-check connection to update UI
     } catch (err: any) {
