@@ -1,13 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Info, RefreshCw, CheckCircle } from 'lucide-react';
+import { Info, RefreshCw, CheckCircle, ArrowRight } from 'lucide-react';
 import { isEmbeddedMode, execMondayQuery } from '@/utils/mondaySDK';
 
 export function GoogleSheetsConnect() {
+  const navigate = useNavigate();
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [connectionError, setConnectionError] = useState<string | null>(null);
@@ -216,7 +218,12 @@ export function GoogleSheetsConnect() {
       return (
         <div className="flex flex-col items-center gap-4 w-full">
           <div className="flex items-center gap-2 text-green-600 text-lg font-medium"><CheckCircle className="h-6 w-6" /><span>Connected to Google Sheets</span></div>
-          <Button onClick={checkConnection} variant="outline" className="flex items-center gap-2"><RefreshCw className="h-4 w-4" />Refresh</Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={() => navigate('/')} className="flex items-center gap-2">
+              Continue to Recipes <ArrowRight className="h-4 w-4" />
+            </Button>
+            <Button onClick={checkConnection} variant="outline" className="flex items-center gap-2"><RefreshCw className="h-4 w-4" />Refresh</Button>
+          </div>
         </div>
       );
     }
