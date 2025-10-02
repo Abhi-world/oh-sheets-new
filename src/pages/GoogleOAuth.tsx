@@ -28,6 +28,14 @@ const GoogleOAuthCallback = () => {
       };
       console.log('💾 [GoogleOAuth] Storing error in localStorage:', errorResult);
       localStorage.setItem('google_oauth_result', JSON.stringify(errorResult));
+      try {
+        if (window.opener) {
+          window.opener.postMessage({ type: 'google_oauth_result', payload: errorResult }, window.location.origin);
+          console.log('📨 [GoogleOAuth] Posted error message to opener');
+        }
+      } catch (e) {
+        console.log('⚠️ [GoogleOAuth] postMessage failed:', e);
+      }
       console.log('✅ [GoogleOAuth] Error stored, localStorage now has:', localStorage.getItem('google_oauth_result'));
     } else if (code) {
       console.log('✅ [GoogleOAuth] Code received successfully');
@@ -40,6 +48,15 @@ const GoogleOAuthCallback = () => {
       };
       console.log('💾 [GoogleOAuth] Storing success in localStorage:', { ...successResult, code: `${code.substring(0, 20)}...` });
       localStorage.setItem('google_oauth_result', JSON.stringify(successResult));
+      // Notify opener directly (works even with storage partitioning)
+      try {
+        if (window.opener) {
+          window.opener.postMessage({ type: 'google_oauth_result', payload: successResult }, window.location.origin);
+          console.log('📨 [GoogleOAuth] Posted success message to opener');
+        }
+      } catch (e) {
+        console.log('⚠️ [GoogleOAuth] postMessage failed:', e);
+      }
       console.log('✅ [GoogleOAuth] Success stored, localStorage now has:', localStorage.getItem('google_oauth_result')?.substring(0, 100) + '...');
     } else {
       console.log('❌ [GoogleOAuth] No code or error received');

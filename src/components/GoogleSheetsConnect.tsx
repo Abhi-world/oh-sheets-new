@@ -105,7 +105,28 @@ export function GoogleSheetsConnect() {
   useEffect(() => {
     checkConnection();
 
-    // Use localStorage polling for popup communication
+    // Listener for messages from OAuth popup (robust in embedded/partitioned storage environments)
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        if (event.origin !== window.location.origin) return; // security
+        const data: any = event.data;
+        if (!data || data.type !== 'google_oauth_result') return;
+        console.log('📨 [message] Received OAuth result from popup:', data);
+        const payload = data.payload;
+        if (payload?.type === 'success' && payload.code) {
+          exchangeCodeForTokens(payload.code);
+        } else if (payload?.type === 'error') {
+          setConnectionError(payload.error || 'Authorization failed in popup.');
+          toast({ title: 'Authorization Error', description: payload?.error || 'Authorization failed', variant: 'destructive' });
+        }
+      } catch (e) {
+        console.error('💥 [message] Handler error:', e);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+
+    // Fallback: localStorage polling for environments where postMessage isn't available
     const handleOAuthResult = () => {
         const resultStr = localStorage.getItem('google_oauth_result');
         if (!resultStr) return;
@@ -139,7 +160,8 @@ export function GoogleSheetsConnect() {
     console.log('🔄 Starting localStorage polling...');
     const intervalId = setInterval(handleOAuthResult, 500);
     return () => {
-        console.log('🛑 Stopping localStorage polling');
+        console.log('🛑 Cleaning up listeners');
+        window.removeEventListener('message', handleMessage);
         clearInterval(intervalId);
     };
   }, [checkConnection, exchangeCodeForTokens, toast]);
