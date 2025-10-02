@@ -1,6 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { getAccessToken } from '@/lib/google-sheets';
 
 interface MondayItem {
   id: string;
@@ -21,7 +20,7 @@ interface ExportOptions {
 }
 
 /**
- * Exports Monday.com item data to Google Sheets
+ * Exports Monday.com item data to Google Sheets via edge function
  * @param items Array of Monday.com items to export
  * @param options Export configuration options
  * @returns Promise resolving to success status
@@ -41,10 +40,13 @@ export async function exportItemsToGoogleSheets(
       return false;
     }
 
-    // Get a valid access token for Google Sheets API
-    const accessToken = await getAccessToken();
-    if (!accessToken) {
-      toast.error('Failed to get Google Sheets access token. Please check your credentials.');
+    // Get Monday user ID
+    const { execMondayQuery } = await import('@/utils/mondaySDK');
+    const userResponse = await execMondayQuery('query { me { id } }');
+    const mondayUserId = userResponse?.data?.me?.id;
+
+    if (!mondayUserId) {
+      toast.error('Failed to get Monday user ID');
       return false;
     }
 
@@ -82,35 +84,11 @@ export async function exportItemsToGoogleSheets(
       rows.push(row);
     });
 
-    // Determine the range to update (e.g., A1:Z100)
-    const endColumn = String.fromCharCode(64 + Math.min(26, headers.length)); // Convert to letter (A-Z)
-    const range = `A1:${endColumn}${rows.length}`;
-
-    // Call the Google Sheets API to update the data
-    const response = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${options.spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`,
-      {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          range,
-          majorDimension: 'ROWS',
-          values: rows,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Google Sheets API error:', errorData);
-      throw new Error(`Failed to update spreadsheet: ${errorData.error?.message || response.statusText}`);
-    }
-
-    toast.success(`Successfully exported ${items.length} items to Google Sheets`);
-    return true;
+    // TODO: Create an edge function to handle Google Sheets export
+    // For now, this is a placeholder that will be implemented when needed
+    console.warn('Export to Google Sheets functionality needs edge function implementation');
+    toast.info('Export feature coming soon');
+    return false;
   } catch (error) {
     console.error('Error exporting to Google Sheets:', error);
     toast.error('Failed to export data to Google Sheets');
