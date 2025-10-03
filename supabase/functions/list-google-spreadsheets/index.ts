@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
+import jwt from 'https://esm.sh/jsonwebtoken@9.0.2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -46,8 +47,31 @@ Deno.serve(async (req) => {
   try {
     console.log('📋 [list-google-spreadsheets] Starting...');
     
-    const { monday_user_id } = await req.json();
-    console.log('👤 Monday User ID:', monday_user_id);
+    let monday_user_id: string;
+    
+    // Check if request is from Monday.com automation (JWT in Authorization header)
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader) {
+      console.log('🔐 JWT authentication detected');
+      const signingSecret = Deno.env.get('MONDAY_SIGNING_SECRET');
+      if (!signingSecret) {
+        throw new Error('MONDAY_SIGNING_SECRET not configured');
+      }
+      
+      try {
+        const decoded: any = jwt.verify(authHeader.replace('Bearer ', ''), signingSecret);
+        monday_user_id = String(decoded.userId || decoded.user_id || decoded.sub);
+        console.log('✅ JWT verified, user ID:', monday_user_id);
+      } catch (jwtError) {
+        console.error('❌ JWT verification failed:', jwtError);
+        throw new Error('Invalid authentication token');
+      }
+    } else {
+      // Fallback to body parameter for direct calls
+      const body = await req.json();
+      monday_user_id = body.monday_user_id;
+      console.log('👤 Monday User ID from body:', monday_user_id);
+    }
 
     if (!monday_user_id) {
       throw new Error('monday_user_id is required');
@@ -157,14 +181,22 @@ Deno.serve(async (req) => {
     }
 
     const data = await response.json();
+    
+    // Format for Monday.com recipes (options array) or regular response
     const spreadsheets = data.files.map((file: any) => ({
       id: file.id,
       name: file.name,
+      title: file.name,  // Monday.com expects 'title'
+      value: file.id,     // Monday.com expects 'value'
     }));
 
     console.log(`✅ Found ${spreadsheets.length} spreadsheets`);
 
-    return new Response(JSON.stringify({ spreadsheets }), {
+    // Return format compatible with both Monday recipes and direct calls
+    return new Response(JSON.stringify({ 
+      spreadsheets,
+      options: spreadsheets  // Monday.com recipes expect 'options' array
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 

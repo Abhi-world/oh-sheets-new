@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
+import jwt from 'https://esm.sh/jsonwebtoken@9.0.2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -46,8 +47,38 @@ Deno.serve(async (req) => {
   try {
     console.log('📄 [list-google-sheets] Starting...');
     
-    const { monday_user_id, spreadsheet_id } = await req.json();
-    console.log('👤 Monday User ID:', monday_user_id);
+    let monday_user_id: string;
+    let spreadsheet_id: string;
+    
+    // Check if request is from Monday.com automation (JWT in Authorization header)
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader) {
+      console.log('🔐 JWT authentication detected');
+      const signingSecret = Deno.env.get('MONDAY_SIGNING_SECRET');
+      if (!signingSecret) {
+        throw new Error('MONDAY_SIGNING_SECRET not configured');
+      }
+      
+      try {
+        const decoded: any = jwt.verify(authHeader.replace('Bearer ', ''), signingSecret);
+        monday_user_id = String(decoded.userId || decoded.user_id || decoded.sub);
+        console.log('✅ JWT verified, user ID:', monday_user_id);
+        
+        // For Monday recipes, spreadsheet_id comes in the body
+        const body = await req.json();
+        spreadsheet_id = body.spreadsheet_id || body.payload?.inputFields?.spreadsheet_id;
+      } catch (jwtError) {
+        console.error('❌ JWT verification failed:', jwtError);
+        throw new Error('Invalid authentication token');
+      }
+    } else {
+      // Fallback to body parameter for direct calls
+      const body = await req.json();
+      monday_user_id = body.monday_user_id;
+      spreadsheet_id = body.spreadsheet_id;
+      console.log('👤 Monday User ID from body:', monday_user_id);
+    }
+    
     console.log('📊 Spreadsheet ID:', spreadsheet_id);
 
     if (!monday_user_id || !spreadsheet_id) {
@@ -142,14 +173,22 @@ Deno.serve(async (req) => {
         }
         
         const data = await retryResponse.json();
+        
+        // Format for Monday.com recipes (options array) or regular response
         const sheets = data.sheets.map((sheet: any) => ({
-          id: sheet.properties.sheetId.toString(),
+          id: String(sheet.properties.sheetId),
           name: sheet.properties.title,
+          title: sheet.properties.title,  // Monday.com expects 'title'
+          value: String(sheet.properties.sheetId),  // Monday.com expects 'value'
         }));
         
         console.log(`✅ Found ${sheets.length} sheets`);
         
-        return new Response(JSON.stringify({ sheets }), {
+        // Return format compatible with both Monday recipes and direct calls
+        return new Response(JSON.stringify({ 
+          sheets,
+          options: sheets  // Monday.com recipes expect 'options' array
+        }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
@@ -158,15 +197,24 @@ Deno.serve(async (req) => {
     }
 
     const data = await response.json();
+    
+    // Format for Monday.com recipes (options array) or regular response
     const sheets = data.sheets.map((sheet: any) => ({
-      id: sheet.properties.sheetId.toString(),
+      id: String(sheet.properties.sheetId),
       name: sheet.properties.title,
+      title: sheet.properties.title,  // Monday.com expects 'title'
+      value: String(sheet.properties.sheetId),  // Monday.com expects 'value'
     }));
 
     console.log(`✅ Found ${sheets.length} sheets`);
 
-    return new Response(JSON.stringify({ sheets }), {
+    // Return format compatible with both Monday recipes and direct calls
+    return new Response(JSON.stringify({ 
+      sheets,
+      options: sheets  // Monday.com recipes expect 'options' array
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
     });
 
   } catch (error: any) {
