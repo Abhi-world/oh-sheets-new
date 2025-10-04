@@ -51,22 +51,25 @@ serve(async (req) => {
 
     // Get Google credentials from database
     console.log('🔍 Fetching Google credentials...');
-    const { data: credentials, error: credsError } = await supabase
-      .from('google_credentials')
-      .select('access_token, refresh_token, expires_at')
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('google_sheets_credentials')
       .eq('monday_user_id', mondayUserId)
       .single();
 
-    if (credsError || !credentials) {
-      console.error('❌ No credentials found:', credsError);
+    if (profileError || !profile?.google_sheets_credentials) {
+      console.error('❌ No credentials found:', profileError);
       throw new Error('Google credentials not found. Please connect to Google Sheets first.');
     }
 
+    const credentials = profile.google_sheets_credentials as any;
     let accessToken = credentials.access_token;
 
     // Check if token is expired
-    const now = Math.floor(Date.now() / 1000);
-    if (credentials.expires_at && credentials.expires_at < now) {
+    const expiryDate = new Date(credentials.expiry_date);
+    const now = new Date();
+    
+    if (expiryDate < now) {
       console.log('🔄 Token expired, refreshing...');
 
       const refreshResponse = await fetch('https://oauth2.googleapis.com/token', {
@@ -88,11 +91,14 @@ serve(async (req) => {
       accessToken = refreshData.access_token;
 
       // Update token in database
+      const newExpiryDate = new Date(Date.now() + refreshData.expires_in * 1000);
+      credentials.access_token = accessToken;
+      credentials.expiry_date = newExpiryDate.toISOString();
+      
       await supabase
-        .from('google_credentials')
+        .from('profiles')
         .update({
-          access_token: refreshData.access_token,
-          expires_at: now + refreshData.expires_in,
+          google_sheets_credentials: credentials,
         })
         .eq('monday_user_id', mondayUserId);
 
