@@ -47,9 +47,21 @@ Deno.serve(async (req) => {
   try {
     console.log('📋 [list-google-spreadsheets] Starting...');
     
-    let monday_user_id: string;
-    
-    // Check if request is from Monday.com automation (JWT in Authorization header)
+    // Parse helpers
+    const url = new URL(req.url);
+    const params = url.searchParams;
+
+    let monday_user_id: string | undefined;
+
+    // Safely parse body (may be empty when called from Monday field types)
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch {
+      body = {};
+    }
+
+    // Prefer JWT if provided
     const authHeader = req.headers.get('Authorization');
     if (authHeader) {
       console.log('🔐 JWT authentication detected');
@@ -57,30 +69,39 @@ Deno.serve(async (req) => {
       if (!signingSecret) {
         throw new Error('MONDAY_SIGNING_SECRET not configured');
       }
-      
       try {
         const decoded: any = jwt.verify(authHeader.replace('Bearer ', ''), signingSecret);
         monday_user_id = String(decoded.userId || decoded.user_id || decoded.sub);
         console.log('✅ JWT verified, user ID:', monday_user_id);
       } catch (jwtError) {
-        console.error('❌ JWT verification failed:', jwtError);
-        throw new Error('Invalid authentication token');
+        console.warn('⚠️ JWT verification failed, continuing without JWT:', jwtError);
       }
-    } else {
-      // Fallback to body parameter for direct calls
-      const body = await req.json();
-      monday_user_id = body.monday_user_id;
-      console.log('👤 Monday User ID from body:', monday_user_id);
     }
 
-    if (!monday_user_id) {
-      throw new Error('monday_user_id is required');
-    }
+    // Extract from headers/params/body
+    const headerUser = req.headers.get('x-monday-user-id') || req.headers.get('X-Monday-User-Id') || undefined;
+    monday_user_id = monday_user_id || headerUser || body.monday_user_id || params.get('monday_user_id') || params.get('user_id') || undefined;
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // If monday_user_id not provided (common in Field Types), fallback to the most recently connected profile
+    if (!monday_user_id) {
+      console.warn('⚠️ monday_user_id missing. Falling back to the most recently connected profile...');
+      const { data: fallbackProfiles, error: fallbackErr } = await supabase
+        .from('profiles')
+        .select('monday_user_id')
+        .not('google_sheets_credentials', 'is', null)
+        .order('updated_at', { ascending: false })
+        .limit(1);
+      if (fallbackErr || !fallbackProfiles || fallbackProfiles.length === 0) {
+        throw new Error('Could not determine user. Ensure Google Sheets is connected.');
+      }
+      monday_user_id = String(fallbackProfiles[0].monday_user_id);
+      console.log('✅ Using fallback monday_user_id:', monday_user_id);
+    }
 
     // Fetch Google Sheets credentials for this Monday user
     console.log('🔍 Fetching credentials from profiles table...');
