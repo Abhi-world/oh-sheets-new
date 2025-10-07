@@ -1,5 +1,4 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
-// JWT verification removed (not needed for this public endpoint)
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,12 +13,9 @@ interface GoogleSheetsCredentials {
 
 async function refreshGoogleToken(refreshToken: string, clientId: string, clientSecret: string): Promise<string> {
   console.log('🔄 Refreshing Google access token...');
-  
   const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       client_id: clientId,
       client_secret: clientSecret,
@@ -27,13 +23,11 @@ async function refreshGoogleToken(refreshToken: string, clientId: string, client
       grant_type: 'refresh_token',
     }),
   });
-
   if (!tokenResponse.ok) {
     const errorData = await tokenResponse.json();
     console.error('❌ Error refreshing token:', errorData);
     throw new Error(`Failed to refresh token: ${errorData.error_description || tokenResponse.statusText}`);
   }
-
   const tokenData = await tokenResponse.json();
   console.log('✅ Token refreshed successfully');
   return tokenData.access_token;
@@ -45,41 +39,23 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('📄 [list-google-sheets] Starting...');
-    
+    console.log('📋 [gs-list-spreadsheets] Starting...');
+
     // Parse helpers
     const url = new URL(req.url);
     const params = url.searchParams;
 
     let monday_user_id: string | undefined;
-    let spreadsheet_id: string | undefined;
 
-    // Safely parse body (may be empty when called from Monday field types)
+    // Safely parse body (may be empty)
     let body: any = {};
-    try {
-      body = await req.json();
-    } catch {
-      body = {};
-    }
-    
-    // Prefer JWT if provided
-    // Skipping JWT verification (not required). We'll resolve monday_user_id from headers/body/params or fallback.
+    try { body = await req.json(); } catch { body = {}; }
 
-    // Extract from headers/params/body
+    // Extract from headers/params/body (no JWT verification required)
     const headerUser = req.headers.get('x-monday-user-id') || req.headers.get('X-Monday-User-Id') || undefined;
-    monday_user_id = monday_user_id || headerUser || body.monday_user_id || params.get('monday_user_id') || params.get('user_id') || undefined;
+    monday_user_id = headerUser || body.monday_user_id || params.get('monday_user_id') || params.get('user_id') || undefined;
 
-    spreadsheet_id = body.spreadsheet_id 
-      || body.payload?.inputFields?.spreadsheet_id 
-      || req.headers.get('x-spreadsheet-id') 
-      || req.headers.get('X-Spreadsheet-Id') 
-      || params.get('spreadsheet_id') 
-      || params.get('spreadsheetId') 
-      || undefined;
-
-    console.log('📊 Spreadsheet ID:', spreadsheet_id);
-
-    // Initialize Supabase client (used for fallback lookup too)
+    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -100,17 +76,13 @@ Deno.serve(async (req) => {
       console.log('✅ Using fallback monday_user_id:', monday_user_id);
     }
 
-    if (!spreadsheet_id) {
-      throw new Error('spreadsheet_id is required');
-    }
-
     // Fetch Google Sheets credentials for this Monday user
     console.log('🔍 Fetching credentials from profiles table...');
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('google_sheets_credentials')
       .eq('monday_user_id', String(monday_user_id))
-      .single();
+      .maybeSingle();
 
     if (profileError || !profile?.google_sheets_credentials) {
       console.error('❌ No credentials found:', profileError);
@@ -122,122 +94,72 @@ Deno.serve(async (req) => {
 
     // Get or refresh access token
     let accessToken = credentials.access_token;
-    
-    // Check if token might be expired
     if (credentials.expiry_date) {
       const expiryDate = new Date(credentials.expiry_date);
-      const now = new Date();
-      if (expiryDate <= now) {
+      if (expiryDate <= new Date()) {
         console.log('🔄 Token expired, refreshing...');
         const clientId = Deno.env.get('GOOGLE_CLIENT_ID')!;
         const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET')!;
         accessToken = await refreshGoogleToken(credentials.refresh_token, clientId, clientSecret);
-        
-        // Update the credentials with new access token
-        const newExpiryDate = new Date(Date.now() + 3600 * 1000); // 1 hour from now
+        const newExpiryDate = new Date(Date.now() + 3600 * 1000);
         await supabase
           .from('profiles')
           .update({
-            google_sheets_credentials: {
-              ...credentials,
-              access_token: accessToken,
-              expiry_date: newExpiryDate.toISOString(),
-            },
+            google_sheets_credentials: { ...credentials, access_token: accessToken, expiry_date: newExpiryDate.toISOString() },
           })
           .eq('monday_user_id', String(monday_user_id));
       }
     }
 
-    // Fetch sheets from Google Sheets API
-    console.log('📑 Fetching sheets from Google Sheets API...');
+    // Fetch spreadsheets from Google Drive API
+    console.log('📊 Fetching spreadsheets from Google Drive...');
     const response = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheet_id}`,
+      "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&pageSize=100",
       {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json',
-        },
+        headers: { 'Authorization': `Bearer ${accessToken}`, 'Accept': 'application/json' },
       }
     );
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({}));
       console.error('❌ Google API error:', errorData);
-      
-      // If unauthorized, try refreshing token
       if (response.status === 401) {
         console.log('🔄 Token invalid, refreshing...');
         const clientId = Deno.env.get('GOOGLE_CLIENT_ID')!;
         const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET')!;
         accessToken = await refreshGoogleToken(credentials.refresh_token, clientId, clientSecret);
-        
-        // Try again with fresh token
         const retryResponse = await fetch(
-          `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheet_id}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Accept': 'application/json',
-            },
-          }
+          "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&pageSize=100",
+          { headers: { 'Authorization': `Bearer ${accessToken}`, 'Accept': 'application/json' } }
         );
-        
         if (!retryResponse.ok) {
-          throw new Error(`Failed to fetch sheets after token refresh: ${retryResponse.statusText}`);
+          throw new Error(`Failed to fetch spreadsheets after token refresh: ${retryResponse.statusText}`);
         }
-        
-        const data = await retryResponse.json();
-        
-        // Format for Monday.com recipes (options array) or regular response
-        const sheets = data.sheets.map((sheet: any) => ({
-          id: String(sheet.properties.sheetId),
-          name: sheet.properties.title,
-          title: sheet.properties.title,  // Monday.com expects 'title'
-          value: String(sheet.properties.sheetId),  // Monday.com expects 'value'
+        const retryData = await retryResponse.json();
+        const spreadsheets = (retryData.files || []).map((file: any) => ({
+          id: file.id,
+          name: file.name,
+          title: file.name,
+          value: file.id,
         }));
-        
-        console.log(`✅ Found ${sheets.length} sheets`);
-        
-        // Return format compatible with both Monday recipes and direct calls
-        return new Response(JSON.stringify({ 
-          sheets,
-          options: sheets  // Monday.com recipes expect 'options' array
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        console.log(`✅ Found ${spreadsheets.length} spreadsheets`);
+        return new Response(JSON.stringify({ spreadsheets, options: spreadsheets }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
-      
-      throw new Error(`Failed to fetch sheets: ${response.statusText}`);
+      throw new Error(`Failed to fetch spreadsheets: ${response.statusText}`);
     }
 
     const data = await response.json();
-    
-    // Format for Monday.com recipes (options array) or regular response
-    const sheets = data.sheets.map((sheet: any) => ({
-      id: String(sheet.properties.sheetId),
-      name: sheet.properties.title,
-      title: sheet.properties.title,  // Monday.com expects 'title'
-      value: String(sheet.properties.sheetId),  // Monday.com expects 'value'
+    const spreadsheets = (data.files || []).map((file: any) => ({
+      id: file.id,
+      name: file.name,
+      title: file.name,
+      value: file.id,
     }));
 
-    console.log(`✅ Found ${sheets.length} sheets`);
-
-    // Return format compatible with both Monday recipes and direct calls
-    return new Response(JSON.stringify({ 
-      sheets,
-      options: sheets  // Monday.com recipes expect 'options' array
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-
+    console.log(`✅ Found ${spreadsheets.length} spreadsheets`);
+    return new Response(JSON.stringify({ spreadsheets, options: spreadsheets }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error: any) {
     console.error('💥 Error:', error);
-    return new Response(
-      JSON.stringify({ error: error.message || 'Internal server error' }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
+    return new Response(JSON.stringify({ error: error.message || 'Internal server error' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 });

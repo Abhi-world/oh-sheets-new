@@ -27,5 +27,11 @@ verify_jwt = false
 [functions.list-google-sheets]
 verify_jwt = false
 
+[functions.gs-list-spreadsheets]
+verify_jwt = false
+
+[functions.gs-list-sheets]
+verify_jwt = false
+
 [env]
 APP_URL = "https://ohsheets.netlify.app"

@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
-import jwt from 'https://esm.sh/jsonwebtoken@9.0.2';
+// JWT verification removed (not needed for this public endpoint)
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -62,21 +62,7 @@ Deno.serve(async (req) => {
     }
 
     // Prefer JWT if provided
-    const authHeader = req.headers.get('Authorization');
-    if (authHeader) {
-      console.log('🔐 JWT authentication detected');
-      const signingSecret = Deno.env.get('MONDAY_SIGNING_SECRET');
-      if (!signingSecret) {
-        throw new Error('MONDAY_SIGNING_SECRET not configured');
-      }
-      try {
-        const decoded: any = jwt.verify(authHeader.replace('Bearer ', ''), signingSecret);
-        monday_user_id = String(decoded.userId || decoded.user_id || decoded.sub);
-        console.log('✅ JWT verified, user ID:', monday_user_id);
-      } catch (jwtError) {
-        console.warn('⚠️ JWT verification failed, continuing without JWT:', jwtError);
-      }
-    }
+    // Skipping JWT verification (not required). We'll resolve monday_user_id from headers/body/params or fallback.
 
     // Extract from headers/params/body
     const headerUser = req.headers.get('x-monday-user-id') || req.headers.get('X-Monday-User-Id') || undefined;
