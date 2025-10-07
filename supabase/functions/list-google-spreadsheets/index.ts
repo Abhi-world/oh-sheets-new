@@ -66,7 +66,15 @@ Deno.serve(async (req) => {
 
     // Extract from headers/params/body
     const headerUser = req.headers.get('x-monday-user-id') || req.headers.get('X-Monday-User-Id') || undefined;
-    monday_user_id = monday_user_id || headerUser || body.monday_user_id || params.get('monday_user_id') || params.get('user_id') || undefined;
+    monday_user_id = monday_user_id 
+      || headerUser 
+      || body.monday_user_id 
+      || body.user_id 
+      || body.payload?.userId 
+      || body.payload?.invocation?.userId 
+      || params.get('monday_user_id') 
+      || params.get('user_id') 
+      || undefined;
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;

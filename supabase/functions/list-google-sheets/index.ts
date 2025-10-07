@@ -67,17 +67,33 @@ Deno.serve(async (req) => {
 
     // Extract from headers/params/body
     const headerUser = req.headers.get('x-monday-user-id') || req.headers.get('X-Monday-User-Id') || undefined;
-    monday_user_id = monday_user_id || headerUser || body.monday_user_id || params.get('monday_user_id') || params.get('user_id') || undefined;
-
-    spreadsheet_id = body.spreadsheet_id 
-      || body.payload?.inputFields?.spreadsheet_id 
-      || req.headers.get('x-spreadsheet-id') 
-      || req.headers.get('X-Spreadsheet-Id') 
-      || params.get('spreadsheet_id') 
-      || params.get('spreadsheetId') 
+    monday_user_id = monday_user_id 
+      || headerUser 
+      || body.monday_user_id 
+      || body.user_id 
+      || body.payload?.userId 
+      || body.payload?.invocation?.userId 
+      || params.get('monday_user_id') 
+      || params.get('user_id') 
       || undefined;
 
-    console.log('📊 Spreadsheet ID:', spreadsheet_id);
+    // Resolve spreadsheet_id from many possible Monday payload shapes
+    const possibleSpreadsheetIds = [
+      body.spreadsheet_id,
+      body.dependency_fields?.spreadsheet_id,
+      body.dependencyFields?.spreadsheet_id,
+      body.dependencies?.spreadsheet_id,
+      body.payload?.inputFields?.spreadsheet_id,
+      body.payload?.dependency_fields?.spreadsheet_id,
+      body.payload?.dependencies?.spreadsheet_id,
+      req.headers.get('x-spreadsheet-id'),
+      req.headers.get('X-Spreadsheet-Id'),
+      params.get('spreadsheet_id'),
+      params.get('spreadsheetId'),
+    ].filter(Boolean);
+    spreadsheet_id = possibleSpreadsheetIds[0] as string | undefined;
+
+    console.log('📊 Spreadsheet ID resolved:', spreadsheet_id, ' method:', req.method, ' searchParams:', [...params.keys()]);
 
     // Initialize Supabase client (used for fallback lookup too)
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
