@@ -205,12 +205,12 @@ Deno.serve(async (req) => {
         const data = await retryResponse.json();
         
         // Format for Monday.com recipes (options array) or regular response
-        const sheets = data.sheets.map((sheet: any) => ({
+        const sheets = data.sheets && Array.isArray(data.sheets) ? data.sheets.map((sheet: any) => ({
           id: String(sheet.properties.sheetId),
           name: sheet.properties.title,
           title: sheet.properties.title,  // Monday.com expects 'title'
           value: String(sheet.properties.sheetId),  // Monday.com expects 'value'
-        }));
+        })) : [];
         
         console.log(`✅ Found ${sheets.length} sheets`);
         
@@ -229,12 +229,12 @@ Deno.serve(async (req) => {
     const data = await response.json();
     
     // Format for Monday.com recipes (options array) or regular response
-    const sheets = data.sheets.map((sheet: any) => ({
+    const sheets = data.sheets && Array.isArray(data.sheets) ? data.sheets.map((sheet: any) => ({
       id: String(sheet.properties.sheetId),
       name: sheet.properties.title,
       title: sheet.properties.title,  // Monday.com expects 'title'
       value: String(sheet.properties.sheetId),  // Monday.com expects 'value'
-    }));
+    })) : [];
 
     console.log(`✅ Found ${sheets.length} sheets`);
 

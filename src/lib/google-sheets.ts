@@ -25,7 +25,8 @@ export async function fetchSpreadsheets() {
     const mondayUserId = await getMondayUserId();
     
     if (!mondayUserId) {
-      throw new Error('Could not get Monday user ID');
+      console.error('Could not get Monday user ID');
+      return [];
     }
 
     console.log('👤 Using Monday User ID:', mondayUserId);
@@ -36,18 +37,20 @@ export async function fetchSpreadsheets() {
 
     if (error) {
       console.error('Error from edge function:', error);
-      throw error;
+      return [];
     }
 
     if (data?.error) {
-      throw new Error(data.error);
+      console.error('Error from API:', data.error);
+      return [];
     }
 
-    console.log('✅ Fetched spreadsheets:', data?.spreadsheets?.length || 0);
-    return data.spreadsheets || [];
+    const spreadsheets = data?.spreadsheets || [];
+    console.log('✅ Fetched spreadsheets:', spreadsheets.length);
+    return Array.isArray(spreadsheets) ? spreadsheets : [];
   } catch (error) {
     console.error('Error fetching spreadsheets:', error);
-    throw error;
+    return [];
   }
 }
 
@@ -57,14 +60,16 @@ export async function fetchSpreadsheets() {
 export async function fetchSheets(spreadsheetId: string) {
   try {
     if (!spreadsheetId) {
-      throw new Error('Spreadsheet ID is required');
+      console.error('Spreadsheet ID is required');
+      return [];
     }
 
     console.log('📑 Fetching sheets for spreadsheet:', spreadsheetId);
     const mondayUserId = await getMondayUserId();
     
     if (!mondayUserId) {
-      throw new Error('Could not get Monday user ID');
+      console.error('Could not get Monday user ID');
+      return [];
     }
 
     console.log('👤 Using Monday User ID:', mondayUserId);
@@ -78,17 +83,19 @@ export async function fetchSheets(spreadsheetId: string) {
 
     if (error) {
       console.error('Error from edge function:', error);
-      throw error;
+      return [];
     }
 
     if (data?.error) {
-      throw new Error(data.error);
+      console.error('Error from API:', data.error);
+      return [];
     }
 
-    console.log('✅ Fetched sheets:', data?.sheets?.length || 0);
-    return data.sheets || [];
+    const sheets = data?.sheets || [];
+    console.log('✅ Fetched sheets:', sheets.length);
+    return Array.isArray(sheets) ? sheets : [];
   } catch (error) {
     console.error('Error fetching sheets:', error);
-    throw error;
+    return [];
   }
 }

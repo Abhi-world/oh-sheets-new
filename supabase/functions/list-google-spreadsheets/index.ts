@@ -83,12 +83,13 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: errorData.error || 'Failed to fetch spreadsheets.' }), { status: response.status, headers: corsHeaders });
     }
     const data = await response.json();
-    const spreadsheets = (data.files || []).map((file) => ({
+    const files = data.files || [];
+    const spreadsheets = Array.isArray(files) ? files.map((file) => ({
       id: file.id,
       name: file.name,
       title: file.name,
       value: file.id,
-    }));
+    })) : [];
 
     return new Response(JSON.stringify({ spreadsheets, options: spreadsheets }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
