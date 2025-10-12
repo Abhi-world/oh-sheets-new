@@ -7,7 +7,12 @@ import { execMondayQuery } from '@/utils/mondaySDK';
  */
 async function getMondayUserId(): Promise<string | null> {
   try {
-    const userResponse = await execMondayQuery('query { me { id } }');
+    // Fix GraphQL validation error by using a properly formatted query
+    const userResponse = await execMondayQuery(`query { 
+      me { 
+        id 
+      }
+    }`);
     const mondayUserId = userResponse?.data?.me?.id;
     return mondayUserId ? String(mondayUserId) : null;
   } catch (error) {

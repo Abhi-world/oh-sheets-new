@@ -27,7 +27,12 @@ export function GoogleSheetsConnect() {
       }
 
       console.log('📞 [checkConnection] Getting Monday user ID...');
-      const userResponse = await execMondayQuery('query { me { id } }');
+      // Fix GraphQL validation error by using a properly formatted query
+      const userResponse = await execMondayQuery(`query { 
+        me { 
+          id 
+        }
+      }`);
       const mondayUserId = userResponse?.data?.me?.id;
 
       if (!mondayUserId) {
@@ -64,7 +69,12 @@ export function GoogleSheetsConnect() {
     setIsAuthorizing(true);
     toast({ title: 'Authorization successful', description: 'Finalizing connection...' });
     try {
-        const userResponse = await execMondayQuery('query { me { id } }');
+        // Fix GraphQL validation error by using a properly formatted query
+        const userResponse = await execMondayQuery(`query { 
+          me { 
+            id 
+          }
+        }`);
         const mondayUserId = userResponse?.data?.me?.id;
         if (!mondayUserId) {
             throw new Error('Could not retrieve Monday.com user to link account.');

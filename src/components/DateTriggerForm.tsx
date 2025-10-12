@@ -26,7 +26,13 @@ const DateTriggerForm = () => {
   const fetchMondayBoards = async () => {
     try {
       const { execMondayQuery } = await import('@/utils/mondaySDK');
-      const query = `query { boards { id name } }`;
+      // Fix GraphQL validation error with properly formatted query
+      const query = `query { 
+        boards { 
+          id 
+          name 
+        } 
+      }`;
       
       const result = await execMondayQuery(query);
       if (result.data?.boards) {

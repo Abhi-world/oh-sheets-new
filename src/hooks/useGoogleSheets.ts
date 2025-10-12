@@ -29,26 +29,21 @@ export const useGoogleSheets = () => {
     
     try {
       setIsLoading(true);
-      console.log('Fetching spreadsheets from Google Sheets API...');
+      console.log('TESTING MODE: Using mock spreadsheets data');
       
-      const spreadsheetsList = await fetchSpreadsheets();
-      console.log('Received spreadsheets:', spreadsheetsList);
+      // Use mock data instead of API call
+      const spreadsheetsList = MOCK_SPREADSHEETS;
+      console.log('Mock spreadsheets:', spreadsheetsList);
       
-      if (Array.isArray(spreadsheetsList)) {
-        setSpreadsheets(spreadsheetsList);
-        
-        // If we have spreadsheets but none selected, select the first one
-        if (spreadsheetsList.length > 0 && !selectedSpreadsheet) {
-          setSelectedSpreadsheet(spreadsheetsList[0].id);
-        }
-      } else {
-        console.error('Invalid spreadsheets list format:', spreadsheetsList);
-        setSpreadsheets([]);
-        toast.error('Failed to fetch spreadsheets: Invalid response format');
+      setSpreadsheets(spreadsheetsList);
+      
+      // If we have spreadsheets but none selected, select the first one
+      if (spreadsheetsList.length > 0 && !selectedSpreadsheet) {
+        setSelectedSpreadsheet(spreadsheetsList[0].id);
       }
     } catch (error) {
-      console.error('Error fetching spreadsheets:', error);
-      toast.error('Failed to fetch spreadsheets');
+      console.error('Error with mock spreadsheets:', error);
+      toast.error('Failed to load mock spreadsheets');
       setSpreadsheets([]);
     } finally {
       setIsLoading(false);
@@ -60,26 +55,21 @@ export const useGoogleSheets = () => {
 
     try {
       setIsLoading(true);
-      console.log('Fetching sheets for spreadsheet:', spreadsheetId);
+      console.log('TESTING MODE: Using mock sheets data for spreadsheet:', spreadsheetId);
 
-      const sheetsList = await fetchSheets(spreadsheetId);
-      console.log('Processed sheets list:', sheetsList);
+      // Use mock data instead of API call
+      const sheetsList = MOCK_SHEETS[spreadsheetId] || [];
+      console.log('Mock sheets:', sheetsList);
       
-      if (Array.isArray(sheetsList)) {
-        setSheets(sheetsList);
-        
-        // If we have sheets but none selected, select the first one
-        if (sheetsList.length > 0 && !selectedSheet) {
-          setSelectedSheet(sheetsList[0].id);
-        }
-      } else {
-        console.error('Invalid sheets list format:', sheetsList);
-        setSheets([]);
-        toast.error('Failed to fetch sheets: Invalid response format');
+      setSheets(sheetsList);
+      
+      // If we have sheets but none selected, select the first one
+      if (sheetsList.length > 0 && !selectedSheet) {
+        setSelectedSheet(sheetsList[0].id);
       }
     } catch (error) {
-      console.error('Error fetching sheets:', error);
-      toast.error('Failed to fetch sheets');
+      console.error('Error with mock sheets:', error);
+      toast.error('Failed to load mock sheets');
       setSheets([]);
     } finally {
       setIsLoading(false);
