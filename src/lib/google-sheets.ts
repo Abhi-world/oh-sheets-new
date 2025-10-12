@@ -10,7 +10,9 @@ async function getMondayUserId(): Promise<string | null> {
     // Fix GraphQL validation error by using a properly formatted query
     const userResponse = await execMondayQuery(`query { 
       me { 
-        id 
+        id
+        name
+        email 
       }
     }`);
     const mondayUserId = userResponse?.data?.me?.id;

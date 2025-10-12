@@ -30,7 +30,10 @@ const DateTriggerForm = () => {
       const query = `query { 
         boards { 
           id 
-          name 
+          name
+          state
+          board_folder_id
+          workspace_id
         } 
       }`;
       
