@@ -221,6 +221,44 @@ export function GoogleSheetsConnect() {
     }
   };
 
+  const handleDisconnect = async () => {
+    setIsLoading(true);
+    setConnectionError(null);
+    try {
+      const userResponse = await execMondayQuery(`query { 
+        me { 
+          id
+        }
+      }`);
+      const mondayUserId = userResponse?.data?.me?.id;
+      if (!mondayUserId) throw new Error('Could not get Monday.com user to disconnect.');
+
+      console.log('🔄 [handleDisconnect] Disconnecting Google Sheets for user:', mondayUserId);
+      const { error } = await supabase.functions.invoke('disconnect-google-sheets', {
+        body: { monday_user_id: String(mondayUserId) }
+      });
+
+      if (error) throw error;
+
+      toast({ 
+        title: 'Disconnected', 
+        description: 'Google Sheets has been disconnected. You can reconnect at any time.' 
+      });
+      
+      setIsConnected(false);
+    } catch (err: any) {
+      console.error('❌ [handleDisconnect] Failed:', err);
+      setConnectionError(err.message || 'Failed to disconnect.');
+      toast({ 
+        title: 'Error', 
+        description: err.message || 'Failed to disconnect Google Sheets.', 
+        variant: 'destructive' 
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const renderContent = () => {
     if (isLoading) {
       return <div className="flex items-center gap-2 text-gray-500"><RefreshCw className="h-5 w-5 animate-spin" /><span>Checking connection...</span></div>;
@@ -237,6 +275,15 @@ export function GoogleSheetsConnect() {
               Continue to Recipes <ArrowRight className="h-4 w-4" />
             </Button>
             <Button onClick={checkConnection} variant="outline" className="flex items-center gap-2"><RefreshCw className="h-4 w-4" />Refresh</Button>
+          </div>
+          <div className="mt-4">
+            <Button 
+              onClick={handleDisconnect} 
+              variant="outline" 
+              className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
+            >
+              Disconnect Google Sheets
+            </Button>
           </div>
         </div>
       );
