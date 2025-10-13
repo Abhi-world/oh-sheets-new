@@ -29,11 +29,11 @@ export const useGoogleSheets = () => {
     
     try {
       setIsLoading(true);
-      console.log('TESTING MODE: Using mock spreadsheets data');
+      console.log('Fetching spreadsheets from Google API');
       
-      // Use mock data instead of API call
-      const spreadsheetsList = MOCK_SPREADSHEETS;
-      console.log('Mock spreadsheets:', spreadsheetsList);
+      // Use real API call
+      const spreadsheetsList = await fetchSpreadsheets();
+      console.log('Fetched spreadsheets:', spreadsheetsList);
       
       setSpreadsheets(spreadsheetsList);
       
@@ -42,8 +42,8 @@ export const useGoogleSheets = () => {
         setSelectedSpreadsheet(spreadsheetsList[0].id);
       }
     } catch (error) {
-      console.error('Error with mock spreadsheets:', error);
-      toast.error('Failed to load mock spreadsheets');
+      console.error('Error fetching spreadsheets:', error);
+      toast.error('Failed to load spreadsheets');
       setSpreadsheets([]);
     } finally {
       setIsLoading(false);
@@ -55,11 +55,11 @@ export const useGoogleSheets = () => {
 
     try {
       setIsLoading(true);
-      console.log('TESTING MODE: Using mock sheets data for spreadsheet:', spreadsheetId);
+      console.log('Fetching sheets from Google API for spreadsheet:', spreadsheetId);
 
-      // Use mock data instead of API call
-      const sheetsList = MOCK_SHEETS[spreadsheetId] || [];
-      console.log('Mock sheets:', sheetsList);
+      // Use real API call
+      const sheetsList = await fetchSheets(spreadsheetId);
+      console.log('Fetched sheets:', sheetsList);
       
       setSheets(sheetsList);
       
@@ -68,8 +68,8 @@ export const useGoogleSheets = () => {
         setSelectedSheet(sheetsList[0].id);
       }
     } catch (error) {
-      console.error('Error with mock sheets:', error);
-      toast.error('Failed to load mock sheets');
+      console.error('Error fetching sheets:', error);
+      toast.error('Failed to load sheets');
       setSheets([]);
     } finally {
       setIsLoading(false);
