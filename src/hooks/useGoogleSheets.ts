@@ -31,9 +31,14 @@ export const useGoogleSheets = () => {
       setIsLoading(true);
       console.log('Fetching spreadsheets from Google API');
       
-      // Use real API call
+      // Force real API call with no caching
       const spreadsheetsList = await fetchSpreadsheets();
       console.log('Fetched spreadsheets:', spreadsheetsList);
+      
+      if (!spreadsheetsList || spreadsheetsList.length === 0) {
+        console.warn('No spreadsheets returned from API');
+        toast.warning('No spreadsheets found in your Google Drive');
+      }
       
       setSpreadsheets(spreadsheetsList);
       
@@ -43,7 +48,7 @@ export const useGoogleSheets = () => {
       }
     } catch (error) {
       console.error('Error fetching spreadsheets:', error);
-      toast.error('Failed to load spreadsheets');
+      toast.error('Failed to load spreadsheets. Please check your Google connection.');
       setSpreadsheets([]);
     } finally {
       setIsLoading(false);
@@ -51,15 +56,23 @@ export const useGoogleSheets = () => {
   }, [isGoogleConnected, selectedSpreadsheet]);
 
   const fetchSheetsList = useCallback(async (spreadsheetId: string) => {
-    if (!spreadsheetId || !isGoogleConnected) return;
+    if (!spreadsheetId || !isGoogleConnected) {
+      console.log('Cannot fetch sheets: spreadsheetId or Google connection missing');
+      return;
+    }
 
     try {
       setIsLoading(true);
       console.log('Fetching sheets from Google API for spreadsheet:', spreadsheetId);
 
-      // Use real API call
+      // Force real API call with no caching
       const sheetsList = await fetchSheets(spreadsheetId);
       console.log('Fetched sheets:', sheetsList);
+      
+      if (!sheetsList || sheetsList.length === 0) {
+        console.warn('No sheets returned from API for spreadsheet:', spreadsheetId);
+        toast.warning('No sheets found in the selected spreadsheet');
+      }
       
       setSheets(sheetsList);
       
@@ -69,7 +82,7 @@ export const useGoogleSheets = () => {
       }
     } catch (error) {
       console.error('Error fetching sheets:', error);
-      toast.error('Failed to load sheets');
+      toast.error('Failed to load sheets. Please check your Google connection.');
       setSheets([]);
     } finally {
       setIsLoading(false);
