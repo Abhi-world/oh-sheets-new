@@ -234,11 +234,18 @@ export function GoogleSheetsConnect() {
       if (!mondayUserId) throw new Error('Could not get Monday.com user to disconnect.');
 
       console.log('🔄 [handleDisconnect] Disconnecting Google Sheets for user:', mondayUserId);
-      const { error } = await supabase.functions.invoke('disconnect-google-sheets', {
+      
+      // Add more detailed logging
+      console.log('📤 [handleDisconnect] Calling disconnect-google-sheets with payload:', { monday_user_id: String(mondayUserId) });
+      
+      const { data, error } = await supabase.functions.invoke('disconnect-google-sheets', {
         body: { monday_user_id: String(mondayUserId) }
       });
 
+      console.log('📥 [handleDisconnect] Response:', { data, error });
+      
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       toast({ 
         title: 'Disconnected', 
@@ -246,6 +253,9 @@ export function GoogleSheetsConnect() {
       });
       
       setIsConnected(false);
+      
+      // Force a re-check of the connection status
+      await checkConnection();
     } catch (err: any) {
       console.error('❌ [handleDisconnect] Failed:', err);
       setConnectionError(err.message || 'Failed to disconnect.');
