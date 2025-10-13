@@ -47,6 +47,11 @@ const SheetSelector = ({
             />
           </div>
           <div className="space-y-1 max-h-[200px] overflow-y-auto">
+            {filteredItems.length === 0 && (
+              <div className="px-3 py-2 text-white/50">
+                No {placeholder.toLowerCase()}s found
+              </div>
+            )}
             {filteredItems.map(item => (
               <button
                 key={item.id}

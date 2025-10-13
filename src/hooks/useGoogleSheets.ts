@@ -92,19 +92,37 @@ export const useGoogleSheets = () => {
   // Auto-fetch spreadsheets when Google is connected
   useEffect(() => {
     if (isGoogleConnected) {
+      console.log('Google connected, fetching spreadsheets automatically');
       fetchSpreadsheetsList();
     }
   }, [isGoogleConnected, fetchSpreadsheetsList]);
+  
+  // Force fetch on component mount to ensure data is always available
+  useEffect(() => {
+    if (isGoogleConnected && spreadsheets.length === 0 && !isLoading) {
+      console.log('Component mounted, forcing spreadsheet fetch');
+      fetchSpreadsheetsList();
+    }
+  }, []);
 
   // Fetch sheets when spreadsheet is selected
   useEffect(() => {
     if (selectedSpreadsheet) {
+      console.log('Spreadsheet selected, fetching sheets:', selectedSpreadsheet);
       fetchSheetsList(selectedSpreadsheet);
     } else {
       setSheets([]);
       setSelectedSheet('');
     }
   }, [selectedSpreadsheet, fetchSheetsList]);
+  
+  // Force immediate fetch of sheets when a spreadsheet is selected in a recipe component
+  const forceSheetsFetch = useCallback((spreadsheetId: string) => {
+    if (spreadsheetId && isGoogleConnected) {
+      console.log('Force fetching sheets for spreadsheet:', spreadsheetId);
+      fetchSheetsList(spreadsheetId);
+    }
+  }, [fetchSheetsList, isGoogleConnected]);
 
   return {
     spreadsheets,
@@ -115,5 +133,6 @@ export const useGoogleSheets = () => {
     setSelectedSpreadsheet,
     setSelectedSheet,
     fetchSpreadsheets: fetchSpreadsheetsList,
+    forceSheetsFetch,
   };
 };
