@@ -259,10 +259,9 @@ export function GoogleSheetsConnect() {
         description: 'Google Sheets has been disconnected successfully.' 
       });
       
+      // Set the state and trust the successful API call.
+      // The UI will now correctly show the disconnected state.
       setIsConnected(false);
-      
-      // Force a re-check of the connection status
-      await checkConnection();
     } catch (err: any) {
       console.error('❌ [handleDisconnect] Failed:', err);
       setConnectionError(err.message || 'Failed to disconnect.');
