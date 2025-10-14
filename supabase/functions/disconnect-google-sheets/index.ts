@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
     const { error: credentialsError } = await supabaseAdmin
       .from('google_credentials')
       .delete()
-      .eq('user_id', mondayUserId);
+      .eq('monday_user_id', String(mondayUserId));
 
     if (credentialsError && credentialsError.code !== 'PGRST116') {
       console.error('❌ Error deleting from google_credentials:', credentialsError);

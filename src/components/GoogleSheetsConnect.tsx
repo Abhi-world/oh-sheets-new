@@ -235,26 +235,17 @@ export function GoogleSheetsConnect() {
 
       console.log('🔄 [handleDisconnect] Disconnecting Google Sheets for user:', mondayUserId);
       
-      // Direct database update approach to avoid CORS issues
-      console.log('📤 [handleDisconnect] Using direct database update approach');
+      // Go back to using the Edge Function but with proper JWT auth
+      console.log('📤 [handleDisconnect] Calling disconnect-google-sheets with payload:', { monday_user_id: String(mondayUserId) });
       
-      // Update profiles table to clear google_sheets_credentials
-      const { error: profilesError } = await supabase
-        .from('profiles')
-        .update({ google_sheets_credentials: null })
-        .eq('monday_user_id', String(mondayUserId));
+      const { data, error } = await supabase.functions.invoke('disconnect-google-sheets', {
+        body: { monday_user_id: String(mondayUserId) }
+      });
+
+      console.log('📥 [handleDisconnect] Response:', { data, error });
       
-      if (profilesError) throw new Error(`Failed to update profiles: ${profilesError.message}`);
-      
-      // Delete from google_credentials table
-      const { error: credentialsError } = await supabase
-        .from('google_credentials')
-        .delete()
-        .eq('monday_user_id', String(mondayUserId));
-      
-      if (credentialsError) throw new Error(`Failed to delete credentials: ${credentialsError.message}`);
-      
-      console.log('📥 [handleDisconnect] Successfully disconnected via direct database updates');
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       toast({ 
         title: 'Disconnected', 
