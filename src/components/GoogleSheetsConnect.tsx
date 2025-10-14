@@ -235,17 +235,17 @@ export function GoogleSheetsConnect() {
 
       console.log('🔄 [handleDisconnect] Disconnecting Google Sheets for user:', mondayUserId);
       
-      // Go back to using the Edge Function but with proper JWT auth
-      console.log('📤 [handleDisconnect] Calling disconnect-google-sheets with payload:', { monday_user_id: String(mondayUserId) });
+      // Direct database update using Supabase client - NO CORS ISSUES
+      console.log('📤 [handleDisconnect] Updating profiles table directly for user:', mondayUserId);
       
-      const { data, error } = await supabase.functions.invoke('disconnect-google-sheets', {
-        body: { monday_user_id: String(mondayUserId) }
-      });
+      const { error } = await supabase
+        .from('profiles')
+        .update({ google_sheets_credentials: null })
+        .eq('monday_user_id', String(mondayUserId));
 
-      console.log('📥 [handleDisconnect] Response:', { data, error });
+      console.log('📥 [handleDisconnect] Direct database update response:', { error });
       
       if (error) throw error;
-      if (data?.error) throw new Error(data.error);
 
       toast({ 
         title: 'Disconnected', 
