@@ -196,7 +196,7 @@ export function GoogleSheetsConnect() {
       if (error) throw error;
 
       // Hardcode the exact redirect URI that matches what's registered in Google Cloud Console
-      const redirectUri = 'https://funny-otter-9faa67.netlify.app/google-oauth';
+      const redirectUri = 'https://funny-otter-9faa67.netlify.app/notify-app/google-oauth';
       
       console.log('🔗 [handleConnect] Using hardcoded redirect URI:', redirectUri);
       
