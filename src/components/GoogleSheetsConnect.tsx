@@ -195,11 +195,10 @@ export function GoogleSheetsConnect() {
       const { data, error } = await supabase.functions.invoke('get-google-client-id');
       if (error) throw error;
 
-      // Use origin so callback path matches router: /google-oauth at site root
-      const redirectUri = `${window.location.origin}/google-oauth`;
+      // Hardcode the exact redirect URI that matches what's registered in Google Cloud Console
+      const redirectUri = 'https://funny-otter-9faa67.netlify.app/google-oauth';
       
-      console.log('🔗 [handleConnect] Origin:', window.location.origin);
-      console.log('🔗 [handleConnect] Redirect URI:', redirectUri);
+      console.log('🔗 [handleConnect] Using hardcoded redirect URI:', redirectUri);
       
       const scope = "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly";
       
@@ -235,6 +234,37 @@ export function GoogleSheetsConnect() {
       if (!mondayUserId) throw new Error('Could not get Monday.com user to disconnect.');
 
       console.log('🔄 [handleDisconnect] Disconnecting Google Sheets for user:', mondayUserId);
+      
+      // First, get the current credentials to revoke the token
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('google_sheets_credentials')
+        .eq('monday_user_id', String(mondayUserId))
+        .single();
+        
+      if (profileError) throw profileError;
+      
+      // If we have credentials, revoke the token
+      if (profileData?.google_sheets_credentials?.access_token) {
+        try {
+          console.log('🔄 [handleDisconnect] Revoking Google access token...');
+          const revokeResponse = await fetch(`https://oauth2.googleapis.com/revoke?token=${profileData.google_sheets_credentials.access_token}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            }
+          });
+          
+          if (revokeResponse.ok) {
+            console.log('✅ [handleDisconnect] Token revoked successfully');
+          } else {
+            console.warn('⚠️ [handleDisconnect] Token revocation failed:', await revokeResponse.text());
+          }
+        } catch (revokeErr) {
+          console.error('❌ [handleDisconnect] Token revocation error:', revokeErr);
+          // Continue with disconnection even if revocation fails
+        }
+      }
       
       // Create admin client that bypasses RLS
       const supabaseAdmin = createClient(
