@@ -236,13 +236,15 @@ export function GoogleSheetsConnect() {
       console.log('🔄 [handleDisconnect] Disconnecting Google Sheets for user:', mondayUserId);
       
       // First, get the current credentials to revoke the token
-      const { data: profileData, error: profileError } = await supabase
+      const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('google_sheets_credentials')
-        .eq('monday_user_id', String(mondayUserId))
-        .single();
+        .eq('monday_user_id', String(mondayUserId));
         
       if (profileError) throw profileError;
+      
+      // Safely get the first profile from the returned array, even if multiple exist
+      const profileData = profiles?.[0];
       
       // If we have credentials, revoke the token
       if (profileData?.google_sheets_credentials?.access_token) {
