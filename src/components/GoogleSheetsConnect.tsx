@@ -248,22 +248,30 @@ export function GoogleSheetsConnect() {
       if (profileData?.google_sheets_credentials?.access_token) {
         try {
           console.log('🔄 [handleDisconnect] Revoking Google access token...');
-          const revokeResponse = await fetch(`https://oauth2.googleapis.com/revoke?token=${profileData.google_sheets_credentials.access_token}`, {
+          
+          // Ensure proper token revocation by using the correct content type and format
+          const revokeResponse = await fetch('https://oauth2.googleapis.com/revoke', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded'
-            }
+            },
+            body: `token=${encodeURIComponent(profileData.google_sheets_credentials.access_token)}`
           });
           
           if (revokeResponse.ok) {
             console.log('✅ [handleDisconnect] Token revoked successfully');
           } else {
-            console.warn('⚠️ [handleDisconnect] Token revocation failed:', await revokeResponse.text());
+            const errorText = await revokeResponse.text();
+            console.warn('⚠️ [handleDisconnect] Token revocation failed:', errorText);
+            throw new Error(`Token revocation failed: ${errorText}`);
           }
-        } catch (revokeErr) {
+        } catch (revokeErr: any) {
           console.error('❌ [handleDisconnect] Token revocation error:', revokeErr);
-          // Continue with disconnection even if revocation fails
+          // Don't continue with disconnection if token revocation fails
+          throw new Error(`Failed to revoke access: ${revokeErr.message}`);
         }
+      } else {
+        console.warn('⚠️ [handleDisconnect] No access token found to revoke');
       }
       
       // Create admin client that bypasses RLS
@@ -284,6 +292,10 @@ export function GoogleSheetsConnect() {
       
       if (error) throw error;
 
+      // Clear any stored OAuth state in localStorage to prevent reconnection
+      localStorage.removeItem('google_oauth_result');
+      localStorage.removeItem('google_sheets_connected');
+      
       toast({ 
         title: 'Disconnected', 
         description: 'Google Sheets has been disconnected successfully.' 
