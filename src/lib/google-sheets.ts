@@ -51,23 +51,13 @@ export const fetchSpreadsheets = async (): Promise<SpreadsheetOption[]> => {
     const spreadsheets = response.data?.spreadsheets || [];
     console.log('Successfully fetched spreadsheets:', spreadsheets.length);
     
-    // Add mock data if no spreadsheets found (for testing)
-    if (spreadsheets.length === 0) {
-      console.log('No spreadsheets found, adding mock data for testing');
-      return [
-        { id: 'mock-1', name: 'Sample Spreadsheet 1', title: 'Sample Spreadsheet 1', value: 'mock-1' },
-        { id: 'mock-2', name: 'Sample Spreadsheet 2', title: 'Sample Spreadsheet 2', value: 'mock-2' }
-      ];
-    }
-    
+    // Return actual spreadsheets, even if empty
     return spreadsheets;
   } catch (error) {
     console.error('Error in fetchSpreadsheets:', error);
-    // Return mock data on error for testing
-    return [
-      { id: 'mock-1', name: 'Sample Spreadsheet 1', title: 'Sample Spreadsheet 1', value: 'mock-1' },
-      { id: 'mock-2', name: 'Sample Spreadsheet 2', title: 'Sample Spreadsheet 2', value: 'mock-2' }
-    ];
+    // Return empty array on error instead of mock data
+    toast.error('Failed to fetch spreadsheets. Please check your Google connection.');
+    return [];
   }
 }
 

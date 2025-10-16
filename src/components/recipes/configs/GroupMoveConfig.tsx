@@ -55,10 +55,7 @@ const GroupMoveConfig = ({ onConfigValid }: { onConfigValid?: (isValid: boolean)
         </Popover>
         {', '}add a row in{' '}
         <SheetSelector
-          items={spreadsheets.length > 0 ? spreadsheets : [
-            { id: 'mock-1', name: 'Sample Spreadsheet 1' },
-            { id: 'mock-2', name: 'Sample Spreadsheet 2' }
-          ]}
+          items={spreadsheets}
           selectedId={selectedSpreadsheet}
           onSelect={setSelectedSpreadsheet}
           placeholder="spreadsheet"

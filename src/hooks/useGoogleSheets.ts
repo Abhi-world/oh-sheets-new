@@ -14,18 +14,12 @@ interface SheetOption {
 }
 
 export const useGoogleSheets = () => {
-  // Initialize with mock data to ensure UI always shows something
-  const [spreadsheets, setSpreadsheets] = useState<SpreadsheetOption[]>([
-    { id: 'mock-1', name: 'Sample Spreadsheet 1' },
-    { id: 'mock-2', name: 'Sample Spreadsheet 2' }
-  ]);
-  const [sheets, setSheets] = useState<SheetOption[]>([
-    { id: 'sheet-1', name: 'Sample Sheet 1' },
-    { id: 'sheet-2', name: 'Sample Sheet 2' }
-  ]);
+  // Initialize with empty arrays to ensure we fetch real data
+  const [spreadsheets, setSpreadsheets] = useState<SpreadsheetOption[]>([]);
+  const [sheets, setSheets] = useState<SheetOption[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedSpreadsheet, setSelectedSpreadsheet] = useState('mock-1');
-  const [selectedSheet, setSelectedSheet] = useState('sheet-1');
+  const [selectedSpreadsheet, setSelectedSpreadsheet] = useState('');
+  const [selectedSheet, setSelectedSheet] = useState('');
   const { isConnected: isGoogleConnected } = useGoogleSheetsStatus();
 
   const fetchSpreadsheetsList = useCallback(async () => {
