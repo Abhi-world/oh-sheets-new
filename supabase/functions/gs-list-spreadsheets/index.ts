@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
     // Fetch spreadsheets from Google Drive API
     console.log('📊 Fetching spreadsheets from Google Drive...');
     const response = await fetch(
-      "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&pageSize=100",
+      "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet' and trashed=false&fields=files(id,name,owners(emailAddress))&orderBy=modifiedTime desc&supportsAllDrives=true&includeItemsFromAllDrives=true&pageSize=100",
       {
         headers: { 'Authorization': `Bearer ${accessToken}`, 'Accept': 'application/json' },
       }
@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
         const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET')!;
         accessToken = await refreshGoogleToken(credentials.refresh_token, clientId, clientSecret);
         const retryResponse = await fetch(
-          "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&pageSize=100",
+          "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet' and trashed=false&fields=files(id,name,owners(emailAddress))&orderBy=modifiedTime desc&supportsAllDrives=true&includeItemsFromAllDrives=true&pageSize=100",
           { headers: { 'Authorization': `Bearer ${accessToken}`, 'Accept': 'application/json' } }
         );
         if (!retryResponse.ok) {
