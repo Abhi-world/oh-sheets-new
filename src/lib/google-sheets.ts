@@ -38,23 +38,34 @@ export async function fetchSpreadsheets() {
 
     console.log('👤 Using Monday User ID:', mondayUserId);
 
-    const { data, error } = await supabase.functions.invoke('list-google-spreadsheets', {
+    // Try the list-google-spreadsheets endpoint first
+  let response = await supabase.functions.invoke('list-google-spreadsheets', {
+    body: { monday_user_id: mondayUserId }
+  });
+
+  // If that fails, try the gs-list-spreadsheets endpoint as fallback
+  if (response.error || !response.data?.spreadsheets) {
+    console.log('Falling back to gs-list-spreadsheets endpoint...');
+    response = await supabase.functions.invoke('gs-list-spreadsheets', {
       body: { monday_user_id: mondayUserId }
     });
+  }
 
-    if (error) {
-      console.error('Error from edge function:', error);
-      return [];
-    }
+  const { data, error } = response;
 
-    if (data?.error) {
-      console.error('Error from API:', data.error);
-      return [];
-    }
+  if (error) {
+    console.error('Error from edge function:', error);
+    return [];
+  }
 
-    const spreadsheets = data?.spreadsheets || [];
-    console.log('✅ Fetched spreadsheets:', spreadsheets.length);
-    return Array.isArray(spreadsheets) ? spreadsheets : [];
+  if (data?.error) {
+    console.error('Error from API:', data.error);
+    return [];
+  }
+
+  const spreadsheets = data?.spreadsheets || [];
+  console.log('✅ Fetched spreadsheets:', spreadsheets.length);
+  return Array.isArray(spreadsheets) ? spreadsheets : [];
   } catch (error) {
     console.error('Error fetching spreadsheets:', error);
     return [];
