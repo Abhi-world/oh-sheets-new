@@ -30,8 +30,9 @@ const GoogleOAuthCallback = () => {
       localStorage.setItem('google_oauth_result', JSON.stringify(errorResult));
       try {
         if (window.opener) {
-          window.opener.postMessage({ type: 'google_oauth_result', payload: errorResult }, window.location.origin);
-          console.log('📨 [GoogleOAuth] Posted error message to opener');
+          // Allow communication with Monday.com by using '*' for targetOrigin
+          window.opener.postMessage({ type: 'google_oauth_result', payload: errorResult }, '*');
+          console.log('📨 [GoogleOAuth] Posted error message to opener with wildcard origin');
         }
       } catch (e) {
         console.log('⚠️ [GoogleOAuth] postMessage failed:', e);
@@ -51,8 +52,9 @@ const GoogleOAuthCallback = () => {
       // Notify opener directly (works even with storage partitioning)
       try {
         if (window.opener) {
-          window.opener.postMessage({ type: 'google_oauth_result', payload: successResult }, window.location.origin);
-          console.log('📨 [GoogleOAuth] Posted success message to opener');
+          // Allow communication with Monday.com by using '*' for targetOrigin
+          window.opener.postMessage({ type: 'google_oauth_result', payload: successResult }, '*');
+          console.log('📨 [GoogleOAuth] Posted success message to opener with wildcard origin');
         }
       } catch (e) {
         console.log('⚠️ [GoogleOAuth] postMessage failed:', e);
