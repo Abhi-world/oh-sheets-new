@@ -17,12 +17,10 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Get the Google Client ID from secrets
-    const googleClientId = Deno.env.get('GOOGLE_CLIENT_ID')
+    // Hardcoded Google Client ID to match the one configured in Google Cloud Console
+    const googleClientId = '733843448601-od0r114ua2tpdm08ghos6a5tff72uelk.apps.googleusercontent.com'
     
-    if (!googleClientId) {
-      throw new Error('Google Client ID not configured')
-    }
+    // No need to check if it's configured since it's hardcoded
 
     return new Response(
       JSON.stringify({ clientId: googleClientId }),
