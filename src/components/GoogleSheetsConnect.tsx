@@ -1,7 +1,9 @@
+// In src/components/GoogleSheetsConnect.tsx
+
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js'; // For admin client
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
@@ -27,23 +29,13 @@ export function GoogleSheetsConnect() {
         throw new Error('This app must be run inside Monday.com.');
       }
 
-      console.log('📞 [checkConnection] Getting Monday user ID...');
-      // Fix GraphQL validation error by using a properly formatted query
-      const userResponse = await execMondayQuery(`query { 
-        me { 
-          id
-          name
-          email
-        }
-      }`);
+      const userResponse = await execMondayQuery(`query { me { id } }`);
       const mondayUserId = userResponse?.data?.me?.id;
 
       if (!mondayUserId) {
         throw new Error('Could not retrieve Monday.com user information.');
       }
-      console.log('✅ [checkConnection] Got Monday User ID:', mondayUserId);
-
-      console.log('🔍 [checkConnection] Checking connection status via Supabase...');
+      
       const { data, error } = await supabase.functions.invoke('check-google-connection', {
         body: { monday_user_id: String(mondayUserId) }
       });
@@ -51,10 +43,8 @@ export function GoogleSheetsConnect() {
       if (error) throw error;
 
       if (data?.connected) {
-        console.log('✅ [checkConnection] User is connected.');
         setIsConnected(true);
       } else {
-        console.log('❌ [checkConnection] User is not connected.');
         setIsConnected(false);
       }
     } catch (err: any) {
@@ -63,51 +53,29 @@ export function GoogleSheetsConnect() {
       setIsConnected(false);
     } finally {
       setIsLoading(false);
-      console.log('🏁 [checkConnection] Finished.');
     }
   }, []);
 
   const exchangeCodeForTokens = useCallback(async (code: string) => {
-    console.log('🔄 [exchangeCodeForTokens] Starting token exchange...');
     setIsAuthorizing(true);
     toast({ title: 'Authorization successful', description: 'Finalizing connection...' });
     try {
-        // Fix GraphQL validation error by using a properly formatted query
-        const userResponse = await execMondayQuery(`query { 
-          me { 
-            id
-            name
-            email
-          }
-        }`);
+        const userResponse = await execMondayQuery(`query { me { id } }`);
         const mondayUserId = userResponse?.data?.me?.id;
         if (!mondayUserId) {
             throw new Error('Could not retrieve Monday.com user to link account.');
         }
-        console.log('✅ [exchangeCodeForTokens] Got Monday User ID:', mondayUserId);
-
-        console.log('📤 [exchangeCodeForTokens] Calling google-oauth-exchange edge function...');
-        const { data, error } = await supabase.functions.invoke('google-oauth-exchange', {
+        
+        const { error } = await supabase.functions.invoke('google-oauth-exchange', {
             body: { code, monday_user_id: String(mondayUserId) }
         });
         
-        console.log('📥 [exchangeCodeForTokens] Edge function response:', { data, error });
-        
-        if (error) {
-            console.error('❌ [exchangeCodeForTokens] Edge function error:', error);
-            throw error;
-        }
+        if (error) throw error;
 
-        if (data?.error) {
-            console.error('❌ [exchangeCodeForTokens] Edge function returned error:', data.error);
-            throw new Error(data.error);
-        }
-
-        console.log('✅ [exchangeCodeForTokens] Token exchange successful!');
         toast({ title: 'Success!', description: 'Google Sheets connected successfully!' });
-        await checkConnection(); // Re-check connection to update UI
-    } catch (err: any) {
-        console.error('❌ [exchangeCodeForTokens] Failed:', err);
+        await checkConnection();
+    } catch (err: any)
+    {
         setConnectionError(err.message || 'Failed to finalize connection.');
         toast({
             title: 'Connection Error',
@@ -122,65 +90,29 @@ export function GoogleSheetsConnect() {
   useEffect(() => {
     checkConnection();
 
-    // Listener for messages from OAuth popup (robust in embedded/partitioned storage environments)
-    const handleMessage = (event: MessageEvent) => {
-      try {
-        if (event.origin !== window.location.origin) return; // security
-        const data: any = event.data;
-        if (!data || data.type !== 'google_oauth_result') return;
-        console.log('📨 [message] Received OAuth result from popup:', data);
-        const payload = data.payload;
-        if (payload?.type === 'success' && payload.code) {
-          exchangeCodeForTokens(payload.code);
-        } else if (payload?.type === 'error') {
-          setConnectionError(payload.error || 'Authorization failed in popup.');
-          toast({ title: 'Authorization Error', description: payload?.error || 'Authorization failed', variant: 'destructive' });
-        }
-      } catch (e) {
-        console.error('💥 [message] Handler error:', e);
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-
-    // Fallback: localStorage polling for environments where postMessage isn't available
     const handleOAuthResult = () => {
         const resultStr = localStorage.getItem('google_oauth_result');
         if (!resultStr) return;
 
-        console.log('🔔 [handleOAuthResult] Found OAuth result in localStorage:', resultStr);
-        localStorage.removeItem('google_oauth_result'); // Process only once
+        localStorage.removeItem('google_oauth_result');
 
         try {
             const result = JSON.parse(resultStr);
-            console.log('📦 [handleOAuthResult] Parsed result:', result);
-            
-            if (Date.now() - result.timestamp > 30000) {
-                console.log('⏰ [handleOAuthResult] Result too old, ignoring');
-                return; // Ignore old results
-            }
+            if (Date.now() - result.timestamp > 60000) return; // 1 minute expiry
 
             if (result.type === 'success' && result.code) {
-                console.log('✅ [handleOAuthResult] Success! Calling exchangeCodeForTokens...');
                 exchangeCodeForTokens(result.code);
             } else if (result.type === 'error') {
-                console.error('❌ [handleOAuthResult] Error result:', result.error);
                 throw new Error(result.error || 'Authorization failed in popup.');
             }
         } catch (err: any) {
-            console.error('💥 [handleOAuthResult] Error handling OAuth result:', err);
             setConnectionError(err.message);
             toast({ title: 'Authorization Error', description: err.message, variant: 'destructive' });
         }
     };
 
-    console.log('🔄 Starting localStorage polling...');
     const intervalId = setInterval(handleOAuthResult, 500);
-    return () => {
-        console.log('🛑 Cleaning up listeners');
-        window.removeEventListener('message', handleMessage);
-        clearInterval(intervalId);
-    };
+    return () => clearInterval(intervalId);
   }, [checkConnection, exchangeCodeForTokens, toast]);
 
 
@@ -195,7 +127,9 @@ export function GoogleSheetsConnect() {
       const { data, error } = await supabase.functions.invoke('get-google-client-id');
       if (error) throw error;
 
-      // Hardcode the exact redirect URI that matches what's registered in Google Cloud Console
+      // *** THIS IS THE FIX ***
+      // We hardcode the exact redirect URI that is registered in the Google Cloud Console.
+      // This prevents the iframe from creating a mismatched "monday.com" URL.
       const redirectUri = 'https://funny-otter-9faa67.netlify.app/google-oauth';
       
       console.log('🔗 [handleConnect] Using hardcoded redirect URI:', redirectUri);
@@ -208,9 +142,8 @@ export function GoogleSheetsConnect() {
         `response_type=code&` +
         `scope=${encodeURIComponent(scope)}&` +
         `access_type=offline&prompt=consent&` +
-        `state=${encodeURIComponent(mondayUserId)}`; // Pass mondayUserId in state
+        `state=${encodeURIComponent(mondayUserId)}`;
 
-      console.log('🚀 [handleConnect] Opening OAuth popup with URL:', authUrl.substring(0, 150) + '...');
       const popup = window.open(authUrl, 'google-oauth-popup', 'width=500,height=600');
       if (!popup) throw new Error('Popup blocked. Please allow popups for this site.');
 
@@ -225,89 +158,26 @@ export function GoogleSheetsConnect() {
     setIsLoading(true);
     setConnectionError(null);
     try {
-      const userResponse = await execMondayQuery(`query { 
-        me { 
-          id
-        }
-      }`);
+      const userResponse = await execMondayQuery(`query { me { id } }`);
       const mondayUserId = userResponse?.data?.me?.id;
       if (!mondayUserId) throw new Error('Could not get Monday.com user to disconnect.');
-
-      console.log('🔄 [handleDisconnect] Disconnecting Google Sheets for user:', mondayUserId);
       
-      // First, get the current credentials to revoke the token
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('google_sheets_credentials')
-        .eq('monday_user_id', String(mondayUserId));
-        
-      if (profileError) throw profileError;
-      
-      // Safely get the first profile from the returned array, even if multiple exist
-      const profileData = profiles?.[0];
-      
-      // If we have credentials, revoke the token
-      if (profileData?.google_sheets_credentials?.access_token) {
-        try {
-          console.log('🔄 [handleDisconnect] Revoking Google access token...');
-          
-          // Ensure proper token revocation by using the correct content type and format
-          const revokeResponse = await fetch('https://oauth2.googleapis.com/revoke', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: `token=${encodeURIComponent(profileData.google_sheets_credentials.access_token)}`
-          });
-          
-          if (revokeResponse.ok) {
-            console.log('✅ [handleDisconnect] Token revoked successfully');
-          } else {
-            const errorText = await revokeResponse.text();
-            console.warn('⚠️ [handleDisconnect] Token revocation failed:', errorText);
-            throw new Error(`Token revocation failed: ${errorText}`);
-          }
-        } catch (revokeErr: any) {
-          console.error('❌ [handleDisconnect] Token revocation error:', revokeErr);
-          // Don't continue with disconnection if token revocation fails
-          throw new Error(`Failed to revoke access: ${revokeErr.message}`);
-        }
-      } else {
-        console.warn('⚠️ [handleDisconnect] No access token found to revoke');
-      }
-      
-      // Create admin client that bypasses RLS
-      const supabaseAdmin = createClient(
-        import.meta.env.VITE_SUPABASE_URL,
-        import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY
-      );
-      
-      console.log('📤 [handleDisconnect] Using admin client to update profiles table for user:', mondayUserId);
-      
-      const { data, error } = await supabaseAdmin
+      // IMPORTANT: This requires setting up Row Level Security (RLS) in Supabase
+      // to ensure a user can only update their own profile.
+      const { error } = await supabase
         .from('profiles')
         .update({ google_sheets_credentials: null })
-        .eq('monday_user_id', String(mondayUserId))
-        .select(); // Add select() to see what was updated
-
-      console.log('📥 [handleDisconnect] Admin client update result:', { data, error });
+        .eq('monday_user_id', String(mondayUserId));
       
       if (error) throw error;
 
-      // Clear any stored OAuth state in localStorage to prevent reconnection
-      localStorage.removeItem('google_oauth_result');
-      localStorage.removeItem('google_sheets_connected');
-      
       toast({ 
         title: 'Disconnected', 
         description: 'Google Sheets has been disconnected successfully.' 
       });
       
-      // Set the state and trust the successful API call.
-      // The UI will now correctly show the disconnected state.
       setIsConnected(false);
     } catch (err: any) {
-      console.error('❌ [handleDisconnect] Failed:', err);
       setConnectionError(err.message || 'Failed to disconnect.');
       toast({ 
         title: 'Error', 
@@ -318,8 +188,10 @@ export function GoogleSheetsConnect() {
       setIsLoading(false);
     }
   };
-
-  const renderContent = () => {
+  
+  // The rest of your component's return statement (JSX) remains the same...
+  // ... (pasting the render logic for brevity)
+    const renderContent = () => {
     if (isLoading) {
       return <div className="flex items-center gap-2 text-gray-500"><RefreshCw className="h-5 w-5 animate-spin" /><span>Checking connection...</span></div>;
     }
@@ -356,7 +228,7 @@ export function GoogleSheetsConnect() {
       </div>
     );
   };
-  
+ 
   return (
     <Card className="w-full p-6 shadow-lg">
       <div className="flex flex-col items-center gap-6">
