@@ -111,8 +111,38 @@ export function GoogleSheetsConnect() {
         }
     };
 
+    // Add event listener for postMessage from popup window
+    const handlePostMessage = (event: MessageEvent) => {
+        console.log('📨 [GoogleSheetsConnect] Received postMessage:', event);
+        
+        // Accept messages from any origin since we're in an iframe
+        // Process the message data
+        if (event.data && event.data.type === 'google_oauth_result') {
+            const result = event.data.payload;
+            console.log('📨 [GoogleSheetsConnect] Processing OAuth result from postMessage:', result);
+            
+            if (result.type === 'success' && result.code) {
+                console.log('✅ [GoogleSheetsConnect] Success result from postMessage, exchanging code');
+                exchangeCodeForTokens(result.code);
+            } else if (result.type === 'error') {
+                console.log('❌ [GoogleSheetsConnect] Error result from postMessage:', result.error);
+                setConnectionError(result.error || 'Authorization failed in popup.');
+                toast({ 
+                    title: 'Authorization Error', 
+                    description: result.error || 'Authorization failed in popup.', 
+                    variant: 'destructive' 
+                });
+            }
+        }
+    };
+
+    window.addEventListener('message', handlePostMessage);
     const intervalId = setInterval(handleOAuthResult, 500);
-    return () => clearInterval(intervalId);
+    
+    return () => {
+        clearInterval(intervalId);
+        window.removeEventListener('message', handlePostMessage);
+    };
   }, [checkConnection, exchangeCodeForTokens, toast]);
 
 
@@ -144,8 +174,33 @@ export function GoogleSheetsConnect() {
         `access_type=offline&prompt=consent&` +
         `state=${encodeURIComponent(mondayUserId)}`;
 
+      // Set up message listener before opening popup
+      const messageHandler = (event: MessageEvent) => {
+        console.log('📩 [handleConnect] Received message:', event);
+        if (event.data && event.data.type === 'google_oauth_result') {
+          const result = event.data.payload;
+          if (result.type === 'success' && result.code) {
+            console.log('✅ [handleConnect] Success message received with code');
+            exchangeCodeForTokens(result.code);
+          }
+          // Remove the listener after receiving a message
+          window.removeEventListener('message', messageHandler);
+        }
+      };
+      
+      // Add the message listener
+      window.addEventListener('message', messageHandler);
+
       const popup = window.open(authUrl, 'google-oauth-popup', 'width=500,height=600');
-      if (!popup) throw new Error('Popup blocked. Please allow popups for this site.');
+      if (!popup) {
+        window.removeEventListener('message', messageHandler);
+        throw new Error('Popup blocked. Please allow popups for this site.');
+      }
+
+      // Set a timeout to remove the listener if no message is received
+      setTimeout(() => {
+        window.removeEventListener('message', messageHandler);
+      }, 300000); // 5 minutes timeout
 
     } catch (err: any) {
       setConnectionError(err.message || 'Failed to start connection.');
