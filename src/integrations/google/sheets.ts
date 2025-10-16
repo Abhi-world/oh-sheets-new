@@ -39,7 +39,7 @@ class GoogleSheetsService {
     const params = new URLSearchParams({
       client_id: this.config.clientId,
       redirect_uri: this.config.redirectUri,
-      scope: 'https://www.googleapis.com/auth/spreadsheets',
+      scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly',
       response_type: 'code',
       access_type: 'offline',
       prompt: 'consent'
