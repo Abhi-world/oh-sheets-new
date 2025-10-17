@@ -25,6 +25,30 @@ Deno.serve(async (req) => {
       console.error('❌ Missing required parameters:', { code: !!code, monday_user_id: !!monday_user_id });
       throw new Error('Authorization code and Monday User ID are required.');
     }
+    
+    // Create Supabase client for database operations
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+    
+    // Check if we already have valid credentials
+    const { data: existingProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('google_sheets_credentials')
+      .eq('monday_user_id', String(monday_user_id))
+      .single();
+    
+    if (existingProfile?.google_sheets_credentials?.access_token) {
+      const expiryDate = new Date(existingProfile.google_sheets_credentials.expiry_date);
+      if (expiryDate > new Date()) {
+        console.log('✅ Valid credentials already exist, skipping token exchange');
+        return new Response(JSON.stringify({ success: true, message: 'Already connected' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        });
+      }
+    }
  
     // **THE FIX: Hardcode the redirect URI to match your Google Cloud Console setting**
     const redirectUri = 'https://funny-otter-9faa67.netlify.app/google-oauth';
@@ -87,11 +111,6 @@ Deno.serve(async (req) => {
     };
  
     // Store the credentials in the 'profiles' table
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
- 
     // **CRITICAL FIX: Use UPSERT instead of UPDATE**
     // This will INSERT if the row doesn't exist, or UPDATE if it does
     const { error: dbError } = await supabaseAdmin
