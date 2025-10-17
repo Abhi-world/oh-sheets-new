@@ -33,21 +33,37 @@ Deno.serve(async (req) => {
     );
     
     // Check if we already have valid credentials
-    const { data: existingProfile } = await supabaseAdmin
+    console.log('🔍 Checking for existing credentials for Monday user:', monday_user_id);
+    
+    const { data: existingProfile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('google_sheets_credentials')
       .eq('monday_user_id', String(monday_user_id))
       .single();
     
+    if (profileError) {
+      console.log('⚠️ Error checking for existing profile:', profileError.message);
+    } else {
+      console.log('📋 Existing profile found:', !!existingProfile);
+    }
+    
     if (existingProfile?.google_sheets_credentials?.access_token) {
+      console.log('🔑 Found access token in profile');
       const expiryDate = new Date(existingProfile.google_sheets_credentials.expiry_date);
-      if (expiryDate > new Date()) {
+      const currentDate = new Date();
+      console.log('⏰ Token expiry check - Expiry:', expiryDate.toISOString(), 'Current:', currentDate.toISOString(), 'Valid:', expiryDate > currentDate);
+      
+      if (expiryDate > currentDate) {
         console.log('✅ Valid credentials already exist, skipping token exchange');
         return new Response(JSON.stringify({ success: true, message: 'Already connected' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200,
         });
+      } else {
+        console.log('⚠️ Credentials expired, proceeding with token exchange');
       }
+    } else {
+      console.log('⚠️ No valid credentials found, proceeding with token exchange');
     }
  
     // **THE FIX: Hardcode the redirect URI to match your Google Cloud Console setting**
