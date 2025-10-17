@@ -1,6 +1,6 @@
 // In src/components/GoogleSheetsConnect.tsx
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { createClient } from '@supabase/supabase-js'; // For admin client
@@ -64,7 +64,20 @@ export function GoogleSheetsConnect() {
     }
   }, [forceReconnect]);
 
+  // Create a ref to track if a token exchange is in progress
+  const isExchangingRef = useRef(false);
+  
   const exchangeCodeForTokens = useCallback(async (code: string) => {
+    // Prevent duplicate calls with a lock mechanism
+    if (isExchangingRef.current) {
+      console.log('🔒 [exchangeCodeForTokens] Token exchange already in progress, skipping duplicate call');
+      return;
+    }
+    
+    // Set the lock
+    isExchangingRef.current = true;
+    console.log('🔒 [exchangeCodeForTokens] Setting exchange lock, preventing duplicate calls');
+    
     setIsAuthorizing(true);
     toast({ title: 'Authorization successful', description: 'Finalizing connection...' });
     try {
@@ -74,6 +87,7 @@ export function GoogleSheetsConnect() {
             throw new Error('Could not retrieve Monday.com user to link account.');
         }
         
+        console.log('🔄 [exchangeCodeForTokens] Calling google-oauth-exchange function');
         const { error } = await supabase.functions.invoke('google-oauth-exchange', {
             body: { code, monday_user_id: String(mondayUserId) }
         });
@@ -92,6 +106,12 @@ export function GoogleSheetsConnect() {
         });
     } finally {
         setIsAuthorizing(false);
+        
+        // Release the lock after a delay to ensure any potential duplicate calls have been processed
+        setTimeout(() => {
+          isExchangingRef.current = false;
+          console.log('🔓 [exchangeCodeForTokens] Releasing exchange lock after delay');
+        }, 3000);
     }
   }, [checkConnection, toast]);
 
@@ -165,7 +185,6 @@ export function GoogleSheetsConnect() {
       const { data, error } = await supabase.functions.invoke('get-google-client-id');
       if (error) throw error;
 
-      // *** THIS IS THE FIX ***
       // We hardcode the exact redirect URI that is registered in the Google Cloud Console.
       // This prevents the iframe from creating a mismatched "monday.com" URL.
       const redirectUri = 'https://funny-otter-9faa67.netlify.app/google-oauth';
@@ -182,33 +201,12 @@ export function GoogleSheetsConnect() {
         `access_type=offline&prompt=consent&` +
         `state=${encodeURIComponent(mondayUserId)}`;
 
-      // Set up message listener before opening popup
-      const messageHandler = (event: MessageEvent) => {
-        console.log('📩 [handleConnect] Received message:', event);
-        if (event.data && event.data.type === 'google_oauth_result') {
-          const result = event.data.payload;
-          if (result.type === 'success' && result.code) {
-            console.log('✅ [handleConnect] Success message received with code');
-            exchangeCodeForTokens(result.code);
-          }
-          // Remove the listener after receiving a message
-          window.removeEventListener('message', messageHandler);
-        }
-      };
-      
-      // Add the message listener
-      window.addEventListener('message', messageHandler);
-
+      // Just open the popup - the useEffect listener will handle the response
+      console.log('🔍 [handleConnect] Opening popup, relying on useEffect listener for response');
       const popup = window.open(authUrl, 'google-oauth-popup', 'width=500,height=600');
       if (!popup) {
-        window.removeEventListener('message', messageHandler);
         throw new Error('Popup blocked. Please allow popups for this site.');
       }
-
-      // Set a timeout to remove the listener if no message is received
-      setTimeout(() => {
-        window.removeEventListener('message', messageHandler);
-      }, 300000); // 5 minutes timeout
 
     } catch (err: any) {
       setConnectionError(err.message || 'Failed to start connection.');
