@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGoogleSheets } from '@/hooks/useGoogleSheets';
+import { toast } from 'sonner';
 
 interface SpreadsheetSelectorProps {
   selectedSpreadsheet: string;
@@ -49,7 +50,25 @@ const SpreadsheetSelector = ({
   const handleOpenChange = (open: boolean) => {
     if (open) {
       console.log('Dropdown opened, fetching spreadsheets');
-      fetchSpreadsheets();
+      console.log('Network request to gs-list-spreadsheets will be triggered');
+      // Add a visual indicator that we're fetching
+      toast.info('Fetching spreadsheets...');
+      
+      // Force immediate fetch with no caching
+      fetchSpreadsheets()
+        .then(result => {
+          console.log('Fetch result:', result);
+          if (result && result.length > 0) {
+            toast.success(`Found ${result.length} spreadsheets`);
+          } else {
+            console.warn('No spreadsheets found or empty result');
+            toast.warning('No spreadsheets found. You may need to re-consent with Google.');
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching spreadsheets:', err);
+          toast.error('Failed to fetch spreadsheets. Check console for details.');
+        });
     }
   };
 

@@ -36,16 +36,22 @@ class GoogleSheetsService {
    * Generates the URL for OAuth2 authorization
    */
   getAuthUrl(): string {
-    const params = new URLSearchParams({
+    // Correct scopes (space-separated URLs, no Markdown formatting)
+    const scopes = [
+      "https://www.googleapis.com/auth/spreadsheets",
+      "https://www.googleapis.com/auth/drive.metadata.readonly"
+    ].join(" ");
+    
+    const p = new URLSearchParams({
       client_id: this.config.clientId,
-      redirect_uri: this.config.redirectUri,
-      scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.metadata.readonly https://www.googleapis.com/auth/drive',
+      redirect_uri: this.config.redirectUri, // must match Google Console exact URI
+      scope: scopes,
       response_type: 'code',
       access_type: 'offline',
       prompt: 'consent'
     });
 
-    return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+    return `https://accounts.google.com/o/oauth2/v2/auth?${p}`;
   }
 
   /**
@@ -238,8 +244,18 @@ class GoogleSheetsService {
         throw new Error('No access token available');
       }
 
+      // Stronger Drive query with shared drives support
+      const qs = new URLSearchParams({
+        q: "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false",
+        fields: "files(id,name)",
+        orderBy: "modifiedTime desc",
+        supportsAllDrives: "true",
+        includeItemsFromAllDrives: "true",
+        pageSize: "50"
+      });
+
       const response = await fetch(
-        "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'",
+        `https://www.googleapis.com/drive/v3/files?${qs}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,

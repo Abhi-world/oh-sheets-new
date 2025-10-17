@@ -138,8 +138,16 @@ Deno.serve(async (req) => {
       console.error('❌ Missing required scopes! User needs to reconnect with proper permissions');
     }
     
-    // Using the exact recommended query parameters
-    const driveApiUrl = "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet' and trashed=false&fields=files(id,name)&orderBy=modifiedTime desc&supportsAllDrives=true&includeItemsFromAllDrives=true&pageSize=50";
+    // Using the exact recommended query parameters with proper URL construction
+    const qs = new URLSearchParams({
+      q: "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false",
+      fields: "files(id,name)",
+      orderBy: "modifiedTime desc",
+      supportsAllDrives: "true",
+      includeItemsFromAllDrives: "true",
+      pageSize: "50"
+    });
+    const driveApiUrl = `https://www.googleapis.com/drive/v3/files?${qs}`;
     console.log('🔍 Drive API URL:', driveApiUrl);
     
     const response = await fetch(

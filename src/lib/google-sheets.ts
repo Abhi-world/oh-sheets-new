@@ -28,19 +28,23 @@ async function getMondayUserId(): Promise<string | null> {
  */
 export const fetchSpreadsheets = async (): Promise<SpreadsheetOption[]> => {
   try {
-    console.log('📋 Fetching spreadsheets...');
+    console.log('📋 Fetching spreadsheets from gs-list-spreadsheets...');
     const mondayUserId = await getMondayUserId();
     
     if (!mondayUserId) {
       console.error('Could not get Monday user ID');
+      toast.error('Could not identify your Monday.com account');
       return [];
     }
 
     console.log('👤 Using Monday User ID:', mondayUserId);
 
-    // Use gs-list-spreadsheets directly as it's more reliable
+    // Use gs-list-spreadsheets with explicit timestamp to prevent caching
     const response = await supabase.functions.invoke('gs-list-spreadsheets', {
-      body: { monday_user_id: mondayUserId },
+      body: { 
+        monday_user_id: mondayUserId,
+        _timestamp: Date.now() // Prevent caching
+      },
     });
     
     if (response.error) {
@@ -48,8 +52,15 @@ export const fetchSpreadsheets = async (): Promise<SpreadsheetOption[]> => {
       throw new Error(`Failed to fetch spreadsheets: ${response.error.message}`);
     }
     
+    // Log the raw response for debugging
+    console.log('Raw API response:', response);
+    
     const spreadsheets = response.data?.spreadsheets || [];
     console.log('Successfully fetched spreadsheets:', spreadsheets.length);
+    
+    if (spreadsheets.length === 0) {
+      console.warn('No spreadsheets found - may need to re-consent with correct scopes');
+    }
     
     // Return actual spreadsheets, even if empty
     return spreadsheets;

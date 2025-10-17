@@ -25,20 +25,20 @@ export const useGoogleSheets = () => {
   const fetchSpreadsheetsList = useCallback(async () => {
     if (!isGoogleConnected) {
       console.log('Google Sheets not connected, skipping fetch');
-      return;
+      return [];
     }
     
     try {
       setIsLoading(true);
-      console.log('Fetching spreadsheets from Google API');
+      console.log('Fetching spreadsheets from Google API via gs-list-spreadsheets');
       
       // Force real API call with no caching
       const spreadsheetsList = await fetchSpreadsheets();
       console.log('Fetched spreadsheets:', spreadsheetsList);
       
       if (!spreadsheetsList || spreadsheetsList.length === 0) {
-        console.warn('No spreadsheets returned from API');
-        toast.warning('No spreadsheets found in your Google Drive');
+        console.warn('No spreadsheets returned from API - may need to re-consent with correct scopes');
+        toast.warning('No spreadsheets found. You may need to re-consent with Google.');
       }
       
       setSpreadsheets(spreadsheetsList);
@@ -47,10 +47,13 @@ export const useGoogleSheets = () => {
       if (spreadsheetsList.length > 0 && !selectedSpreadsheet) {
         setSelectedSpreadsheet(spreadsheetsList[0].id);
       }
+      
+      return spreadsheetsList;
     } catch (error) {
       console.error('Error fetching spreadsheets:', error);
       toast.error('Failed to load spreadsheets. Please check your Google connection.');
       setSpreadsheets([]);
+      return [];
     } finally {
       setIsLoading(false);
     }
