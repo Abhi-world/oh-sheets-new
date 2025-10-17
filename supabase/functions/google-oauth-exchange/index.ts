@@ -92,14 +92,21 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
  
+    // **CRITICAL FIX: Use UPSERT instead of UPDATE**
+    // This will INSERT if the row doesn't exist, or UPDATE if it does
     const { error: dbError } = await supabaseAdmin
       .from('profiles')
-      .update({ google_sheets_credentials: credentials })
-      .eq('monday_user_id', String(monday_user_id));
+      .upsert({
+        monday_user_id: String(monday_user_id),
+        google_sheets_credentials: credentials,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'monday_user_id'
+      });
  
     if (dbError) {
-      console.error('❌ Database update error:', dbError);
-      throw new Error('Failed to save credentials to the database.');
+      console.error('❌ Database upsert error:', dbError);
+      throw new Error(`Failed to save credentials: ${dbError.message}`);
     }
  
     console.log(`✅ Credentials stored for Monday user: ${monday_user_id}`);
