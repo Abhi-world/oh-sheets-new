@@ -13,9 +13,16 @@ Deno.serve(async (req) => {
   }
  
   try {
-    const { code, monday_user_id } = await req.json();
+    // Log request details for debugging
+    console.log('[google-oauth-exchange] Request received');
+    
+    const requestData = await req.json();
+    console.log('[google-oauth-exchange] Request data:', JSON.stringify(requestData));
+    
+    const { code, monday_user_id } = requestData;
  
     if (!code || !monday_user_id) {
+      console.error('❌ Missing required parameters:', { code: !!code, monday_user_id: !!monday_user_id });
       throw new Error('Authorization code and Monday User ID are required.');
     }
  
@@ -23,6 +30,26 @@ Deno.serve(async (req) => {
     const redirectUri = 'https://funny-otter-9faa67.netlify.app/google-oauth';
  
     console.log('[google-oauth-exchange] Exchanging code for tokens with redirect_uri:', redirectUri);
+    
+    // Verify environment variables
+    const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
+    const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
+    
+    if (!clientId || !clientSecret) {
+      console.error('❌ Missing environment variables:', { 
+        clientId: !!clientId, 
+        clientSecret: !!clientSecret 
+      });
+      throw new Error('Google API credentials not configured properly.');
+    }
+    
+    // Log request parameters (without exposing secrets)
+    console.log('[google-oauth-exchange] Token request parameters:', {
+      code: code.substring(0, 10) + '...',
+      redirect_uri: redirectUri,
+      client_id_exists: !!clientId,
+      client_secret_exists: !!clientSecret
+    });
  
     // Exchange the code for tokens with Google
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
@@ -30,8 +57,8 @@ Deno.serve(async (req) => {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         code,
-        client_id: Deno.env.get('GOOGLE_CLIENT_ID')!,
-        client_secret: Deno.env.get('GOOGLE_CLIENT_SECRET')!,
+        client_id: clientId,
+        client_secret: clientSecret,
         redirect_uri: redirectUri,
         grant_type: 'authorization_code',
       }),
@@ -39,8 +66,12 @@ Deno.serve(async (req) => {
  
     if (!tokenResponse.ok) {
       const errorText = await tokenResponse.text();
-      console.error('❌ Google Token Exchange Failed:', errorText);
-      throw new Error(`Failed to exchange token with Google. Details: ${errorText}`);
+      console.error('❌ Google Token Exchange Failed:', {
+        status: tokenResponse.status,
+        statusText: tokenResponse.statusText,
+        errorDetails: errorText
+      });
+      throw new Error(`Failed to exchange token with Google. Status: ${tokenResponse.status}. Details: ${errorText}`);
     }
  
     const tokens = await tokenResponse.json();
