@@ -113,8 +113,12 @@ Deno.serve(async (req) => {
 
     // Fetch spreadsheets from Google Drive API
     console.log('📊 Fetching spreadsheets from Google Drive...');
+    // Using the exact recommended query parameters
+    const driveApiUrl = "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet' and trashed=false&fields=files(id,name)&orderBy=modifiedTime desc&supportsAllDrives=true&includeItemsFromAllDrives=true&pageSize=50";
+    console.log('🔍 Drive API URL:', driveApiUrl);
+    
     const response = await fetch(
-      "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet' and trashed=false&fields=files(id,name,owners(emailAddress))&orderBy=modifiedTime desc&supportsAllDrives=true&includeItemsFromAllDrives=true&pageSize=100",
+      driveApiUrl,
       {
         headers: { 'Authorization': `Bearer ${accessToken}`, 'Accept': 'application/json' },
       }
@@ -128,8 +132,9 @@ Deno.serve(async (req) => {
         const clientId = Deno.env.get('GOOGLE_CLIENT_ID')!;
         const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET')!;
         accessToken = await refreshGoogleToken(credentials.refresh_token, clientId, clientSecret);
+        // Use the same optimized query parameters for retry
         const retryResponse = await fetch(
-          "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet' and trashed=false&fields=files(id,name,owners(emailAddress))&orderBy=modifiedTime desc&supportsAllDrives=true&includeItemsFromAllDrives=true&pageSize=100",
+          driveApiUrl,
           { headers: { 'Authorization': `Bearer ${accessToken}`, 'Accept': 'application/json' } }
         );
         if (!retryResponse.ok) {
@@ -149,6 +154,9 @@ Deno.serve(async (req) => {
     }
 
     const data = await response.json();
+    // Log the raw response for debugging
+    console.log('📄 Raw Drive API response:', JSON.stringify(data));
+    
     const spreadsheets = (data.files || []).map((file: any) => ({
       id: file.id,
       name: file.name,
@@ -157,9 +165,35 @@ Deno.serve(async (req) => {
     }));
 
     console.log(`✅ Found ${spreadsheets.length} spreadsheets`);
+    
+    // Add explicit error message if no spreadsheets found
+    if (spreadsheets.length === 0) {
+      console.warn('⚠️ No spreadsheets found in the user\'s Google Drive');
+      return new Response(
+        JSON.stringify({ 
+          spreadsheets, 
+          options: spreadsheets, 
+          warning: "No spreadsheets found in your Google Drive. Please check your Google Drive permissions and ensure you have at least one spreadsheet."
+        }), 
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
     return new Response(JSON.stringify({ spreadsheets, options: spreadsheets }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error: any) {
     console.error('💥 Error:', error);
-    return new Response(JSON.stringify({ error: error.message || 'Internal server error' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    // Provide more detailed error information
+    return new Response(
+      JSON.stringify({ 
+        error: error.message || 'Internal server error',
+        errorDetails: {
+          type: error.name,
+          stack: error.stack,
+          code: error.code || 'UNKNOWN'
+        },
+        suggestion: "Please verify your Google Drive API is enabled and your token has the correct scopes (drive.readonly and spreadsheets.readonly)"
+      }), 
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 });

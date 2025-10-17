@@ -143,7 +143,11 @@ Deno.serve(async (req) => {
 
     // Fetch sheets from Google Sheets API
     console.log('📑 Fetching sheets from Google Sheets API...');
-    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheet_id}`, {
+    // Using the recommended fields parameter
+    const sheetsApiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheet_id}?fields=sheets.properties(sheetId,title)`;
+    console.log('🔍 Sheets API URL:', sheetsApiUrl);
+    
+    const response = await fetch(sheetsApiUrl, {
       headers: { 'Authorization': `Bearer ${accessToken}`, 'Accept': 'application/json' },
     });
 
@@ -155,7 +159,8 @@ Deno.serve(async (req) => {
         const clientId = Deno.env.get('GOOGLE_CLIENT_ID')!;
         const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET')!;
         accessToken = await refreshGoogleToken(credentials.refresh_token, clientId, clientSecret);
-        const retryResponse = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheet_id}`, {
+        console.log('🔄 Retrying with refreshed token...');
+        const retryResponse = await fetch(sheetsApiUrl, {
           headers: { 'Authorization': `Bearer ${accessToken}`, 'Accept': 'application/json' },
         });
         if (!retryResponse.ok) {
@@ -175,6 +180,8 @@ Deno.serve(async (req) => {
     }
 
     const data = await response.json();
+    console.log('📊 Raw Sheets API response:', JSON.stringify(data).substring(0, 500) + '...');
+    
     const sheets = (data.sheets || []).map((sheet: any) => ({
       id: String(sheet.properties.sheetId),
       name: sheet.properties.title,
@@ -183,9 +190,32 @@ Deno.serve(async (req) => {
     }));
 
     console.log(`✅ Found ${sheets.length} sheets`);
+    
+    if (sheets.length === 0) {
+      console.warn('⚠️ No sheets found in the spreadsheet. This may indicate an issue with permissions or the spreadsheet structure.');
+      return new Response(JSON.stringify({ 
+        sheets, 
+        options: sheets, 
+        warning: 'No sheets found in this spreadsheet. Please verify the spreadsheet contains at least one sheet and you have sufficient permissions.'
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    
     return new Response(JSON.stringify({ sheets, options: sheets }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error: any) {
     console.error('💥 Error:', error);
-    return new Response(JSON.stringify({ error: error.message || 'Internal server error' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    console.error('Error details:', {
+      type: error.constructor.name,
+      stack: error.stack,
+      code: error.code,
+      message: error.message
+    });
+    
+    return new Response(JSON.stringify({ 
+      error: error.message || 'Internal server error',
+      suggestion: 'Please verify that the Google Sheets API is enabled in your Google Cloud project and your token has the spreadsheets.readonly scope.'
+    }), { 
+      status: 500, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
   }
 });
