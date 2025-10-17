@@ -14,6 +14,9 @@ interface SheetOption {
 }
 
 export const useGoogleSheets = () => {
+  // Add debug log at the very top
+  console.log('🔧 [useGoogleSheets] Hook initialized');
+  
   // Initialize with empty arrays to ensure we fetch real data
   const [spreadsheets, setSpreadsheets] = useState<SpreadsheetOption[]>([]);
   const [sheets, setSheets] = useState<SheetOption[]>([]);
@@ -22,44 +25,50 @@ export const useGoogleSheets = () => {
   const [selectedSheet, setSelectedSheet] = useState('');
   const { isConnected: isGoogleConnected } = useGoogleSheetsStatus();
 
+  // Add debug log for connection status
+  console.log('🔌 [useGoogleSheets] isGoogleConnected:', isGoogleConnected);
+
   const fetchSpreadsheetsList = useCallback(async () => {
+    console.log('🚀 [useGoogleSheets] fetchSpreadsheetsList called');
+    console.log('🚀 [useGoogleSheets] isGoogleConnected:', isGoogleConnected);
+    
     if (!isGoogleConnected) {
-      console.log('Google Sheets not connected, skipping fetch');
+      console.log('❌ [useGoogleSheets] Google Sheets not connected, skipping fetch');
       return [];
     }
     
     try {
       setIsLoading(true);
-      console.log('Fetching spreadsheets from Google API via gs-list-spreadsheets');
+      console.log('📋 [useGoogleSheets] Fetching spreadsheets from Google API via gs-list-spreadsheets');
       
       // Force real API call with no caching
       const spreadsheetsList = await fetchSpreadsheets();
-      console.log('DEBUG: Raw spreadsheets response:', JSON.stringify(spreadsheetsList));
+      console.log('🔍 [useGoogleSheets] Raw spreadsheets response:', JSON.stringify(spreadsheetsList));
       
       if (!spreadsheetsList || spreadsheetsList.length === 0) {
-        console.warn('No spreadsheets returned from API - may need to re-consent with correct scopes');
+        console.warn('⚠️ [useGoogleSheets] No spreadsheets returned from API - may need to re-consent with correct scopes');
         toast.warning('No spreadsheets found. You may need to re-consent with Google.');
       }
       
       // Ensure we're getting the expected data structure
       if (Array.isArray(spreadsheetsList)) {
-        console.log(`DEBUG: Found ${spreadsheetsList.length} spreadsheets with correct array structure`);
+        console.log(`✅ [useGoogleSheets] Found ${spreadsheetsList.length} spreadsheets with correct array structure`);
         setSpreadsheets(spreadsheetsList);
         
         // If we have spreadsheets but none selected, select the first one
         if (spreadsheetsList.length > 0 && !selectedSpreadsheet) {
-          console.log('DEBUG: Auto-selecting first spreadsheet:', spreadsheetsList[0]);
+          console.log('📌 [useGoogleSheets] Auto-selecting first spreadsheet:', spreadsheetsList[0]);
           setSelectedSpreadsheet(spreadsheetsList[0].id);
         }
       } else {
-        console.error('DEBUG: Spreadsheets response is not an array:', typeof spreadsheetsList);
+        console.error('❌ [useGoogleSheets] Spreadsheets response is not an array:', typeof spreadsheetsList);
         toast.error('Invalid spreadsheet data format received');
         setSpreadsheets([]);
       }
       
       return spreadsheetsList;
     } catch (error) {
-      console.error('Error fetching spreadsheets:', error);
+      console.error('❌ [useGoogleSheets] Error fetching spreadsheets:', error);
       toast.error('Failed to load spreadsheets. Please check your Google connection.');
       setSpreadsheets([]);
       return [];
@@ -102,24 +111,22 @@ export const useGoogleSheets = () => {
     }
   }, [isGoogleConnected, selectedSheet]);
 
-  // Auto-fetch spreadsheets when Google is connected
+  // Add useEffect to force fetch spreadsheets on hook initialization
   useEffect(() => {
+    console.log('🔄 [useGoogleSheets] useEffect triggered - checking connection status');
     if (isGoogleConnected) {
-      console.log('Google connected, fetching spreadsheets automatically');
+      console.log('🔄 [useGoogleSheets] Google connected, triggering initial fetch');
       fetchSpreadsheetsList();
+    } else {
+      console.log('⚠️ [useGoogleSheets] Google not connected on initial load');
     }
   }, [isGoogleConnected, fetchSpreadsheetsList]);
-  
-  // Force fetch on component mount to ensure data is always available
-  useEffect(() => {
-    if (isGoogleConnected) {
-      console.log('Component mounted, forcing spreadsheet fetch');
-      // Add a slight delay to ensure proper loading
-      setTimeout(() => {
-        fetchSpreadsheetsList();
-      }, 300);
-    }
-  }, [isGoogleConnected]);
+
+  // Force fetch spreadsheets (exposed for components to call)
+  const fetchSpreadsheets = useCallback(async () => {
+    console.log('🔄 [useGoogleSheets] fetchSpreadsheets called directly');
+    return fetchSpreadsheetsList();
+  }, [fetchSpreadsheetsList]);
 
   // Fetch sheets when spreadsheet is selected
   useEffect(() => {
