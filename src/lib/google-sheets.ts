@@ -55,7 +55,27 @@ export const fetchSpreadsheets = async (): Promise<SpreadsheetOption[]> => {
     // Log the raw response for debugging
     console.log('Raw API response:', response);
     
-    const spreadsheets = response.data?.spreadsheets || [];
+    // Check if response.data exists and has the expected structure
+    if (!response.data) {
+      console.error('Invalid response format: missing data property', response);
+      toast.error('Invalid response from Google Sheets API');
+      return [];
+    }
+    
+    // Handle both possible response formats - direct array or nested under spreadsheets
+    let spreadsheets = [];
+    if (Array.isArray(response.data)) {
+      console.log('Response data is an array, using directly');
+      spreadsheets = response.data;
+    } else if (response.data.spreadsheets && Array.isArray(response.data.spreadsheets)) {
+      console.log('Response data has spreadsheets property, using that');
+      spreadsheets = response.data.spreadsheets;
+    } else {
+      console.error('Unexpected response format:', response.data);
+      toast.error('Unexpected data format from Google Sheets API');
+      return [];
+    }
+    
     console.log('Successfully fetched spreadsheets:', spreadsheets.length);
     
     if (spreadsheets.length === 0) {

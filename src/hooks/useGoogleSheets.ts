@@ -34,18 +34,27 @@ export const useGoogleSheets = () => {
       
       // Force real API call with no caching
       const spreadsheetsList = await fetchSpreadsheets();
-      console.log('Fetched spreadsheets:', spreadsheetsList);
+      console.log('DEBUG: Raw spreadsheets response:', JSON.stringify(spreadsheetsList));
       
       if (!spreadsheetsList || spreadsheetsList.length === 0) {
         console.warn('No spreadsheets returned from API - may need to re-consent with correct scopes');
         toast.warning('No spreadsheets found. You may need to re-consent with Google.');
       }
       
-      setSpreadsheets(spreadsheetsList);
-      
-      // If we have spreadsheets but none selected, select the first one
-      if (spreadsheetsList.length > 0 && !selectedSpreadsheet) {
-        setSelectedSpreadsheet(spreadsheetsList[0].id);
+      // Ensure we're getting the expected data structure
+      if (Array.isArray(spreadsheetsList)) {
+        console.log(`DEBUG: Found ${spreadsheetsList.length} spreadsheets with correct array structure`);
+        setSpreadsheets(spreadsheetsList);
+        
+        // If we have spreadsheets but none selected, select the first one
+        if (spreadsheetsList.length > 0 && !selectedSpreadsheet) {
+          console.log('DEBUG: Auto-selecting first spreadsheet:', spreadsheetsList[0]);
+          setSelectedSpreadsheet(spreadsheetsList[0].id);
+        }
+      } else {
+        console.error('DEBUG: Spreadsheets response is not an array:', typeof spreadsheetsList);
+        toast.error('Invalid spreadsheet data format received');
+        setSpreadsheets([]);
       }
       
       return spreadsheetsList;
