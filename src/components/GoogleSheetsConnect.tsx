@@ -17,6 +17,7 @@ export function GoogleSheetsConnect() {
   const [isLoading, setIsLoading] = useState(true);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
+  const [forceReconnect, setForceReconnect] = useState(false);
   const { toast } = useToast();
 
   const checkConnection = useCallback(async () => {
@@ -34,6 +35,13 @@ export function GoogleSheetsConnect() {
 
       if (!mondayUserId) {
         throw new Error('Could not retrieve Monday.com user information.');
+      }
+      
+      // If force reconnect is enabled, skip the connection check
+      if (forceReconnect) {
+        setIsConnected(false);
+        setForceReconnect(false);
+        return;
       }
       
       const { data, error } = await supabase.functions.invoke('check-google-connection', {
@@ -54,7 +62,7 @@ export function GoogleSheetsConnect() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [forceReconnect]);
 
   const exchangeCodeForTokens = useCallback(async (code: string) => {
     setIsAuthorizing(true);
@@ -164,7 +172,7 @@ export function GoogleSheetsConnect() {
       
       console.log('🔗 [handleConnect] Using hardcoded redirect URI:', redirectUri);
       
-      const scope = "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly";
+      const scope = "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.metadata.readonly";
       
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
         `client_id=${data.clientId}&` +
@@ -242,6 +250,59 @@ export function GoogleSheetsConnect() {
     }
   };
   
+  const handleForceReconnect = async () => {
+    setIsLoading(true);
+    setConnectionError(null);
+    try {
+      const userResponse = await execMondayQuery(`query { me { id } }`);
+      const mondayUserId = userResponse?.data?.me?.id;
+      if (!mondayUserId) throw new Error('Could not get Monday.com user to force reconnect.');
+      
+      // First, disconnect from Google Sheets to clear the token
+      const { error: disconnectError } = await supabase.functions.invoke('disconnect-google-sheets', {
+        body: { monday_user_id: String(mondayUserId) }
+      });
+      
+      if (disconnectError) throw disconnectError;
+      
+      // Execute SQL to ensure the token is removed from the database
+      const { error: sqlError } = await supabase.functions.invoke('force-clear-google-tokens', {
+        body: { monday_user_id: String(mondayUserId) }
+      });
+      
+      // Even if the SQL function doesn't exist, we continue with the flow
+      // as the disconnect should have cleared the token
+      
+      // Clear any local storage tokens
+      localStorage.removeItem('google_sheets_tokens');
+      localStorage.removeItem('google_oauth_result');
+      
+      toast({ 
+        title: 'Connection Reset', 
+        description: 'Google Sheets connection has been reset. Please reconnect.' 
+      });
+      
+      // Set connected to false to show the connect button
+      setIsConnected(false);
+      
+      // Refresh the connection status
+      await checkConnection();
+      
+    } catch (err: any) {
+      console.error('Force reconnect error:', err);
+      // Even if there's an error, we want to force the reconnect UI to show
+      setIsConnected(false);
+      setConnectionError('Connection reset. Please reconnect to Google Sheets.');
+      toast({ 
+        title: 'Connection Reset', 
+        description: 'Please reconnect to Google Sheets to fix any issues.', 
+        variant: 'default' 
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   // The rest of your component's return statement (JSX) remains the same...
   // ... (pasting the render logic for brevity)
     const renderContent = () => {
@@ -261,13 +322,23 @@ export function GoogleSheetsConnect() {
             </Button>
             <Button onClick={checkConnection} variant="outline" className="flex items-center gap-2"><RefreshCw className="h-4 w-4" />Refresh</Button>
           </div>
-          <div className="mt-4">
+          <div className="mt-4 flex flex-col gap-2">
             <Button 
               onClick={handleDisconnect} 
               variant="outline" 
               className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
             >
               Disconnect Google Sheets
+            </Button>
+            <Button 
+              onClick={() => {
+                setForceReconnect(true);
+                handleForceReconnect();
+              }} 
+              variant="outline" 
+              className="text-amber-500 border-amber-200 hover:bg-amber-50 hover:text-amber-600"
+            >
+              Force Reconnect (Fix Connection Issues)
             </Button>
           </div>
         </div>
