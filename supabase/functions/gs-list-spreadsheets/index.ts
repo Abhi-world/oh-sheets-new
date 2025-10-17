@@ -113,6 +113,31 @@ Deno.serve(async (req) => {
 
     // Fetch spreadsheets from Google Drive API
     console.log('📊 Fetching spreadsheets from Google Drive...');
+    
+    // Check token scopes to verify permissions
+    console.log('🔑 Checking token scopes...');
+    const tokenInfoResponse = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`);
+    const tokenInfo = await tokenInfoResponse.json();
+    console.log('🔐 Token scopes:', tokenInfo.scope);
+    
+    // Verify required scopes are present
+    const hasReadOnlyScope = tokenInfo.scope && (
+      tokenInfo.scope.includes('https://www.googleapis.com/auth/drive.readonly') || 
+      tokenInfo.scope.includes('https://www.googleapis.com/auth/drive.metadata.readonly') ||
+      tokenInfo.scope.includes('https://www.googleapis.com/auth/drive')
+    );
+    const hasSheetsReadOnlyScope = tokenInfo.scope && (
+      tokenInfo.scope.includes('https://www.googleapis.com/auth/spreadsheets.readonly') ||
+      tokenInfo.scope.includes('https://www.googleapis.com/auth/spreadsheets')
+    );
+    
+    console.log('✅ Has Drive readonly scope:', hasReadOnlyScope);
+    console.log('✅ Has Sheets readonly scope:', hasSheetsReadOnlyScope);
+    
+    if (!hasReadOnlyScope || !hasSheetsReadOnlyScope) {
+      console.error('❌ Missing required scopes! User needs to reconnect with proper permissions');
+    }
+    
     // Using the exact recommended query parameters
     const driveApiUrl = "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet' and trashed=false&fields=files(id,name)&orderBy=modifiedTime desc&supportsAllDrives=true&includeItemsFromAllDrives=true&pageSize=50";
     console.log('🔍 Drive API URL:', driveApiUrl);
