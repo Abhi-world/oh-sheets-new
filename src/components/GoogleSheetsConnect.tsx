@@ -217,12 +217,10 @@ export function GoogleSheetsConnect() {
       const mondayUserId = userResponse?.data?.me?.id;
       if (!mondayUserId) throw new Error('Could not get Monday.com user to disconnect.');
       
-      // IMPORTANT: This requires setting up Row Level Security (RLS) in Supabase
-      // to ensure a user can only update their own profile.
-      const { error } = await supabase
-        .from('profiles')
-        .update({ google_sheets_credentials: null })
-        .eq('monday_user_id', String(mondayUserId));
+      // Call the Supabase edge function to disconnect Google Sheets
+      const { error } = await supabase.functions.invoke('disconnect-google-sheets', {
+        body: { monday_user_id: String(mondayUserId) }
+      });
       
       if (error) throw error;
 

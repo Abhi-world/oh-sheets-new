@@ -81,7 +81,7 @@ export async function fetchSheets(spreadsheetId: string) {
 
     console.log('👤 Using Monday User ID:', mondayUserId);
 
-    const { data, error } = await supabase.functions.invoke('list-google-sheets', {
+    const { data, error } = await supabase.functions.invoke('gs-list-sheets', {
       body: { 
         monday_user_id: mondayUserId,
         spreadsheet_id: spreadsheetId 
