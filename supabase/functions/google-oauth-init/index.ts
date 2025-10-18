@@ -38,8 +38,8 @@ Deno.serve(async (req) => {
     const scopes = [
       'https://www.googleapis.com/auth/userinfo.profile',
       'https://www.googleapis.com/auth/userinfo.email',
-      'https://www.googleapis.com/auth/drive.readonly',
-      'https://www.googleapis.com/auth/spreadsheets.readonly'
+      'https://www.googleapis.com/auth/drive.readonly',        // CHANGED: full read, not just metadata
+      'https://www.googleapis.com/auth/spreadsheets.readonly'  // CHANGED: read-only, not full write
     ];
     
     // Build the OAuth URL
@@ -49,10 +49,15 @@ Deno.serve(async (req) => {
     authUrl.searchParams.append('response_type', 'code');
     authUrl.searchParams.append('scope', scopes.join(' '));
     authUrl.searchParams.append('access_type', 'offline');
+    authUrl.searchParams.append('include_granted_scopes', 'true');
+    authUrl.searchParams.append('approval_prompt', 'force'); // For older OAuth clients
     
     // Force consent if requested (important for re-consent with new scopes)
     if (force_consent) {
       authUrl.searchParams.append('prompt', 'consent');
+    } else {
+      // Even on normal connect, request consent if incremental auth might miss new scopes
+      authUrl.searchParams.append('prompt', 'select_account consent');
     }
     
     // Add state parameter with Monday user ID

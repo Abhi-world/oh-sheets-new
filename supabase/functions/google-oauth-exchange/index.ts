@@ -114,16 +114,24 @@ Deno.serve(async (req) => {
       throw new Error(`Failed to exchange token with Google. Status: ${tokenResponse.status}. Details: ${errorText}`);
     }
  
-    const tokens = await tokenResponse.json();
+    const tokenData = await tokenResponse.json();
     console.log('✅ Tokens received from Google successfully.');
- 
+    console.log('[google-oauth-exchange] ✅ Granted scopes:', tokenData.scope);
+    console.log('[google-oauth-exchange] ✅ Refresh token present:', !!tokenData.refresh_token);
+    
+    // Validate that required scopes were granted
+    if (!tokenData.scope.includes('drive.readonly')) {
+      console.error('[google-oauth-exchange] ❌ drive.readonly scope NOT granted!');
+      throw new Error('Required Drive scope was not granted. Please re-consent in GCP settings.');
+    }
+    
     // Prepare credentials to be stored in the database
-    const expiryIso = new Date(Date.now() + (tokens.expires_in ?? 3600) * 1000).toISOString();
+    const expiryIso = new Date(Date.now() + (tokenData.expires_in ?? 3600) * 1000).toISOString();
     const credentials = {
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
+      access_token: tokenData.access_token,
+      refresh_token: tokenData.refresh_token,
       expiry_date: expiryIso,
-      scope: tokens.scope,
+      scope: tokenData.scope,
     };
  
     // Store the credentials in the 'profiles' table

@@ -73,8 +73,10 @@ export function GoogleSheetsConnect() {
             console.log('✅ Spreadsheets found:', sheetsData.spreadsheets.length);
             setNoSpreadsheetsFound(false);
           }
-        } catch (sheetsErr) {
-          console.error('❌ Error checking spreadsheets:', sheetsErr);
+        } catch (sheetsErr: any) {
+          console.error('❌ Sheets fetch error details:', sheetsErr);
+          setConnectionError(`Fetch failed: ${sheetsErr.message}`);
+          setNoSpreadsheetsFound(true);
           // Don't throw here, we still want to show connected state
         }
       } else {
@@ -276,20 +278,31 @@ export function GoogleSheetsConnect() {
       const mondayUserId = userResponse?.data?.me?.id;
       if (!mondayUserId) throw new Error('Could not get Monday.com user to force reconnect.');
       
+      console.log('🔄 [handleForceReconnect] Starting force reconnect process for user:', mondayUserId);
+      
       // First, disconnect from Google Sheets to clear the token
       const { error: disconnectError } = await supabase.functions.invoke('disconnect-google-sheets', {
         body: { monday_user_id: String(mondayUserId) }
       });
       
-      if (disconnectError) throw disconnectError;
+      if (disconnectError) {
+        console.error('❌ [handleForceReconnect] Error disconnecting:', disconnectError);
+        throw disconnectError;
+      }
+      
+      console.log('✅ [handleForceReconnect] Successfully disconnected Google Sheets');
       
       // Execute SQL to ensure the token is removed from the database
       const { error: sqlError } = await supabase.functions.invoke('force-clear-google-tokens', {
         body: { monday_user_id: String(mondayUserId) }
       });
       
-      // Even if the SQL function doesn't exist, we continue with the flow
-      // as the disconnect should have cleared the token
+      if (sqlError) {
+        console.warn('⚠️ [handleForceReconnect] Error clearing tokens:', sqlError);
+        // Continue anyway as the disconnect should have cleared the token
+      } else {
+        console.log('✅ [handleForceReconnect] Successfully cleared tokens from database');
+      }
       
       // Clear any local storage tokens
       localStorage.removeItem('google_sheets_tokens');
@@ -297,17 +310,19 @@ export function GoogleSheetsConnect() {
       
       toast({ 
         title: 'Connection Reset', 
-        description: 'Google Sheets connection has been reset. Please reconnect.' 
+        description: 'Google Sheets connection has been reset. Now reconnecting with correct permissions...' 
       });
       
       // Set connected to false to show the connect button
       setIsConnected(false);
       
-      // Refresh the connection status
-      await checkConnection();
+      // Immediately start the OAuth flow with force_consent=true to ensure new scopes are requested
+      setTimeout(() => {
+        handleConnect(true); // Pass true to force consent with new scopes
+      }, 1000); // Short delay to allow UI to update
       
     } catch (err: any) {
-      console.error('Force reconnect error:', err);
+      console.error('❌ [handleForceReconnect] Force reconnect error:', err);
       // Even if there's an error, we want to force the reconnect UI to show
       setIsConnected(false);
       setConnectionError('Connection reset. Please reconnect to Google Sheets.');
