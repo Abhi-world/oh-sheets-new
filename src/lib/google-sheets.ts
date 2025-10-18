@@ -98,10 +98,14 @@ export const fetchSpreadsheets = async (): Promise<SpreadsheetOption[]> => {
     
     // Return actual spreadsheets, even if empty
     return spreadsheets;
-  } catch (error) {
-    console.error('Error in fetchSpreadsheets:', error);
-    // Return empty array on error instead of mock data
-    toast.error('Failed to fetch spreadsheets. Please check your Google connection.');
+  } catch (error: any) {
+    console.error('❌ Sheets fetch error details:', error);
+    // Provide more detailed error message
+    toast.error(`Failed to fetch spreadsheets: ${error.message || 'Unknown error'}`);
+    // Log the full error for debugging
+    if (error.response) {
+      console.error('Response error:', error.response);
+    }
     return [];
   }
 }
