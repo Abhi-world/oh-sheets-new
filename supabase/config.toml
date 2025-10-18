@@ -33,3 +33,6 @@ verify_jwt = false
 
 [functions.disconnect-google-sheets]
 verify_jwt = false
+
+[functions.google-oauth-init]
+verify_jwt = false

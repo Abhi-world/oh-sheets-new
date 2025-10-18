@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Info, RefreshCw, CheckCircle, ArrowRight } from 'lucide-react';
+import { Info, RefreshCw, CheckCircle, ArrowRight, AlertTriangle } from 'lucide-react';
 import { isEmbeddedMode, execMondayQuery } from '@/utils/mondaySDK';
 
 export function GoogleSheetsConnect() {
@@ -18,12 +18,15 @@ export function GoogleSheetsConnect() {
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
   const [forceReconnect, setForceReconnect] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
+  const [noSpreadsheetsFound, setNoSpreadsheetsFound] = useState(false);
   const { toast } = useToast();
 
   const checkConnection = useCallback(async () => {
     console.log('🔄 [checkConnection] Starting...');
     setIsLoading(true);
     setConnectionError(null);
+    setNoSpreadsheetsFound(false);
 
     try {
       if (!isEmbeddedMode()) {
@@ -52,6 +55,28 @@ export function GoogleSheetsConnect() {
 
       if (data?.connected) {
         setIsConnected(true);
+        
+        // Check if we can fetch spreadsheets to verify OAuth scopes
+        try {
+          console.log('🔍 Checking if spreadsheets can be fetched...');
+          const { data: sheetsData, error: sheetsError } = await supabase.functions.invoke('gs-list-spreadsheets', {
+            body: { monday_user_id: String(mondayUserId) }
+          });
+          
+          if (sheetsError) throw sheetsError;
+          
+          // If no spreadsheets are returned, it might be an OAuth scope issue
+          if (!sheetsData?.spreadsheets || sheetsData.spreadsheets.length === 0) {
+            console.log('⚠️ No spreadsheets found - likely an OAuth scope issue');
+            setNoSpreadsheetsFound(true);
+          } else {
+            console.log('✅ Spreadsheets found:', sheetsData.spreadsheets.length);
+            setNoSpreadsheetsFound(false);
+          }
+        } catch (sheetsErr) {
+          console.error('❌ Error checking spreadsheets:', sheetsErr);
+          // Don't throw here, we still want to show connected state
+        }
       } else {
         setIsConnected(false);
       }
@@ -174,7 +199,7 @@ export function GoogleSheetsConnect() {
   }, [checkConnection, exchangeCodeForTokens, toast]);
 
 
-  const handleConnect = async () => {
+  const handleConnect = async (forceConsent = false) => {
     setIsLoading(true);
     setConnectionError(null);
     try {
@@ -182,24 +207,19 @@ export function GoogleSheetsConnect() {
       const mondayUserId = userResponse?.data?.me?.id;
       if (!mondayUserId) throw new Error('Could not get Monday.com user to initiate connection.');
 
-      const { data, error } = await supabase.functions.invoke('get-google-client-id');
+      // Use the new google-oauth-init Edge Function to get the auth URL with correct scopes
+      const { data, error } = await supabase.functions.invoke('google-oauth-init', {
+        body: { 
+          monday_user_id: String(mondayUserId),
+          force_consent: forceConsent 
+        }
+      });
+      
       if (error) throw error;
-
-      // We hardcode the exact redirect URI that is registered in the Google Cloud Console.
-      // This prevents the iframe from creating a mismatched "monday.com" URL.
-      const redirectUri = 'https://funny-otter-9faa67.netlify.app/google-oauth';
+      if (!data?.url) throw new Error('Failed to generate OAuth URL');
       
-      console.log('🔗 [handleConnect] Using hardcoded redirect URI:', redirectUri);
-      
-      const scope = "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly";
-      
-      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
-        `client_id=${data.clientId}&` +
-        `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-        `response_type=code&` +
-        `scope=${encodeURIComponent(scope)}&` +
-        `access_type=offline&prompt=consent&` +
-        `state=${encodeURIComponent(mondayUserId)}`;
+      const authUrl = data.url;
+      console.log('🔗 [handleConnect] Using OAuth URL from Edge Function with force_consent:', forceConsent);
 
       // Just open the popup - the useEffect listener will handle the response
       console.log('🔍 [handleConnect] Opening popup, relying on useEffect listener for response');
@@ -301,6 +321,39 @@ export function GoogleSheetsConnect() {
     }
   };
   
+  // New function to handle reconnecting with proper scopes
+  const reconnectGoogle = async () => {
+    setIsReconnecting(true);
+    
+    try {
+      // Step 1: Get Monday user ID
+      const userResponse = await execMondayQuery(`query { me { id } }`);
+      const mondayUserId = userResponse?.data?.me?.id;
+      if (!mondayUserId) throw new Error('Could not get Monday.com user to reconnect.');
+      
+      // Step 2: Clear existing credentials
+      const { error } = await supabase.functions.invoke('disconnect-google-sheets', {
+        body: { monday_user_id: String(mondayUserId) }
+      });
+      
+      if (error) throw error;
+      
+      toast({ 
+        title: 'Disconnected', 
+        description: 'Now reconnecting with full permissions...' 
+      });
+      
+      // Step 3: Start new OAuth flow with force_consent=true
+      await handleConnect(true);
+    } catch (err: any) {
+      console.error('Reconnection error:', err);
+      toast.error('Failed to reconnect Google account');
+      setConnectionError(err.message || 'Failed to reconnect Google account');
+    } finally {
+      setIsReconnecting(false);
+    }
+  };
+  
   // The rest of your component's return statement (JSX) remains the same...
   // ... (pasting the render logic for brevity)
     const renderContent = () => {
@@ -314,6 +367,25 @@ export function GoogleSheetsConnect() {
       return (
         <div className="flex flex-col items-center gap-4 w-full">
           <div className="flex items-center gap-2 text-green-600 text-lg font-medium"><CheckCircle className="h-6 w-6" /><span>Connected to Google Sheets</span></div>
+          
+          {/* Add warning banner for OAuth scope issues */}
+          {noSpreadsheetsFound && (
+            <Alert variant="warning" className="bg-amber-50 border-amber-200 w-full">
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <AlertTitle className="text-amber-800">No Spreadsheets Found</AlertTitle>
+              <AlertDescription className="text-amber-700">
+                <p className="mb-2">Your Google account may need additional permissions to access spreadsheets.</p>
+                <Button 
+                  onClick={reconnectGoogle} 
+                  disabled={isReconnecting}
+                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                >
+                  {isReconnecting ? 'Reconnecting...' : 'Reconnect with Full Permissions'}
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <div className="flex items-center gap-2">
             <Button onClick={() => navigate('/')} className="flex items-center gap-2">
               Continue to Recipes <ArrowRight className="h-4 w-4" />
