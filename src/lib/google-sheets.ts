@@ -62,7 +62,7 @@ export const fetchSpreadsheets = async (): Promise<SpreadsheetOption[]> => {
       return [];
     }
     
-    // Handle both possible response formats - direct array or nested under spreadsheets
+    // Handle all possible response formats from the list-spreadsheets function
     let spreadsheets = [];
     if (Array.isArray(response.data)) {
       console.log('Response data is an array, using directly');
@@ -70,6 +70,20 @@ export const fetchSpreadsheets = async (): Promise<SpreadsheetOption[]> => {
     } else if (response.data.spreadsheets && Array.isArray(response.data.spreadsheets)) {
       console.log('Response data has spreadsheets property, using that');
       spreadsheets = response.data.spreadsheets;
+    } else if (response.data.files && Array.isArray(response.data.files)) {
+      console.log('Response data has files property, using that');
+      spreadsheets = response.data.files;
+    } else if (typeof response.data === 'object' && response.data !== null) {
+      // Try to extract any array property that might contain spreadsheets
+      const possibleArrays = Object.values(response.data).filter(val => Array.isArray(val));
+      if (possibleArrays.length > 0) {
+        console.log('Found array property in response data, using first one');
+        spreadsheets = possibleArrays[0];
+      } else {
+        console.error('Unexpected response format:', response.data);
+        toast.error('Unexpected data format from Google Sheets API');
+        return [];
+      }
     } else {
       console.error('Unexpected response format:', response.data);
       toast.error('Unexpected data format from Google Sheets API');
