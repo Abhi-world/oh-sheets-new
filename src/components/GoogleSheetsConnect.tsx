@@ -191,7 +191,7 @@ export function GoogleSheetsConnect() {
       
       console.log('🔗 [handleConnect] Using hardcoded redirect URI:', redirectUri);
       
-      const scope = "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.metadata.readonly";
+      const scope = "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly";
       
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
         `client_id=${data.clientId}&` +
