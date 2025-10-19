@@ -88,9 +88,10 @@ export function GoogleSheetsConnect() {
             console.log('✅ Spreadsheets found:', sheetsData.spreadsheets.length);
             setNoSpreadsheetsFound(false);
           }
-        } catch (sheetsErr: any) {
-          console.error('❌ Sheets fetch error details:', sheetsErr);
-          setConnectionError(`Fetch failed: ${sheetsErr.message}`);
+        } catch (sheetsErr) {
+          const msg = toMsg(sheetsErr);
+          console.error('❌ Sheets fetch error details:', msg);
+          setConnectionError(`Fetch failed: ${msg}`);
           setNoSpreadsheetsFound(true);
           // Don't throw here, we still want to show connected state
         }
@@ -176,14 +177,20 @@ export function GoogleSheetsConnect() {
         localStorage.removeItem('google_oauth_result');
 
         let result: any;
-        try { result = JSON.parse(raw); } catch { return; }
-        if (result?.type !== 'google_oauth_result') return;
-        if (typeof result.timestamp !== 'number' || Date.now() - result.timestamp > 60000) return;
+        try { 
+            result = JSON.parse(raw); 
+            if (result?.type !== 'google_oauth_result') return;
+            if (typeof result.timestamp !== 'number' || Date.now() - result.timestamp > 60000) return;
 
-        if (typeof result.code === 'string' && result.code) {
-            exchangeCodeForTokens(result.code);
-        } else if (result.error) {
-            const msg = typeof result.error === 'string' ? result.error : 'Authorization failed in popup.';
+            if (typeof result.code === 'string' && result.code) {
+                exchangeCodeForTokens(result.code);
+            } else if (result.error) {
+                const msg = toMsg(result.error);
+                setConnectionError(msg);
+                toast({ title: 'Authorization Error', description: msg, variant: 'destructive' });
+            }
+        } catch (err) {
+            const msg = toMsg(err);
             setConnectionError(msg);
             toast({ title: 'Authorization Error', description: msg, variant: 'destructive' });
         }
@@ -419,7 +426,7 @@ export function GoogleSheetsConnect() {
     } catch (err) {
       const msg = toMsg(err);
       console.error('Reconnection error:', msg);
-      toast.error('Failed to reconnect Google account');
+      toast({ title: 'Failed to reconnect', description: msg, variant: 'destructive' });
       setConnectionError(msg);
     } finally {
       setIsReconnecting(false);
@@ -489,12 +496,15 @@ export function GoogleSheetsConnect() {
     return (
       <div className="flex flex-col items-center gap-4 w-full">
         <Button onClick={handleConnect} disabled={isLoading || isAuthorizing} className="flex items-center gap-2 bg-[#0F9D58] hover:bg-[#0F9D58]/90 text-white" size="lg">Connect Google Sheets</Button>
-        {connectionError && (<Alert variant="destructive" className="w-full"><Info className="h-4 w-4" /><AlertTitle>Connection Issue</AlertTitle><AlertDescription>{connectionError}</AlertDescription></Alert>)
+        {connectionError && (<Alert variant="destructive" className="w-full"><Info className="h-4 w-4" /><AlertTitle>Connection Issue</AlertTitle><AlertDescription>{safeText(connectionError)}</AlertDescription></Alert>)
         }
       </div>
     );
   };
  
+  // Safety net function to ensure we always render strings in alerts
+  const safeText = (v: unknown) => (typeof v === 'string' ? v : toMsg(v));
+  
   return (
     <Card className="w-full p-6 shadow-lg">
       <div className="flex flex-col items-center gap-6">
