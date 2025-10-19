@@ -11,6 +11,14 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info, RefreshCw, CheckCircle, ArrowRight, AlertTriangle } from 'lucide-react';
 import { isEmbeddedMode, execMondayQuery } from '@/utils/mondaySDK';
 
+// Helper function to normalize errors before showing in UI/toast
+const toMsg = (err: unknown): string => {
+  if (!err) return 'Unknown error';
+  if (typeof err === 'string') return err;
+  if (typeof (err as any).message === 'string') return (err as any).message;
+  try { return JSON.stringify(err); } catch { return 'Unexpected error'; }
+};
+
 export function GoogleSheetsConnect() {
   const navigate = useNavigate();
   const [isConnected, setIsConnected] = useState(false);
@@ -89,9 +97,10 @@ export function GoogleSheetsConnect() {
       } else {
         setIsConnected(false);
       }
-    } catch (err: any) {
-      console.error('❌ [checkConnection] Failed:', err);
-      setConnectionError(err.message || 'An unknown error occurred.');
+    } catch (err) {
+      const msg = toMsg(err);
+      console.error('❌ [checkConnection] Failed:', msg);
+      setConnectionError(msg);
       setIsConnected(false);
     } finally {
       setIsLoading(false);
@@ -138,12 +147,13 @@ export function GoogleSheetsConnect() {
 
         toast({ title: 'Success!', description: 'Google Sheets connected successfully!' });
         await checkConnection();
-    } catch (err: any)
+    } catch (err)
     {
-        setConnectionError(err.message || 'Failed to finalize connection.');
+        const msg = toMsg(err);
+        setConnectionError(msg);
         toast({
             title: 'Connection Error',
-            description: err.message || 'Could not complete the connection.',
+            description: msg,
             variant: 'destructive',
         });
     } finally {
@@ -161,48 +171,52 @@ export function GoogleSheetsConnect() {
     checkConnection();
 
     const handleOAuthResult = () => {
-        const resultStr = localStorage.getItem('google_oauth_result');
-        if (!resultStr) return;
-
+        const raw = localStorage.getItem('google_oauth_result');
+        if (!raw) return;
         localStorage.removeItem('google_oauth_result');
 
-        try {
-            const result = JSON.parse(resultStr);
-            if (Date.now() - result.timestamp > 60000) return; // 1 minute expiry
+        let result: any;
+        try { result = JSON.parse(raw); } catch { return; }
+        if (result?.type !== 'google_oauth_result') return;
+        if (typeof result.timestamp !== 'number' || Date.now() - result.timestamp > 60000) return;
 
-            if (result.type === 'success' && result.code) {
-                exchangeCodeForTokens(result.code);
-            } else if (result.type === 'error') {
-                throw new Error(result.error || 'Authorization failed in popup.');
-            }
-        } catch (err: any) {
-            setConnectionError(err.message);
-            toast({ title: 'Authorization Error', description: err.message, variant: 'destructive' });
+        if (typeof result.code === 'string' && result.code) {
+            exchangeCodeForTokens(result.code);
+        } else if (result.error) {
+            const msg = typeof result.error === 'string' ? result.error : 'Authorization failed in popup.';
+            setConnectionError(msg);
+            toast({ title: 'Authorization Error', description: msg, variant: 'destructive' });
         }
     };
 
     // Add event listener for postMessage from popup window
-    const handlePostMessage = (event: MessageEvent) => {
-        console.log('📨 [GoogleSheetsConnect] Received postMessage:', event);
-        
-        // Accept messages from any origin since we're in an iframe
-        // Process the message data
-        if (event.data && event.data.type === 'google_oauth_result') {
-            const result = event.data.payload;
-            console.log('📨 [GoogleSheetsConnect] Processing OAuth result from postMessage:', result);
-            
-            if (result.type === 'success' && result.code) {
-                console.log('✅ [GoogleSheetsConnect] Success result from postMessage, exchanging code');
-                exchangeCodeForTokens(result.code);
-            } else if (result.type === 'error') {
-                console.log('❌ [GoogleSheetsConnect] Error result from postMessage:', result.error);
-                setConnectionError(result.error || 'Authorization failed in popup.');
-                toast({ 
-                    title: 'Authorization Error', 
-                    description: result.error || 'Authorization failed in popup.', 
-                    variant: 'destructive' 
-                });
-            }
+    const handlePostMessage = (evt: MessageEvent) => {
+        // Never log the entire MessageEvent (contains circular window refs)
+        console.log('📨 [GoogleSheetsConnect] origin:', evt.origin);
+
+        // Accept only our message type and ensure payload is plain JSON
+        const data = evt?.data;
+        if (!data || data.type !== 'google_oauth_result') return;
+
+        // Some popups send { type, payload: { ... } }, others send fields at top-level.
+        const result = typeof data.payload === 'object' && data.payload
+            ? data.payload
+            : data;
+
+        // Log only primitives
+        console.log('📨 [GoogleSheetsConnect] type:', result.type);
+        console.log('📨 [GoogleSheetsConnect] hasCode:', Boolean(result.code));
+        console.log('📨 [GoogleSheetsConnect] hasError:', Boolean(result.error));
+
+        if (result.type === 'success' && typeof result.code === 'string' && result.code) {
+            exchangeCodeForTokens(result.code);
+            return;
+        }
+
+        if (result.type === 'error') {
+            const msg = typeof result.error === 'string' ? result.error : 'Authorization failed in popup.';
+            setConnectionError(msg);
+            toast({ title: 'Authorization Error', description: msg, variant: 'destructive' });
         }
     };
 
@@ -253,9 +267,10 @@ export function GoogleSheetsConnect() {
         throw new Error('Popup blocked. Please allow popups for this site.');
       }
 
-    } catch (err: any) {
-      setConnectionError(err.message || 'Failed to start connection.');
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      const msg = toMsg(err);
+      setConnectionError(msg);
+      toast({ title: 'Error', description: msg, variant: 'destructive' });
       setIsLoading(false);
     }
   };
@@ -289,11 +304,12 @@ export function GoogleSheetsConnect() {
       });
       
       setIsConnected(false);
-    } catch (err: any) {
-      setConnectionError(err.message || 'Failed to disconnect.');
+    } catch (err) {
+      const msg = toMsg(err);
+      setConnectionError(msg);
       toast({ 
         title: 'Error', 
-        description: err.message || 'Failed to disconnect Google Sheets.', 
+        description: msg, 
         variant: 'destructive' 
       });
     } finally {
@@ -360,8 +376,9 @@ export function GoogleSheetsConnect() {
         handleConnect(true); // Pass true to force consent with new scopes
       }, 1000); // Short delay to allow UI to update
       
-    } catch (err: any) {
-      console.error('❌ [handleForceReconnect] Force reconnect error:', err);
+    } catch (err) {
+      const msg = toMsg(err);
+      console.error('❌ [handleForceReconnect] Force reconnect error:', msg);
       // Even if there's an error, we want to force the reconnect UI to show
       setIsConnected(false);
       setConnectionError('Connection reset. Please reconnect to Google Sheets.');
@@ -399,10 +416,11 @@ export function GoogleSheetsConnect() {
       
       // Step 3: Start new OAuth flow with force_consent=true
       await handleConnect(true);
-    } catch (err: any) {
-      console.error('Reconnection error:', err);
+    } catch (err) {
+      const msg = toMsg(err);
+      console.error('Reconnection error:', msg);
       toast.error('Failed to reconnect Google account');
-      setConnectionError(err.message || 'Failed to reconnect Google account');
+      setConnectionError(msg);
     } finally {
       setIsReconnecting(false);
     }
