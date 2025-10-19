@@ -30,8 +30,13 @@ const GoogleOAuthCallback = () => {
       localStorage.setItem('google_oauth_result', JSON.stringify(errorResult));
       try {
         if (window.opener && !window.opener.closed) {
-          // Send only serializable data with no circular references
-          window.opener.postMessage(errorResult, '*');
+          // Ensure data is fully serializable by converting to JSON and back
+          const safeData = JSON.parse(JSON.stringify({ 
+            type: 'google_oauth_result', 
+            error: error || undefined,
+            timestamp: Date.now()
+          }));
+          window.opener.postMessage(safeData, '*');
           console.log('📨 [GoogleOAuth] Posted error message to opener with wildcard origin');
         }
       } catch (e) {
@@ -52,8 +57,13 @@ const GoogleOAuthCallback = () => {
       // Notify opener directly (works even with storage partitioning)
       try {
         if (window.opener && !window.opener.closed) {
-          // Send only serializable data with no circular references
-          window.opener.postMessage(successResult, '*');
+          // Ensure data is fully serializable by converting to JSON and back
+          const safeData = JSON.parse(JSON.stringify({ 
+            type: 'google_oauth_result', 
+            code: code || undefined,
+            timestamp: Date.now()
+          }));
+          window.opener.postMessage(safeData, '*');
           console.log('📨 [GoogleOAuth] Posted success message to opener with wildcard origin');
         }
       } catch (e) {
@@ -73,8 +83,13 @@ const GoogleOAuthCallback = () => {
       localStorage.setItem('google_oauth_result', JSON.stringify(errorResult));
       try {
         if (window.opener && !window.opener.closed) {
-          // Send only serializable data with no circular references
-          window.opener.postMessage(errorResult, '*');
+          // Ensure data is fully serializable by converting to JSON and back
+          const safeData = JSON.parse(JSON.stringify({ 
+            type: 'google_oauth_result', 
+            error: 'No code received',
+            timestamp: Date.now()
+          }));
+          window.opener.postMessage(safeData, '*');
           console.log('📨 [GoogleOAuth] Posted error message to opener with wildcard origin');
         }
       } catch (e) {
