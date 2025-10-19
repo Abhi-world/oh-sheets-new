@@ -22,16 +22,16 @@ const GoogleOAuthCallback = () => {
       setStatus('error');
       setMessage(`Authorization failed: ${error}`);
       const errorResult = { 
-        type: 'error', 
-        error,
+        type: 'google_oauth_result', 
+        error: error || undefined,
         timestamp: Date.now()
       };
       console.log('💾 [GoogleOAuth] Storing error in localStorage:', errorResult);
       localStorage.setItem('google_oauth_result', JSON.stringify(errorResult));
       try {
-        if (window.opener) {
-          // Allow communication with Monday.com by using '*' for targetOrigin
-          window.opener.postMessage({ type: 'google_oauth_result', payload: errorResult }, '*');
+        if (window.opener && !window.opener.closed) {
+          // Send only serializable data with no circular references
+          window.opener.postMessage(errorResult, '*');
           console.log('📨 [GoogleOAuth] Posted error message to opener with wildcard origin');
         }
       } catch (e) {
@@ -43,17 +43,17 @@ const GoogleOAuthCallback = () => {
       setStatus('success');
       setMessage('Success! Finalizing connection...');
       const successResult = { 
-        type: 'success', 
-        code,
+        type: 'google_oauth_result', 
+        code: code || undefined,
         timestamp: Date.now()
       };
       console.log('💾 [GoogleOAuth] Storing success in localStorage:', { ...successResult, code: `${code.substring(0, 20)}...` });
       localStorage.setItem('google_oauth_result', JSON.stringify(successResult));
       // Notify opener directly (works even with storage partitioning)
       try {
-        if (window.opener) {
-          // Allow communication with Monday.com by using '*' for targetOrigin
-          window.opener.postMessage({ type: 'google_oauth_result', payload: successResult }, '*');
+        if (window.opener && !window.opener.closed) {
+          // Send only serializable data with no circular references
+          window.opener.postMessage(successResult, '*');
           console.log('📨 [GoogleOAuth] Posted success message to opener with wildcard origin');
         }
       } catch (e) {
@@ -65,12 +65,21 @@ const GoogleOAuthCallback = () => {
       setStatus('error');
       setMessage('No authorization code was received.');
       const errorResult = { 
-        type: 'error', 
+        type: 'google_oauth_result', 
         error: 'No code received',
         timestamp: Date.now()
       };
       console.log('💾 [GoogleOAuth] Storing no-code error:', errorResult);
       localStorage.setItem('google_oauth_result', JSON.stringify(errorResult));
+      try {
+        if (window.opener && !window.opener.closed) {
+          // Send only serializable data with no circular references
+          window.opener.postMessage(errorResult, '*');
+          console.log('📨 [GoogleOAuth] Posted error message to opener with wildcard origin');
+        }
+      } catch (e) {
+        console.log('⚠️ [GoogleOAuth] postMessage failed:', e);
+      }
     }
 
     // Give more time for localStorage to sync before closing

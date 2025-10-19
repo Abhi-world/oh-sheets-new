@@ -205,23 +205,17 @@ export function GoogleSheetsConnect() {
         const data = evt?.data;
         if (!data || data.type !== 'google_oauth_result') return;
 
-        // Some popups send { type, payload: { ... } }, others send fields at top-level.
-        const result = typeof data.payload === 'object' && data.payload
-            ? data.payload
-            : data;
-
         // Log only primitives
-        console.log('📨 [GoogleSheetsConnect] type:', result.type);
-        console.log('📨 [GoogleSheetsConnect] hasCode:', Boolean(result.code));
-        console.log('📨 [GoogleSheetsConnect] hasError:', Boolean(result.error));
+        console.log('📨 [GoogleSheetsConnect] hasCode:', Boolean(data.code));
+        console.log('📨 [GoogleSheetsConnect] hasError:', Boolean(data.error));
 
-        if (result.type === 'success' && typeof result.code === 'string' && result.code) {
-            exchangeCodeForTokens(result.code);
+        if (typeof data.code === 'string' && data.code) {
+            exchangeCodeForTokens(data.code);
             return;
         }
 
-        if (result.type === 'error') {
-            const msg = typeof result.error === 'string' ? result.error : 'Authorization failed in popup.';
+        if (data.error) {
+            const msg = typeof data.error === 'string' ? data.error : 'Authorization failed in popup.';
             setConnectionError(msg);
             toast({ title: 'Authorization Error', description: msg, variant: 'destructive' });
         }
