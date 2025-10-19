@@ -33,8 +33,15 @@ export function GoogleSheetsConnect() {
         throw new Error('This app must be run inside Monday.com.');
       }
 
-      const userResponse = await execMondayQuery(`query { me { id } }`);
-      const mondayUserId = userResponse?.data?.me?.id;
+      // Use a try-catch block to handle potential circular structure errors
+      let mondayUserId;
+      try {
+        const userResponse = await execMondayQuery(`query { me { id } }`);
+        mondayUserId = userResponse?.data?.me?.id;
+      } catch (err) {
+        console.error('Error executing Monday query:', err);
+        throw new Error('Failed to retrieve Monday.com user information.');
+      }
 
       if (!mondayUserId) {
         throw new Error('Could not retrieve Monday.com user information.');
@@ -108,8 +115,16 @@ export function GoogleSheetsConnect() {
     setIsAuthorizing(true);
     toast({ title: 'Authorization successful', description: 'Finalizing connection...' });
     try {
-        const userResponse = await execMondayQuery(`query { me { id } }`);
-        const mondayUserId = userResponse?.data?.me?.id;
+        // Safely get Monday user ID with error handling for circular structure
+        let mondayUserId;
+        try {
+            const userResponse = await execMondayQuery(`query { me { id } }`);
+            mondayUserId = userResponse?.data?.me?.id;
+        } catch (err) {
+            console.error('Error executing Monday query:', err);
+            throw new Error('Failed to retrieve Monday.com user information.');
+        }
+        
         if (!mondayUserId) {
             throw new Error('Could not retrieve Monday.com user to link account.');
         }
@@ -205,8 +220,16 @@ export function GoogleSheetsConnect() {
     setIsLoading(true);
     setConnectionError(null);
     try {
-      const userResponse = await execMondayQuery('query { me { id } }');
-      const mondayUserId = userResponse?.data?.me?.id;
+      // Safely get Monday user ID with error handling for circular structure
+      let mondayUserId;
+      try {
+        const userResponse = await execMondayQuery('query { me { id } }');
+        mondayUserId = userResponse?.data?.me?.id;
+      } catch (err) {
+        console.error('Error executing Monday query:', err);
+        throw new Error('Failed to retrieve Monday.com user information.');
+      }
+      
       if (!mondayUserId) throw new Error('Could not get Monday.com user to initiate connection.');
 
       // Use the new google-oauth-init Edge Function to get the auth URL with correct scopes
@@ -241,8 +264,16 @@ export function GoogleSheetsConnect() {
     setIsLoading(true);
     setConnectionError(null);
     try {
-      const userResponse = await execMondayQuery(`query { me { id } }`);
-      const mondayUserId = userResponse?.data?.me?.id;
+      // Safely get Monday user ID with error handling for circular structure
+      let mondayUserId;
+      try {
+        const userResponse = await execMondayQuery(`query { me { id } }`);
+        mondayUserId = userResponse?.data?.me?.id;
+      } catch (err) {
+        console.error('Error executing Monday query:', err);
+        throw new Error('Failed to retrieve Monday.com user information.');
+      }
+      
       if (!mondayUserId) throw new Error('Could not get Monday.com user to disconnect.');
       
       // Call the Supabase edge function to disconnect Google Sheets
@@ -274,8 +305,16 @@ export function GoogleSheetsConnect() {
     setIsLoading(true);
     setConnectionError(null);
     try {
-      const userResponse = await execMondayQuery(`query { me { id } }`);
-      const mondayUserId = userResponse?.data?.me?.id;
+      // Safely get Monday user ID with error handling for circular structure
+      let mondayUserId;
+      try {
+        const userResponse = await execMondayQuery(`query { me { id } }`);
+        mondayUserId = userResponse?.data?.me?.id;
+      } catch (err) {
+        console.error('Error executing Monday query:', err);
+        throw new Error('Failed to retrieve Monday.com user information.');
+      }
+      
       if (!mondayUserId) throw new Error('Could not get Monday.com user to force reconnect.');
       
       console.log('🔄 [handleForceReconnect] Starting force reconnect process for user:', mondayUserId);
