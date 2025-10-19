@@ -113,6 +113,21 @@ Deno.serve(async (req) => {
         throw new Error(`Google Drive API error: ${driveResponse.status} - ${errorBody}`);
       }
 
+      // Debug: Log WHICH Google email the access token is for
+      try {
+        const profileResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+          headers: { Authorization: `Bearer ${access_token}` }
+        });
+        if (profileResponse.ok) {
+          const profile = await profileResponse.json();
+          console.log('[gs-list-spreadsheets] Connected Google email:', profile.email);
+        } else {
+          console.error('[gs-list-spreadsheets] Could not fetch user profile:', profileResponse.status);
+        }
+      } catch (profileError) {
+        console.error('[gs-list-spreadsheets] Error fetching user profile:', profileError);
+      }
+
       const data = await driveResponse.json();
       console.log(`[gs-list-spreadsheets] Found ${data.files?.length || 0} spreadsheets`);
       
