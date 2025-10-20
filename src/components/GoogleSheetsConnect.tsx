@@ -265,66 +265,65 @@ export function GoogleSheetsConnect() {
   }, [checkConnection, exchangeCodeForTokens, toast]);
 
 
-  const handleConnect = async (forceConsent = false) => {
+  const handleConnect = (forceConsent = false) => {
     setIsLoading(true);
     setConnectionError(null);
     
-    // Step 1: Prepare the auth URL before opening the popup
-    let authUrl = '';
-    
-    try {
-      // --- Step 1: Asynchronously get all required data first ---
-      console.log('🔄 [handleConnect] Getting Monday user ID...');
-      const userResponse = await execMondayQuery('query { me { id } }');
-      const mondayUserId = userResponse?.data?.me?.id;
-      
-      if (!mondayUserId) {
-        throw new Error('Could not get Monday.com user to initiate connection.');
-      }
-      
-      console.log('🔄 [handleConnect] Getting OAuth URL from Edge Function...');
-      const { data, error } = await supabase.functions.invoke('google-oauth-init', {
-        body: { 
-          monday_user_id: String(mondayUserId),
-          force_consent: forceConsent 
-        }
+    // Step 1: Open a blank popup immediately on click (synchronous)
+    // This avoids popup blockers since it's directly triggered by user action
+    const popup = window.open('about:blank', 'google-oauth-popup', 'width=500,height=600');
+    if (!popup) {
+      toast({
+        title: 'Error',
+        description: 'Popup blocked. Please allow popups for this site.',
+        variant: 'destructive'
       });
-      
-      if (error) throw error;
-      if (!data?.url) throw new Error('Failed to generate OAuth URL');
-      
-      // Store the URL for the next step
-      authUrl = data.url;
-      console.log('✅ [handleConnect] Successfully obtained OAuth URL with force_consent:', forceConsent);
-      
-    } catch (err) {
-      const msg = toMsg(err);
-      console.error('❌ [handleConnect] Error preparing connection:', msg);
-      setConnectionError(msg);
-      toast({ title: 'Error', description: msg, variant: 'destructive' });
       setIsLoading(false);
-      return; // Exit early if we couldn't get the auth URL
+      return;
     }
     
-    // --- Step 2: Now, open the popup synchronously ---
-    try {
-      console.log('🔍 [handleConnect] Opening popup with URL:', authUrl);
-      const popup = window.open(authUrl, 'google-oauth-popup', 'width=500,height=600');
-      
-      if (!popup) {
-        throw new Error('Popup blocked. Please allow popups for this site.');
+    // Step 2: Asynchronously get the URL and redirect the popup
+    const getUrlAndRedirect = async () => {
+      try {
+        // Get Monday user ID
+        console.log('🔄 [handleConnect] Getting Monday user ID...');
+        const userResponse = await execMondayQuery('query { me { id } }');
+        const mondayUserId = userResponse?.data?.me?.id;
+        
+        if (!mondayUserId) {
+          throw new Error('Could not get Monday.com user to initiate connection.');
+        }
+        
+        // Get OAuth URL
+        console.log('🔄 [handleConnect] Getting OAuth URL from Edge Function...');
+        const { data, error } = await supabase.functions.invoke('google-oauth-init', {
+          body: { 
+            monday_user_id: String(mondayUserId),
+            force_consent: forceConsent 
+          }
+        });
+        
+        if (error) throw error;
+        if (!data?.url) throw new Error('Failed to generate OAuth URL');
+        
+        // Step 3: Redirect the already-open popup
+        console.log('🔍 [handleConnect] Redirecting popup to OAuth URL');
+        popup.location.href = data.url;
+        console.log('✅ [handleConnect] Popup redirected successfully');
+        
+      } catch (err) {
+        const msg = toMsg(err);
+        console.error('❌ [handleConnect] Error during OAuth process:', msg);
+        setConnectionError(msg);
+        toast({ title: 'Connection Error', description: msg, variant: 'destructive' });
+        popup.close(); // Close the blank popup if an error occurs
+      } finally {
+        setIsLoading(false);
       }
-      
-      // The useEffect listener will handle the response
-      console.log('✅ [handleConnect] Popup opened successfully');
-      
-    } catch (popupErr) {
-      const msg = toMsg(popupErr);
-      console.error('❌ [handleConnect] Error opening popup:', msg);
-      setConnectionError(msg);
-      toast({ title: 'Error', description: msg, variant: 'destructive' });
-      setIsLoading(false);
-    }
+    };
+    
+    // Start the async process
+    getUrlAndRedirect();
   };
 
   const handleDisconnect = async () => {

@@ -1,6 +1,6 @@
 import mondaySdk from 'monday-sdk-js';
 import { supabase } from '@/integrations/supabase/client';
-import { scrubDanger } from '@/lib/safeJson';
+import { scrubDanger, toMsg } from '@/lib/safeJson';
 
 // Create a single, globally initialized Monday SDK instance
 const monday = mondaySdk();
@@ -162,7 +162,10 @@ export async function execMondayQuery(query: string, variables?: Record<string, 
       throw new Error('Invalid response structure from Monday API');
 
     } catch (sdkError) {
-      console.error('❌ [execMondayQuery] SDK api() method failed:', sdkError);
+      // Use toMsg utility to get a safe string representation instead of logging the raw error object
+      const errorMsg = toMsg(sdkError);
+      console.error('❌ [execMondayQuery] SDK api() method failed:', errorMsg);
+      // Re-throw the original error so it can be caught upstream
       throw sdkError;
     }
   } else {
@@ -213,7 +216,8 @@ export async function execMondayQuery(query: string, variables?: Record<string, 
         }
         return { data: result.data };
     } catch (error) {
-        console.error('❌ [execMondayQuery] Standalone API call failed:', error);
+        const errorMsg = toMsg(error);
+        console.error('❌ [execMondayQuery] Standalone API call failed:', errorMsg);
         throw error;
     }
   }
