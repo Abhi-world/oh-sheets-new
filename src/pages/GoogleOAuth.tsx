@@ -33,8 +33,8 @@ export function GoogleOAuthCallback() {
     let postMessageSuccess = false;
     if (window.opener) {
       try {
-        // Use structured clone algorithm with simple data
-        window.opener.postMessage(JSON.parse(JSON.stringify(result)), '*');
+        // Send the result object directly without JSON conversion
+        window.opener.postMessage(result, '*');
         console.log('GoogleOAuth: ✅ Successfully sent via postMessage');
         postMessageSuccess = true;
       } catch (err) {
