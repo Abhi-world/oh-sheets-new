@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info, RefreshCw, CheckCircle, ArrowRight, AlertTriangle } from 'lucide-react';
 import { isEmbeddedMode, execMondayQuery } from '@/utils/mondaySDK';
-import { safeStringify, toMsg } from '@/lib/safeJson';
+import { safeStringify, toMsg, scrubDanger } from '@/lib/safeJson';
 
 // Using the safer toMsg function from safeJson utility
 
@@ -197,17 +197,22 @@ export function GoogleSheetsConnect() {
             // Never log the entire MessageEvent (contains circular window refs)
             console.log('📨 [GoogleSheetsConnect] origin:', evt.origin);
             
-            // Safely extract data from the event to avoid circular references
+            // Use cross-realm safe scrubDanger function to handle MessageEvent data
+            // This prevents circular references from Window/Event objects across iframes
             let safeData;
             if (evt?.data) {
-                // Only extract the properties we need
                 const rawData = evt.data;
+                
                 if (typeof rawData === 'object') {
+                    // Extract only the properties we need using scrubDanger
+                    // This is safer than manually extracting as it handles nested objects too
+                    const scrubbedData = scrubDanger(rawData);
+                    
                     safeData = {
-                        type: rawData.type,
-                        code: typeof rawData.code === 'string' ? rawData.code : null,
-                        error: rawData.error ? 
-                            (typeof rawData.error === 'string' ? rawData.error : 'Unknown error') : 
+                        type: scrubbedData.type,
+                        code: typeof scrubbedData.code === 'string' ? scrubbedData.code : null,
+                        error: scrubbedData.error ? 
+                            (typeof scrubbedData.error === 'string' ? scrubbedData.error : 'Unknown error') : 
                             null
                     };
                 } else if (typeof rawData === 'string') {

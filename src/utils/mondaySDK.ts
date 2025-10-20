@@ -1,5 +1,6 @@
 import mondaySdk from 'monday-sdk-js';
 import { supabase } from '@/integrations/supabase/client';
+import { scrubDanger } from '@/lib/safeJson';
 
 // Create a single, globally initialized Monday SDK instance
 const monday = mondaySdk();
@@ -137,21 +138,11 @@ export async function execMondayQuery(query: string, variables?: Record<string, 
       const mondayClient = getMondaySDK();
       
       // Safely handle variables to prevent circular references
-      const safeVariables = {};
+      let safeVariables = {};
       if (variables) {
         try {
-          // Create a safe copy of variables without circular references
-          for (const key in variables) {
-            if (Object.prototype.hasOwnProperty.call(variables, key)) {
-              // Skip window, document, or other DOM objects
-              if (variables[key] instanceof Window || 
-                  variables[key] instanceof Document || 
-                  (variables[key] && variables[key].nodeType)) {
-                continue;
-              }
-              safeVariables[key] = variables[key];
-            }
-          }
+          // Use cross-realm safe scrubDanger function to remove problematic objects
+          safeVariables = scrubDanger(variables);
         } catch (err) {
           console.warn('Error sanitizing variables:', err);
           // Continue with empty variables if there's an issue
@@ -192,21 +183,11 @@ export async function execMondayQuery(query: string, variables?: Record<string, 
         }
 
         // Safely handle variables to prevent circular references
-        const safeVariables = {};
+        let safeVariables = {};
         if (variables) {
           try {
-            // Create a safe copy of variables without circular references
-            for (const key in variables) {
-              if (Object.prototype.hasOwnProperty.call(variables, key)) {
-                // Skip window, document, or other DOM objects
-                if (variables[key] instanceof Window || 
-                    variables[key] instanceof Document || 
-                    (variables[key] && variables[key].nodeType)) {
-                  continue;
-                }
-                safeVariables[key] = variables[key];
-              }
-            }
+            // Use cross-realm safe scrubDanger function to remove problematic objects
+            safeVariables = scrubDanger(variables);
           } catch (err) {
             console.warn('Error sanitizing variables:', err);
             // Continue with empty variables if there's an issue

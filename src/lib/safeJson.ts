@@ -3,6 +3,56 @@
  */
 
 /**
+ * Cross-realm safe function to detect and remove Window/Event-like objects
+ * Works even when instanceof checks fail across iframes
+ */
+export function scrubDanger(obj: any): any {
+  // Handle null/undefined
+  if (obj == null) return obj;
+  
+  // Handle primitives
+  if (typeof obj !== 'object') return obj;
+  
+  // Handle arrays
+  if (Array.isArray(obj)) {
+    return obj.map(item => scrubDanger(item));
+  }
+  
+  // Handle objects
+  const out: any = {};
+  for (const k in obj) {
+    if (!Object.prototype.hasOwnProperty.call(obj, k)) continue;
+    
+    const v = obj[k];
+    
+    // Skip if null or not an object
+    if (v == null || typeof v !== 'object') {
+      out[k] = v;
+      continue;
+    }
+    
+    // Cross-realm safe checks for Window-like objects
+    const isWindowish = v === window || 
+                        v.window === v || 
+                        typeof v.postMessage === 'function' ||
+                        (v.location && v.document);
+                        
+    // Cross-realm safe checks for Event-like objects
+    const isEventish = 'target' in v || 
+                      'source' in v || 
+                      (typeof v.preventDefault === 'function' && typeof v.stopPropagation === 'function');
+    
+    // Skip Window-like and Event-like objects
+    if (isWindowish || isEventish) continue;
+    
+    // Recursively scrub nested objects
+    out[k] = scrubDanger(v);
+  }
+  
+  return out;
+}
+
+/**
  * Creates a replacer function for JSON.stringify that handles circular references
  * and Window objects safely
  */
@@ -13,14 +63,20 @@ export const safeReplacer = () => {
       if (seen.has(value)) return '[Circular]';
       seen.add(value);
       
-      // Handle Window objects
-      if (value === window || value?.window === value) return '[Window]';
+      // Handle Window objects - cross-realm safe
+      if (value === window || value?.window === value || typeof value?.postMessage === 'function') {
+        return '[Window]';
+      }
       
-      // Handle DOM nodes
-      if (value.nodeType && typeof value.nodeName === 'string') return `[DOM:${value.nodeName}]`;
+      // Handle DOM nodes - cross-realm safe
+      if (value.nodeType && typeof value.nodeName === 'string') {
+        return `[DOM:${value.nodeName}]`;
+      }
       
-      // Handle Event objects
-      if (value instanceof Event) return `[Event:${value.type}]`;
+      // Handle Event objects - cross-realm safe
+      if (value instanceof Event || ('target' in value && 'type' in value)) {
+        return `[Event:${value.type || 'unknown'}]`;
+      }
     }
     return value;
   };
@@ -31,7 +87,9 @@ export const safeReplacer = () => {
  */
 export const safeStringify = (value: any): string => {
   try {
-    return JSON.stringify(value, safeReplacer());
+    // First scrub dangerous objects, then stringify
+    const scrubbed = scrubDanger(value);
+    return JSON.stringify(scrubbed, safeReplacer());
   } catch (err) {
     return JSON.stringify({
       error: 'Failed to stringify',
