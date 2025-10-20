@@ -268,20 +268,21 @@ export function GoogleSheetsConnect() {
   const handleConnect = async (forceConsent = false) => {
     setIsLoading(true);
     setConnectionError(null);
+    
+    // Step 1: Prepare the auth URL before opening the popup
+    let authUrl = '';
+    
     try {
-      // Safely get Monday user ID with error handling for circular structure
-      let mondayUserId;
-      try {
-        const userResponse = await execMondayQuery('query { me { id } }');
-        mondayUserId = userResponse?.data?.me?.id;
-      } catch (err) {
-        console.error('Error executing Monday query:', err);
-        throw new Error('Failed to retrieve Monday.com user information.');
+      // --- Step 1: Asynchronously get all required data first ---
+      console.log('🔄 [handleConnect] Getting Monday user ID...');
+      const userResponse = await execMondayQuery('query { me { id } }');
+      const mondayUserId = userResponse?.data?.me?.id;
+      
+      if (!mondayUserId) {
+        throw new Error('Could not get Monday.com user to initiate connection.');
       }
       
-      if (!mondayUserId) throw new Error('Could not get Monday.com user to initiate connection.');
-
-      // Use the new google-oauth-init Edge Function to get the auth URL with correct scopes
+      console.log('🔄 [handleConnect] Getting OAuth URL from Edge Function...');
       const { data, error } = await supabase.functions.invoke('google-oauth-init', {
         body: { 
           monday_user_id: String(mondayUserId),
@@ -292,18 +293,34 @@ export function GoogleSheetsConnect() {
       if (error) throw error;
       if (!data?.url) throw new Error('Failed to generate OAuth URL');
       
-      const authUrl = data.url;
-      console.log('🔗 [handleConnect] Using OAuth URL from Edge Function with force_consent:', forceConsent);
-
-      // Just open the popup - the useEffect listener will handle the response
-      console.log('🔍 [handleConnect] Opening popup, relying on useEffect listener for response');
+      // Store the URL for the next step
+      authUrl = data.url;
+      console.log('✅ [handleConnect] Successfully obtained OAuth URL with force_consent:', forceConsent);
+      
+    } catch (err) {
+      const msg = toMsg(err);
+      console.error('❌ [handleConnect] Error preparing connection:', msg);
+      setConnectionError(msg);
+      toast({ title: 'Error', description: msg, variant: 'destructive' });
+      setIsLoading(false);
+      return; // Exit early if we couldn't get the auth URL
+    }
+    
+    // --- Step 2: Now, open the popup synchronously ---
+    try {
+      console.log('🔍 [handleConnect] Opening popup with URL:', authUrl);
       const popup = window.open(authUrl, 'google-oauth-popup', 'width=500,height=600');
+      
       if (!popup) {
         throw new Error('Popup blocked. Please allow popups for this site.');
       }
-
-    } catch (err) {
-      const msg = toMsg(err);
+      
+      // The useEffect listener will handle the response
+      console.log('✅ [handleConnect] Popup opened successfully');
+      
+    } catch (popupErr) {
+      const msg = toMsg(popupErr);
+      console.error('❌ [handleConnect] Error opening popup:', msg);
       setConnectionError(msg);
       toast({ title: 'Error', description: msg, variant: 'destructive' });
       setIsLoading(false);
