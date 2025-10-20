@@ -1,127 +1,56 @@
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
-const GoogleOAuthCallback = () => {
+export function GoogleOAuthCallback() {
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState('Processing authorization...');
+  const navigate = useNavigate();
 
   useEffect(() => {
+    // Extract ONLY primitive values from URL
     const code = searchParams.get('code');
     const error = searchParams.get('error');
+    const state = searchParams.get('state');
 
-    console.log('🔍 [GoogleOAuth] Callback loaded:', { 
-      code: code ? `${code.substring(0, 20)}...` : null, 
-      error,
-      fullUrl: window.location.href 
-    });
+    // Build plain JSON object - NO window/response/event references
+    const result = {
+      type: 'google_oauth_result',
+      code: code || undefined,
+      error: error || undefined,
+      state: state || undefined,
+      timestamp: Date.now()
+    };
 
-    if (error) {
-      console.log('❌ [GoogleOAuth] Error detected:', error);
-      setStatus('error');
-      setMessage(`Authorization failed: ${error}`);
-      const errorResult = { 
-        type: 'google_oauth_result', 
-        error: error || undefined,
-        timestamp: Date.now()
-      };
-      console.log('💾 [GoogleOAuth] Storing error in localStorage:', errorResult);
-      localStorage.setItem('google_oauth_result', JSON.stringify(errorResult));
+    // Send to parent window
+    if (window.opener && !window.opener.closed) {
       try {
-        if (window.opener && !window.opener.closed) {
-          // Ensure data is fully serializable by converting to JSON and back
-          const safeData = JSON.parse(JSON.stringify({ 
-            type: 'google_oauth_result', 
-            error: error || undefined,
-            timestamp: Date.now()
-          }));
-          window.opener.postMessage(safeData, '*');
-          console.log('📨 [GoogleOAuth] Posted error message to opener with wildcard origin');
-        }
-      } catch (e) {
-        console.log('⚠️ [GoogleOAuth] postMessage failed:', e);
-      }
-      console.log('✅ [GoogleOAuth] Error stored, localStorage now has:', localStorage.getItem('google_oauth_result'));
-    } else if (code) {
-      console.log('✅ [GoogleOAuth] Code received successfully');
-      setStatus('success');
-      setMessage('Success! Finalizing connection...');
-      const successResult = { 
-        type: 'google_oauth_result', 
-        code: code || undefined,
-        timestamp: Date.now()
-      };
-      console.log('💾 [GoogleOAuth] Storing success in localStorage:', { ...successResult, code: `${code.substring(0, 20)}...` });
-      localStorage.setItem('google_oauth_result', JSON.stringify(successResult));
-      // Notify opener directly (works even with storage partitioning)
-      try {
-        if (window.opener && !window.opener.closed) {
-          // Ensure data is fully serializable by converting to JSON and back
-          const safeData = JSON.parse(JSON.stringify({ 
-            type: 'google_oauth_result', 
-            code: code || undefined,
-            timestamp: Date.now()
-          }));
-          window.opener.postMessage(safeData, '*');
-          console.log('📨 [GoogleOAuth] Posted success message to opener with wildcard origin');
-        }
-      } catch (e) {
-        console.log('⚠️ [GoogleOAuth] postMessage failed:', e);
-      }
-      console.log('✅ [GoogleOAuth] Success stored, localStorage now has:', localStorage.getItem('google_oauth_result')?.substring(0, 100) + '...');
-    } else {
-      console.log('❌ [GoogleOAuth] No code or error received');
-      setStatus('error');
-      setMessage('No authorization code was received.');
-      const errorResult = { 
-        type: 'google_oauth_result', 
-        error: 'No code received',
-        timestamp: Date.now()
-      };
-      console.log('💾 [GoogleOAuth] Storing no-code error:', errorResult);
-      localStorage.setItem('google_oauth_result', JSON.stringify(errorResult));
-      try {
-        if (window.opener && !window.opener.closed) {
-          // Ensure data is fully serializable by converting to JSON and back
-          const safeData = JSON.parse(JSON.stringify({ 
-            type: 'google_oauth_result', 
-            error: 'No code received',
-            timestamp: Date.now()
-          }));
-          window.opener.postMessage(safeData, '*');
-          console.log('📨 [GoogleOAuth] Posted error message to opener with wildcard origin');
-        }
-      } catch (e) {
-        console.log('⚠️ [GoogleOAuth] postMessage failed:', e);
+        window.opener.postMessage(result, '*');
+        console.log('✅ OAuth result sent to opener');
+      } catch (err) {
+        console.error('❌ postMessage failed:', err);
       }
     }
 
-    // Give more time for localStorage to sync before closing
+    // Fallback: Store in localStorage
+    try {
+      localStorage.setItem('google_oauth_result', JSON.stringify(result));
+    } catch (err) {
+      console.error('localStorage write failed:', err);
+    }
+
+    // Close popup after 500ms
     setTimeout(() => {
-      console.log('🚪 [GoogleOAuth] Closing popup window in 3 seconds...');
-      setTimeout(() => {
-        console.log('👋 [GoogleOAuth] Closing now!');
-        window.close();
-      }, 3000);
-    }, 100);
+      window.close();
+    }, 500);
+
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-sm">
-        {status === 'loading' && <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />}
-        {status === 'success' && <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />}
-        {status === 'error' && <XCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />}
-
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">
-          {status.charAt(0).toUpperCase() + status.slice(1)}
-        </h2>
-        <p className="text-gray-600">{message}</p>
-      </div>
+    <div style={{ padding: '20px', textAlign: 'center' }}>
+      <h2>Processing authentication...</h2>
+      <p>This window will close automatically.</p>
     </div>
   );
-};
+}
 
 export default GoogleOAuthCallback;
 
