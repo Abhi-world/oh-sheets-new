@@ -195,7 +195,9 @@ export function GoogleSheetsConnect() {
     const handlePostMessage = (evt: MessageEvent) => {
         try {
             // Never log the entire MessageEvent (contains circular window refs)
-            console.log('📨 [GoogleSheetsConnect] origin:', evt.origin);
+            // Only log primitive values like origin
+            const safeOrigin = typeof evt.origin === 'string' ? evt.origin : 'unknown';
+            console.log('📨 [GoogleSheetsConnect] origin:', safeOrigin);
             
             // Use cross-realm safe scrubDanger function to handle MessageEvent data
             // This prevents circular references from Window/Event objects across iframes
@@ -204,17 +206,20 @@ export function GoogleSheetsConnect() {
                 const rawData = evt.data;
                 
                 if (typeof rawData === 'object') {
-                    // Extract only the properties we need using scrubDanger
-                    // This is safer than manually extracting as it handles nested objects too
-                    const scrubbedData = scrubDanger(rawData);
-                    
-                    safeData = {
-                        type: scrubbedData.type,
-                        code: typeof scrubbedData.code === 'string' ? scrubbedData.code : null,
-                        error: scrubbedData.error ? 
-                            (typeof scrubbedData.error === 'string' ? scrubbedData.error : 'Unknown error') : 
-                            null
-                    };
+                    try {
+                        // Extract only the properties we need directly to avoid circular references
+                        // Don't use scrubDanger on the entire object as it may still cause issues
+                        safeData = {
+                            type: typeof rawData.type === 'string' ? rawData.type : null,
+                            code: typeof rawData.code === 'string' ? rawData.code : null,
+                            error: rawData.error ? 
+                                (typeof rawData.error === 'string' ? rawData.error : 'Unknown error') : 
+                                null
+                        };
+                    } catch (err) {
+                        console.error('Error extracting data from message event:', toMsg(err));
+                        safeData = { type: null };
+                    }
                 } else if (typeof rawData === 'string') {
                     try {
                         // Try to parse if it's a JSON string
@@ -324,22 +329,30 @@ export function GoogleSheetsConnect() {
             }
           });
           // Only log relevant data, not the entire response
-          console.log('✅ [handleConnect] Got OAuth URL:', oauthResponse?.data?.url);
+          const oauthUrl = oauthResponse?.data?.url;
+          console.log('✅ [handleConnect] Got OAuth URL:', typeof oauthUrl === 'string' ? oauthUrl : 'undefined');
         } catch (supabaseErr) {
           const errorMsg = toMsg(supabaseErr);
           console.error('❌ [handleConnect] Supabase function error:', errorMsg);
           throw new Error(`Supabase function error: ${errorMsg}`);
         }
         
+        if (!oauthResponse) {
+          throw new Error('No response from OAuth initialization');
+        }
+        
         const { data, error } = oauthResponse;
         
         if (error) {
-          console.error('❌ [handleConnect] OAuth init returned error:', toMsg(error));
-          throw error;
+          const errorMsg = toMsg(error);
+          console.error('❌ [handleConnect] OAuth init returned error:', errorMsg);
+          throw new Error(`OAuth initialization error: ${errorMsg}`);
         }
         
         if (!data?.url) {
-          console.error('❌ [handleConnect] No URL in OAuth init response:', safeStringify(data));
+          // Use primitive values only in logging
+          const safeData = typeof data === 'object' ? 'Response missing URL property' : 'Invalid response data';
+          console.error('❌ [handleConnect] No URL in OAuth init response:', safeData);
           throw new Error('Failed to generate OAuth URL');
         }
         
@@ -354,11 +367,14 @@ export function GoogleSheetsConnect() {
         
         // Try-catch around the redirect to handle potential cross-origin issues
         try {
-          popup.location.href = data.url;
-          console.log('✅ [handleConnect] Popup redirected successfully');
+          // Store the URL in a local variable to avoid potential circular references
+          const redirectUrl = data.url;
+          popup.location.href = redirectUrl;
+          console.log('✅ [handleConnect] Popup redirected successfully to OAuth URL');
         } catch (redirectErr) {
-          console.error('❌ [handleConnect] Error redirecting popup:', toMsg(redirectErr));
-          throw new Error(`Failed to redirect: ${toMsg(redirectErr)}`);
+          const errorMsg = toMsg(redirectErr);
+          console.error('❌ [handleConnect] Error redirecting popup:', errorMsg);
+          throw new Error(`Failed to redirect: ${errorMsg}`);
         }
         
       } catch (err) {
