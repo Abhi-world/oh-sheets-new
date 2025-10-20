@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { safeStringify } from '../lib/safeJson';
 
 export function GoogleOAuthCallback() {
   const [searchParams] = useSearchParams();
@@ -33,8 +34,9 @@ export function GoogleOAuthCallback() {
     let postMessageSuccess = false;
     if (window.opener) {
       try {
-        // Send the result object directly without JSON conversion
-        window.opener.postMessage(result, '*');
+        // Use safe serialization to avoid circular references
+        const safeResult = JSON.parse(safeStringify(result));
+        window.opener.postMessage(safeResult, '*');
         console.log('GoogleOAuth: ✅ Successfully sent via postMessage');
         postMessageSuccess = true;
       } catch (err) {
@@ -46,7 +48,7 @@ export function GoogleOAuthCallback() {
 
     // Second try: localStorage fallback
     try {
-      const resultString = JSON.stringify(result);
+      const resultString = safeStringify(result);
       localStorage.setItem('google_oauth_result', resultString);
       console.log('GoogleOAuth: ✅ Successfully saved to localStorage');
     } catch (err) {

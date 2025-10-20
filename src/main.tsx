@@ -4,6 +4,10 @@ import App from './App.tsx';
 import './index.css';
 import { Loader2 } from "lucide-react";
 
+// Add global error diagnostics to capture circular JSON errors
+window.addEventListener('error', e => console.error('GLOBAL ERROR', e.error?.message, e.error?.stack));
+window.addEventListener('unhandledrejection', e => console.error('GLOBAL REJECTION', e.reason?.message, e.reason?.stack));
+
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {

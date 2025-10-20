@@ -10,14 +10,9 @@ import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info, RefreshCw, CheckCircle, ArrowRight, AlertTriangle } from 'lucide-react';
 import { isEmbeddedMode, execMondayQuery } from '@/utils/mondaySDK';
+import { safeStringify, toMsg } from '@/lib/safeJson';
 
-// Helper function to normalize errors before showing in UI/toast
-const toMsg = (err: unknown): string => {
-  if (!err) return 'Unknown error';
-  if (typeof err === 'string') return err;
-  if (typeof (err as any).message === 'string') return (err as any).message;
-  try { return JSON.stringify(err); } catch { return 'Unexpected error'; }
-};
+// Using the safer toMsg function from safeJson utility
 
 export function GoogleSheetsConnect() {
   const navigate = useNavigate();
