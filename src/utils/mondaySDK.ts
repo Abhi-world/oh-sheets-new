@@ -135,7 +135,30 @@ export async function execMondayQuery(query: string, variables?: Record<string, 
     console.log('🔵 [execMondayQuery] Using Monday SDK in embedded mode.');
     try {
       const mondayClient = getMondaySDK();
-      const response = (await mondayClient.api(query, { variables })) as any;
+      
+      // Safely handle variables to prevent circular references
+      const safeVariables = {};
+      if (variables) {
+        try {
+          // Create a safe copy of variables without circular references
+          for (const key in variables) {
+            if (Object.prototype.hasOwnProperty.call(variables, key)) {
+              // Skip window, document, or other DOM objects
+              if (variables[key] instanceof Window || 
+                  variables[key] instanceof Document || 
+                  (variables[key] && variables[key].nodeType)) {
+                continue;
+              }
+              safeVariables[key] = variables[key];
+            }
+          }
+        } catch (err) {
+          console.warn('Error sanitizing variables:', err);
+          // Continue with empty variables if there's an issue
+        }
+      }
+      
+      const response = (await mondayClient.api(query, { variables: safeVariables })) as any;
 
       console.log('✅ [execMondayQuery] SDK response:', response);
 
@@ -168,13 +191,35 @@ export async function execMondayQuery(query: string, variables?: Record<string, 
             throw new Error('Monday.com access token not found. Please connect your account.');
         }
 
+        // Safely handle variables to prevent circular references
+        const safeVariables = {};
+        if (variables) {
+          try {
+            // Create a safe copy of variables without circular references
+            for (const key in variables) {
+              if (Object.prototype.hasOwnProperty.call(variables, key)) {
+                // Skip window, document, or other DOM objects
+                if (variables[key] instanceof Window || 
+                    variables[key] instanceof Document || 
+                    (variables[key] && variables[key].nodeType)) {
+                  continue;
+                }
+                safeVariables[key] = variables[key];
+              }
+            }
+          } catch (err) {
+            console.warn('Error sanitizing variables:', err);
+            // Continue with empty variables if there's an issue
+          }
+        }
+
         const response = await fetch('https://api.monday.com/v2', {
             method: 'POST',
             headers: {
                 'Authorization': profile.monday_access_token,
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ query, variables }),
+            body: JSON.stringify({ query, variables: safeVariables }),
         });
 
         if (!response.ok) {

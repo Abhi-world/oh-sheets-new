@@ -193,24 +193,58 @@ export function GoogleSheetsConnect() {
 
     // Add event listener for postMessage from popup window
     const handlePostMessage = (evt: MessageEvent) => {
-        // Never log the entire MessageEvent (contains circular window refs)
-        console.log('📨 [GoogleSheetsConnect] origin:', evt.origin);
-
-        // Accept only our message type and ensure payload is plain JSON
-        const data = evt?.data;
-        if (!data || data.type !== 'google_oauth_result') return;
-
-        // Log only primitives
-        console.log('📨 [GoogleSheetsConnect] hasCode:', Boolean(data.code));
-        console.log('📨 [GoogleSheetsConnect] hasError:', Boolean(data.error));
-
-        if (typeof data.code === 'string' && data.code) {
-            exchangeCodeForTokens(data.code);
-            return;
-        }
-
-        if (data.error) {
-            const msg = typeof data.error === 'string' ? data.error : 'Authorization failed in popup.';
+        try {
+            // Never log the entire MessageEvent (contains circular window refs)
+            console.log('📨 [GoogleSheetsConnect] origin:', evt.origin);
+            
+            // Safely extract data from the event to avoid circular references
+            let safeData;
+            if (evt?.data) {
+                // Only extract the properties we need
+                const rawData = evt.data;
+                if (typeof rawData === 'object') {
+                    safeData = {
+                        type: rawData.type,
+                        code: typeof rawData.code === 'string' ? rawData.code : null,
+                        error: rawData.error ? 
+                            (typeof rawData.error === 'string' ? rawData.error : 'Unknown error') : 
+                            null
+                    };
+                } else if (typeof rawData === 'string') {
+                    try {
+                        // Try to parse if it's a JSON string
+                        safeData = JSON.parse(rawData);
+                    } catch {
+                        // Not JSON, use as is
+                        safeData = { type: null };
+                    }
+                } else {
+                    safeData = { type: null };
+                }
+            } else {
+                safeData = { type: null };
+            }
+            
+            // Accept only our message type
+            if (!safeData || safeData.type !== 'google_oauth_result') return;
+            
+            // Log only primitives
+            console.log('📨 [GoogleSheetsConnect] hasCode:', Boolean(safeData.code));
+            console.log('📨 [GoogleSheetsConnect] hasError:', Boolean(safeData.error));
+            
+            if (typeof safeData.code === 'string' && safeData.code) {
+                exchangeCodeForTokens(safeData.code);
+                return;
+            }
+            
+            if (safeData.error) {
+                const msg = typeof safeData.error === 'string' ? safeData.error : 'Authorization failed in popup.';
+                setConnectionError(msg);
+                toast({ title: 'Authorization Error', description: msg, variant: 'destructive' });
+            }
+        } catch (err) {
+            console.error('Error handling postMessage:', err);
+            const msg = 'Error processing authentication response';
             setConnectionError(msg);
             toast({ title: 'Authorization Error', description: msg, variant: 'destructive' });
         }
