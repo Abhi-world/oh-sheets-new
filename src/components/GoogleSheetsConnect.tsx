@@ -297,10 +297,13 @@ export function GoogleSheetsConnect() {
         let userResponse;
         try {
           userResponse = await execMondayQuery('query { me { id } }');
-          console.log('✅ [handleConnect] Got Monday user response:', safeStringify(userResponse));
+          // Only log safe properties, not the entire response object which may contain circular references
+          console.log('✅ [handleConnect] Got Monday user ID:', userResponse?.data?.me?.id);
         } catch (mondayErr) {
-          console.error('❌ [handleConnect] Monday query error:', toMsg(mondayErr));
-          throw new Error(`Monday API error: ${toMsg(mondayErr)}`);
+          // Use toMsg to safely convert the error to a string
+          const errorMsg = toMsg(mondayErr);
+          console.error('❌ [handleConnect] Monday query error:', errorMsg);
+          throw new Error(`Monday API error: ${errorMsg}`);
         }
         
         const mondayUserId = userResponse?.data?.me?.id;
@@ -320,10 +323,12 @@ export function GoogleSheetsConnect() {
               force_consent: forceConsent 
             }
           });
-          console.log('✅ [handleConnect] Got OAuth init response:', safeStringify(oauthResponse));
+          // Only log relevant data, not the entire response
+          console.log('✅ [handleConnect] Got OAuth URL:', oauthResponse?.data?.url);
         } catch (supabaseErr) {
-          console.error('❌ [handleConnect] Supabase function error:', toMsg(supabaseErr));
-          throw new Error(`Supabase function error: ${toMsg(supabaseErr)}`);
+          const errorMsg = toMsg(supabaseErr);
+          console.error('❌ [handleConnect] Supabase function error:', errorMsg);
+          throw new Error(`Supabase function error: ${errorMsg}`);
         }
         
         const { data, error } = oauthResponse;
