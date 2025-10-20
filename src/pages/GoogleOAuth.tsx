@@ -1,46 +1,66 @@
 import { useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 export function GoogleOAuthCallback() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   useEffect(() => {
-    // Extract ONLY primitive values from URL
+    console.log('GoogleOAuth: Callback initiated');
+    
+    // Extract ONLY primitive values from URL as strings
     const code = searchParams.get('code');
     const error = searchParams.get('error');
     const state = searchParams.get('state');
+    
+    console.log('GoogleOAuth: Extracted params:', { 
+      code: code ? 'present' : 'missing', 
+      error: error || 'none', 
+      state: state ? 'present' : 'missing' 
+    });
 
-    // Build plain JSON object - NO window/response/event references
+    // Build a simple serializable object with only primitive values
     const result = {
       type: 'google_oauth_result',
-      code: code || undefined,
-      error: error || undefined,
-      state: state || undefined,
+      code: code || null,
+      error: error || null,
+      state: state || null,
       timestamp: Date.now()
     };
 
-    // Send to parent window
-    if (window.opener && !window.opener.closed) {
+    console.log('GoogleOAuth: Created result object (sanitized)');
+    
+    // First try: postMessage to parent window
+    let postMessageSuccess = false;
+    if (window.opener) {
       try {
-        window.opener.postMessage(result, '*');
-        console.log('✅ OAuth result sent to opener');
+        // Use structured clone algorithm with simple data
+        window.opener.postMessage(JSON.parse(JSON.stringify(result)), '*');
+        console.log('GoogleOAuth: ✅ Successfully sent via postMessage');
+        postMessageSuccess = true;
       } catch (err) {
-        console.error('❌ postMessage failed:', err);
+        console.error('GoogleOAuth: ❌ postMessage failed:', err.message);
       }
+    } else {
+      console.log('GoogleOAuth: No opener window found');
     }
 
-    // Fallback: Store in localStorage
+    // Second try: localStorage fallback
     try {
-      localStorage.setItem('google_oauth_result', JSON.stringify(result));
+      const resultString = JSON.stringify(result);
+      localStorage.setItem('google_oauth_result', resultString);
+      console.log('GoogleOAuth: ✅ Successfully saved to localStorage');
     } catch (err) {
-      console.error('localStorage write failed:', err);
+      console.error('GoogleOAuth: ❌ localStorage write failed:', err.message);
     }
 
-    // Close popup after 500ms
+    // Close popup after delay (longer if postMessage failed)
+    const closeDelay = postMessageSuccess ? 800 : 1500;
+    console.log(`GoogleOAuth: Window will close in ${closeDelay}ms`);
+    
     setTimeout(() => {
+      console.log('GoogleOAuth: Closing window now');
       window.close();
-    }, 500);
+    }, closeDelay);
 
   }, [searchParams]);
 
