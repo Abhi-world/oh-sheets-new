@@ -282,13 +282,29 @@ export function GoogleSheetsConnect() {
       return;
     }
     
+    // Add a loading message to the popup so user knows it's working
+    try {
+      popup.document.write('<html><head><title>Connecting to Google Sheets...</title></head><body style="font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f5f5f5;"><div style="text-align: center;"><h2>Connecting to Google Sheets</h2><p>Please wait while we redirect you to Google authentication...</p><div style="width: 40px; height: 40px; border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; animation: spin 2s linear infinite; margin: 20px auto;"></div><style>@keyframes spin {0% { transform: rotate(0deg); }100% { transform: rotate(360deg); }}</style></div></body></html>');
+    } catch (e) {
+      console.warn('Could not write to popup document, but continuing anyway:', toMsg(e));
+    }
+    
     // Step 2: Asynchronously get the URL and redirect the popup
     const getUrlAndRedirect = async () => {
       try {
         // Get Monday user ID
         console.log('🔄 [handleConnect] Getting Monday user ID...');
-        const userResponse = await execMondayQuery('query { me { id } }');
+        let userResponse;
+        try {
+          userResponse = await execMondayQuery('query { me { id } }');
+          console.log('✅ [handleConnect] Got Monday user response:', safeStringify(userResponse));
+        } catch (mondayErr) {
+          console.error('❌ [handleConnect] Monday query error:', toMsg(mondayErr));
+          throw new Error(`Monday API error: ${toMsg(mondayErr)}`);
+        }
+        
         const mondayUserId = userResponse?.data?.me?.id;
+        console.log('🔍 [handleConnect] Monday user ID:', mondayUserId);
         
         if (!mondayUserId) {
           throw new Error('Could not get Monday.com user to initiate connection.');
@@ -296,27 +312,69 @@ export function GoogleSheetsConnect() {
         
         // Get OAuth URL
         console.log('🔄 [handleConnect] Getting OAuth URL from Edge Function...');
-        const { data, error } = await supabase.functions.invoke('google-oauth-init', {
-          body: { 
-            monday_user_id: String(mondayUserId),
-            force_consent: forceConsent 
-          }
-        });
+        let oauthResponse;
+        try {
+          oauthResponse = await supabase.functions.invoke('google-oauth-init', {
+            body: { 
+              monday_user_id: String(mondayUserId),
+              force_consent: forceConsent 
+            }
+          });
+          console.log('✅ [handleConnect] Got OAuth init response:', safeStringify(oauthResponse));
+        } catch (supabaseErr) {
+          console.error('❌ [handleConnect] Supabase function error:', toMsg(supabaseErr));
+          throw new Error(`Supabase function error: ${toMsg(supabaseErr)}`);
+        }
         
-        if (error) throw error;
-        if (!data?.url) throw new Error('Failed to generate OAuth URL');
+        const { data, error } = oauthResponse;
+        
+        if (error) {
+          console.error('❌ [handleConnect] OAuth init returned error:', toMsg(error));
+          throw error;
+        }
+        
+        if (!data?.url) {
+          console.error('❌ [handleConnect] No URL in OAuth init response:', safeStringify(data));
+          throw new Error('Failed to generate OAuth URL');
+        }
         
         // Step 3: Redirect the already-open popup
-        console.log('🔍 [handleConnect] Redirecting popup to OAuth URL');
-        popup.location.href = data.url;
-        console.log('✅ [handleConnect] Popup redirected successfully');
+        console.log('🔍 [handleConnect] Redirecting popup to OAuth URL:', data.url);
+        
+        // Check if popup is still open before redirecting
+        if (popup.closed) {
+          console.error('❌ [handleConnect] Popup was closed by user before redirect');
+          throw new Error('Authentication popup was closed');
+        }
+        
+        // Try-catch around the redirect to handle potential cross-origin issues
+        try {
+          popup.location.href = data.url;
+          console.log('✅ [handleConnect] Popup redirected successfully');
+        } catch (redirectErr) {
+          console.error('❌ [handleConnect] Error redirecting popup:', toMsg(redirectErr));
+          throw new Error(`Failed to redirect: ${toMsg(redirectErr)}`);
+        }
         
       } catch (err) {
         const msg = toMsg(err);
         console.error('❌ [handleConnect] Error during OAuth process:', msg);
         setConnectionError(msg);
         toast({ title: 'Connection Error', description: msg, variant: 'destructive' });
-        popup.close(); // Close the blank popup if an error occurs
+        
+        // Don't close the popup immediately - show the error to the user
+        try {
+          if (!popup.closed) {
+            popup.document.write(`<html><head><title>Connection Error</title></head><body style="font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #fff0f0;"><div style="text-align: center; max-width: 80%;"><h2 style="color: #e74c3c;">Connection Error</h2><p>${msg}</p><p>Please close this window and try again.</p><p>If the problem persists, check your Google Cloud Console configuration.</p></div></body></html>`);
+            // Let the user close the popup manually so they can see the error
+          }
+        } catch (e) {
+          console.warn('Could not write error to popup:', toMsg(e));
+          // Only close if we couldn't show the error
+          if (!popup.closed) {
+            popup.close();
+          }
+        }
       } finally {
         setIsLoading(false);
       }
