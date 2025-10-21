@@ -382,8 +382,12 @@ export function GoogleSheetsConnect() {
               JSON.stringify(data || {}).substring(0, 100));
             throw new Error('Backend did not return OAuth URL');
           }
-        
-        console.log('✅ [handleConnect] Got OAuth URL from Edge Function');
+          
+          console.log('✅ [handleConnect] Got OAuth URL from Edge Function');
+        } catch (fetchErr) {
+          console.error('❌ [handleConnect] Fetch error:', toSafeMsg(fetchErr));
+          throw new Error(`Failed to get OAuth URL: ${toSafeMsg(fetchErr)}`);
+        }
         
         // Step 3: Redirect the popup to the OAuth URL
         if (popup.closed) {
@@ -480,7 +484,7 @@ export function GoogleSheetsConnect() {
     
     // Start the async process
     getUrlAndRedirect();
-  }
+  };
 
   const handleDisconnect = async () => {
     setIsLoading(true);
