@@ -276,8 +276,7 @@ export function GoogleSheetsConnect() {
     
     // Step 1: Open a blank popup immediately on click (synchronous)
     // This avoids popup blockers since it's directly triggered by user action
-    // Use a detached popup approach to avoid circular references
-    const popupFeatures = 'width=500,height=600,resizable=yes,scrollbars=yes';
+    const popupFeatures = 'width=600,height=700,resizable=yes,scrollbars=yes,top=50,left=50';
     const popupUrl = 'about:blank';
     const popupName = 'google-oauth-popup';
     
@@ -287,7 +286,7 @@ export function GoogleSheetsConnect() {
     if (!popup) {
       toast({
         title: 'Error',
-        description: 'Popup blocked. Please allow popups for this site.',
+        description: 'Popup blocked. Please allow popups for this site and try again.',
         variant: 'destructive'
       });
       setIsLoading(false);
@@ -296,9 +295,24 @@ export function GoogleSheetsConnect() {
     
     // Add a loading message to the popup so user knows it's working
     try {
-      // Use document.write without storing references to DOM objects
-      popup.document.write('<html><head><title>Connecting to Google Sheets...</title></head><body style="font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f5f5f5;"><div style="text-align: center;"><h2>Connecting to Google Sheets</h2><p>Please wait while we redirect you to Google authentication...</p><div style="width: 40px; height: 40px; border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; animation: spin 2s linear infinite; margin: 20px auto;"></div><style>@keyframes spin {0% { transform: rotate(0deg); }100% { transform: rotate(360deg); }}</style></div></body></html>');
-      // Close the document to prevent further manipulation
+      // Use a simple loading page with no complex DOM manipulation
+      const loadingHtml = `
+        <html>
+          <head>
+            <title>Connecting to Google Sheets...</title>
+            <meta charset="utf-8">
+          </head>
+          <body style="font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f5f5f5;">
+            <div style="text-align: center;">
+              <h2>Connecting to Google Sheets</h2>
+              <p>Please wait while we redirect you to Google authentication...</p>
+              <div style="width: 40px; height: 40px; border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; animation: spin 2s linear infinite; margin: 20px auto;"></div>
+              <style>@keyframes spin {0% { transform: rotate(0deg); }100% { transform: rotate(360deg); }}</style>
+            </div>
+          </body>
+        </html>
+      `;
+      popup.document.write(loadingHtml);
       popup.document.close();
     } catch (e) {
       console.warn('Could not write to popup document, but continuing anyway:', toMsg(e));
@@ -309,116 +323,143 @@ export function GoogleSheetsConnect() {
       try {
         // Get Monday user ID
         console.log('🔄 [handleConnect] Getting Monday user ID...');
-        let userResponse;
+        let mondayUserId;
+        
         try {
-          userResponse = await execMondayQuery('query { me { id } }');
-          // Only log safe properties, not the entire response object which may contain circular references
-          console.log('✅ [handleConnect] Got Monday user ID:', userResponse?.data?.me?.id);
+          const userResponse = await execMondayQuery('query { me { id } }');
+          mondayUserId = userResponse?.data?.me?.id;
+          console.log('✅ [handleConnect] Got Monday user ID:', mondayUserId);
         } catch (mondayErr) {
-          // Use toMsg to safely convert the error to a string
           const errorMsg = toMsg(mondayErr);
           console.error('❌ [handleConnect] Monday query error:', errorMsg);
           throw new Error(`Monday API error: ${errorMsg}`);
         }
         
-        const mondayUserId = userResponse?.data?.me?.id;
-        console.log('🔍 [handleConnect] Monday user ID:', mondayUserId);
-        
         if (!mondayUserId) {
           throw new Error('Could not get Monday.com user to initiate connection.');
         }
         
-        // Get OAuth URL - Using safer approach to prevent circular JSON errors
+        // Get OAuth URL from edge function
         console.log('🔄 [handleConnect] Getting OAuth URL from Edge Function...');
         
-        // Use a separate try-catch block specifically for the OAuth URL retrieval
-        let authUrl: string | undefined;
+        let oauthResponse;
         try {
-          const { data, error } = await supabase.functions.invoke('google-oauth-init', {
+          oauthResponse = await supabase.functions.invoke('google-oauth-init', {
             body: { 
               monday_user_id: String(mondayUserId),
               force_consent: forceConsent 
             }
           });
-          
-          // Check for FUNCTION-LEVEL errors first, using the safe message converter
-          if (error) {
-            console.error('❌ [handleConnect] Supabase function invocation failed:', toMsg(error));
-            throw new Error(`Failed to initialize OAuth: ${toMsg(error)}`);
-          }
-          
-          // Check if the expected URL property exists in the data and is a string
-          if (!data?.url || typeof data.url !== 'string') {
-            console.error('❌ [handleConnect] Edge function did not return a valid URL. Response data:', 
-              typeof data === 'object' ? 'Response missing URL property' : 'Invalid response data');
-            throw new Error('Failed to generate OAuth URL from backend.');
-          }
-          
-          // If everything is okay, assign the URL to a local variable
-          authUrl = data.url;
-          console.log('✅ [handleConnect] Got OAuth URL from Edge Function. Force consent:', forceConsent);
-          
         } catch (invokeError) {
-          // Catch errors specifically from the invoke call or initial checks
-          // Re-throw using the safe message converter to ensure the outer catch handles a string
           const errorMsg = toMsg(invokeError);
           console.error('❌ [handleConnect] OAuth initialization error:', errorMsg);
           throw new Error(`OAuth Initialization Error: ${errorMsg}`);
         }
         
-        // Only proceed if we have a valid authUrl
-        if (!authUrl) {
-          throw new Error('No valid OAuth URL was generated');
+        // Check for function-level errors
+        if (oauthResponse.error) {
+          const errorMsg = typeof oauthResponse.error === 'string' 
+            ? oauthResponse.error 
+            : toMsg(oauthResponse.error);
+          console.error('❌ [handleConnect] Supabase function error:', errorMsg);
+          throw new Error(`Failed to initialize OAuth: ${errorMsg}`);
         }
         
-        // Step 3: Redirect the already-open popup
-        console.log('🔍 [handleConnect] Redirecting popup to OAuth URL');
+        // Validate the URL in the response
+        const authUrl = oauthResponse.data?.url;
+        if (!authUrl || typeof authUrl !== 'string') {
+          console.error('❌ [handleConnect] Invalid OAuth URL response:', 
+            JSON.stringify(oauthResponse.data || {}).substring(0, 100));
+          throw new Error('Failed to generate OAuth URL from backend.');
+        }
         
-        // Check if popup is still open before redirecting
+        console.log('✅ [handleConnect] Got OAuth URL from Edge Function');
+        
+        // Step 3: Redirect the popup to the OAuth URL
         if (popup.closed) {
           console.error('❌ [handleConnect] Popup was closed by user before redirect');
           throw new Error('Authentication popup was closed');
         }
         
-        // Try-catch around the redirect to handle potential cross-origin issues
+        // Use a safer approach to redirect
         try {
-          // Use the local authUrl variable to avoid potential circular references
-          // Use window.open again instead of manipulating location directly to avoid circular references
-          const newPopup = window.open(authUrl, popupName);
-          
-          // If the new popup failed to open, try the direct approach as fallback
-          if (!newPopup) {
-            popup.location.href = authUrl;
-          }
-          
+          // First try: Direct location change
+          popup.location.href = authUrl;
           console.log('✅ [handleConnect] Popup redirected successfully to OAuth URL');
         } catch (redirectErr) {
-          const errorMsg = toMsg(redirectErr);
-          console.error('❌ [handleConnect] Error redirecting popup:', errorMsg);
-          throw new Error(`Failed to redirect: ${errorMsg}`);
+          console.error('❌ [handleConnect] Error with direct redirect:', toMsg(redirectErr));
+          
+          // Second try: Open a new window with the URL
+          try {
+            const newPopup = window.open(authUrl, popupName);
+            if (!newPopup) {
+              throw new Error('Failed to open OAuth URL in popup');
+            }
+            console.log('✅ [handleConnect] Opened new popup with OAuth URL');
+          } catch (newPopupErr) {
+            console.error('❌ [handleConnect] Error opening new popup:', toMsg(newPopupErr));
+            
+            // Last resort: Try to write a redirect script to the popup
+            try {
+              if (!popup.closed) {
+                popup.document.write(`
+                  <html>
+                    <head>
+                      <meta http-equiv="refresh" content="0;url=${authUrl}">
+                      <script>window.location.href = "${authUrl}";</script>
+                    </head>
+                    <body>
+                      <p>Redirecting to Google authentication...</p>
+                      <p>If you are not redirected, <a href="${authUrl}" target="_self">click here</a>.</p>
+                    </body>
+                  </html>
+                `);
+                popup.document.close();
+              } else {
+                throw new Error('Popup was closed');
+              }
+            } catch (writeErr) {
+              throw new Error(`All redirect methods failed: ${toMsg(writeErr)}`);
+            }
+          }
         }
         
       } catch (err) {
         const msg = toMsg(err);
         console.error('❌ [handleConnect] Error during OAuth process:', msg);
         setConnectionError(msg);
-        toast({ title: 'Connection Error', description: msg, variant: 'destructive' });
+        toast({ 
+          title: 'Connection Error', 
+          description: msg, 
+          variant: 'destructive' 
+        });
         
-        // Don't close the popup immediately - show the error to the user
+        // Show error in popup if it's still open
         try {
-          if (!popup.closed) {
-            // Create error message without DOM manipulation that could cause circular references
-            const errorHtml = `<html><head><title>Connection Error</title></head><body style="font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #fff0f0;"><div style="text-align: center; max-width: 80%;"><h2 style="color: #e74c3c;">Connection Error</h2><p>${msg}</p><p>Please close this window and try again.</p><p>If the problem persists, check your Google Cloud Console configuration.</p></div></body></html>`;
-            
-            // Use document.write and immediately close to prevent further manipulation
+          if (popup && !popup.closed) {
+            const errorHtml = `
+              <html>
+                <head>
+                  <title>Connection Error</title>
+                  <meta charset="utf-8">
+                </head>
+                <body style="font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #fff0f0;">
+                  <div style="text-align: center; max-width: 80%;">
+                    <h2 style="color: #e74c3c;">Connection Error</h2>
+                    <p>${msg}</p>
+                    <p>Please close this window and try again.</p>
+                    <p>If the problem persists, check your Google Cloud Console configuration.</p>
+                    <button onclick="window.close()" style="padding: 8px 16px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px;">Close Window</button>
+                  </div>
+                </body>
+              </html>
+            `;
             popup.document.write(errorHtml);
             popup.document.close();
-            // Let the user close the popup manually so they can see the error
           }
         } catch (e) {
           console.warn('Could not write error to popup:', toMsg(e));
-          // Only close if we couldn't show the error
-          if (!popup.closed) {
+          if (popup && !popup.closed) {
             popup.close();
           }
         }

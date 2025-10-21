@@ -26,12 +26,21 @@ Deno.serve(async (req) => {
     
     // Get Google client ID from environment variables
     const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
+    
+    // Log environment variable status for debugging
+    console.log('[google-oauth-init] Environment check:', {
+      GOOGLE_CLIENT_ID_exists: !!clientId,
+      SUPABASE_URL_exists: !!Deno.env.get('SUPABASE_URL'),
+      SUPABASE_SERVICE_ROLE_KEY_exists: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    });
+    
     if (!clientId) {
       console.error('❌ Missing environment variable: GOOGLE_CLIENT_ID');
-      throw new Error('Google API client ID not configured properly.');
+      throw new Error('Google API client ID not configured properly. Please check Supabase secrets deployment.');
     }
     
-    // Hardcode the redirect URI to match Google Cloud Console setting
+    // Use the correct redirect URI based on the deployment environment
+    // This should match exactly what's configured in Google Cloud Console
     const redirectUri = 'https://funny-otter-9faa67.netlify.app/google-oauth';
     
     // Define the required scopes for Google Sheets and Drive access
@@ -50,7 +59,9 @@ Deno.serve(async (req) => {
     authUrl.searchParams.append('scope', scopes.join(' '));
     authUrl.searchParams.append('access_type', 'offline');
     authUrl.searchParams.append('include_granted_scopes', 'true');
-    authUrl.searchParams.append('approval_prompt', 'force'); // For older OAuth clients
+    
+    // Modern OAuth 2.0 best practices - use prompt instead of approval_prompt
+    // Remove approval_prompt as it's deprecated
     
     // Force consent if requested (important for re-consent with new scopes)
     if (force_consent) {
@@ -63,8 +74,11 @@ Deno.serve(async (req) => {
     // Add state parameter with Monday user ID
     authUrl.searchParams.append('state', monday_user_id);
     
-    console.log(`✅ Generated OAuth URL with scopes: ${scopes.join(' ')}`);
+    // Log the full URL for debugging (but mask the client ID)
+    const debugUrl = authUrl.toString().replace(clientId, 'REDACTED_CLIENT_ID');
+    console.log(`✅ Generated OAuth URL: ${debugUrl}`);
     console.log(`✅ Force consent: ${force_consent}`);
+    console.log(`✅ Scopes requested: ${scopes.join(' ')}`);
     
     return new Response(JSON.stringify({ url: authUrl.toString() }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -73,9 +87,12 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('🔥 [google-oauth-init] Error:', error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      details: 'Failed to initialize OAuth. Please check environment variables and Google Cloud Console configuration.'
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
+      status: 500, // Use 500 for server errors instead of 400
     });
   }
 });
