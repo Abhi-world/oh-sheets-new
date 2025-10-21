@@ -354,6 +354,8 @@ export function GoogleSheetsConnect() {
           throw new Error('Missing Supabase configuration. Please check your environment variables.');
         }
         
+        let authUrl: string | undefined; // HOISTED so it's visible in outer scope
+        
         try {
           const res = await fetch(`${supabaseUrl}/functions/v1/google-oauth-init`, {
             method: 'POST',
@@ -375,7 +377,7 @@ export function GoogleSheetsConnect() {
           }
           
           const data = await res.json();
-          const authUrl = data?.url;
+          authUrl = data?.url; // Assign to the hoisted variable
           
           if (!authUrl) {
             console.error('❌ [handleConnect] Backend did not return OAuth URL:', 
@@ -393,6 +395,11 @@ export function GoogleSheetsConnect() {
         if (popup.closed) {
           console.error('❌ [handleConnect] Popup was closed by user before redirect');
           throw new Error('Authentication popup was closed');
+        }
+        
+        // Validate that we have the authUrl before proceeding
+        if (!authUrl) {
+          throw new Error('OAuth URL is undefined after fetch');
         }
         
         // Use a safer approach to redirect
