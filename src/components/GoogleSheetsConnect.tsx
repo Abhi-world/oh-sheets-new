@@ -480,7 +480,7 @@ export function GoogleSheetsConnect() {
     
     // Start the async process
     getUrlAndRedirect();
-  };
+  }
 
   const handleDisconnect = async () => {
     setIsLoading(true);
