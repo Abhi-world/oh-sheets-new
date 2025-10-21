@@ -86,9 +86,12 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('🔥 [google-oauth-init] Error:', error.message);
+    // Safe error handling to avoid circular references
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error('🔥 [google-oauth-init] Error:', errorMessage);
+    
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: errorMessage,
       details: 'Failed to initialize OAuth. Please check environment variables and Google Cloud Console configuration.'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
