@@ -38,8 +38,8 @@ Deno.serve(async (req) => {
     const scopes = [
       'https://www.googleapis.com/auth/userinfo.profile',
       'https://www.googleapis.com/auth/userinfo.email',
-      'https://www.googleapis.com/auth/drive.readonly',        // CHANGED: full read, not just metadata
-      'https://www.googleapis.com/auth/spreadsheets.readonly'  // CHANGED: read-only, not full write
+      'https://www.googleapis.com/auth/drive.readonly',        // REQUIRED: Read access to files
+      'https://www.googleapis.com/auth/spreadsheets'           // REQUIRED: Allow writing for sheets
     ];
     
     // Build the OAuth URL
