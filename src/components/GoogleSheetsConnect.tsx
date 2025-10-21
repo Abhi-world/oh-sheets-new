@@ -276,7 +276,14 @@ export function GoogleSheetsConnect() {
     
     // Step 1: Open a blank popup immediately on click (synchronous)
     // This avoids popup blockers since it's directly triggered by user action
-    const popup = window.open('about:blank', 'google-oauth-popup', 'width=500,height=600');
+    // Use a detached popup approach to avoid circular references
+    const popupFeatures = 'width=500,height=600,resizable=yes,scrollbars=yes';
+    const popupUrl = 'about:blank';
+    const popupName = 'google-oauth-popup';
+    
+    // Open the popup without storing a direct reference to the window object
+    const popup = window.open(popupUrl, popupName, popupFeatures);
+    
     if (!popup) {
       toast({
         title: 'Error',
@@ -289,7 +296,10 @@ export function GoogleSheetsConnect() {
     
     // Add a loading message to the popup so user knows it's working
     try {
+      // Use document.write without storing references to DOM objects
       popup.document.write('<html><head><title>Connecting to Google Sheets...</title></head><body style="font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f5f5f5;"><div style="text-align: center;"><h2>Connecting to Google Sheets</h2><p>Please wait while we redirect you to Google authentication...</p><div style="width: 40px; height: 40px; border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; animation: spin 2s linear infinite; margin: 20px auto;"></div><style>@keyframes spin {0% { transform: rotate(0deg); }100% { transform: rotate(360deg); }}</style></div></body></html>');
+      // Close the document to prevent further manipulation
+      popup.document.close();
     } catch (e) {
       console.warn('Could not write to popup document, but continuing anyway:', toMsg(e));
     }
@@ -373,7 +383,14 @@ export function GoogleSheetsConnect() {
         // Try-catch around the redirect to handle potential cross-origin issues
         try {
           // Use the local authUrl variable to avoid potential circular references
-          popup.location.href = authUrl;
+          // Use window.open again instead of manipulating location directly to avoid circular references
+          const newPopup = window.open(authUrl, popupName);
+          
+          // If the new popup failed to open, try the direct approach as fallback
+          if (!newPopup) {
+            popup.location.href = authUrl;
+          }
+          
           console.log('✅ [handleConnect] Popup redirected successfully to OAuth URL');
         } catch (redirectErr) {
           const errorMsg = toMsg(redirectErr);
@@ -390,7 +407,12 @@ export function GoogleSheetsConnect() {
         // Don't close the popup immediately - show the error to the user
         try {
           if (!popup.closed) {
-            popup.document.write(`<html><head><title>Connection Error</title></head><body style="font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #fff0f0;"><div style="text-align: center; max-width: 80%;"><h2 style="color: #e74c3c;">Connection Error</h2><p>${msg}</p><p>Please close this window and try again.</p><p>If the problem persists, check your Google Cloud Console configuration.</p></div></body></html>`);
+            // Create error message without DOM manipulation that could cause circular references
+            const errorHtml = `<html><head><title>Connection Error</title></head><body style="font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #fff0f0;"><div style="text-align: center; max-width: 80%;"><h2 style="color: #e74c3c;">Connection Error</h2><p>${msg}</p><p>Please close this window and try again.</p><p>If the problem persists, check your Google Cloud Console configuration.</p></div></body></html>`;
+            
+            // Use document.write and immediately close to prevent further manipulation
+            popup.document.write(errorHtml);
+            popup.document.close();
             // Let the user close the popup manually so they can see the error
           }
         } catch (e) {
