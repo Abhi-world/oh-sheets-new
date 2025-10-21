@@ -318,46 +318,51 @@ export function GoogleSheetsConnect() {
           throw new Error('Could not get Monday.com user to initiate connection.');
         }
         
-        // Get OAuth URL
+        // Get OAuth URL - Using safer approach to prevent circular JSON errors
         console.log('🔄 [handleConnect] Getting OAuth URL from Edge Function...');
-        let oauthResponse;
+        
+        // Use a separate try-catch block specifically for the OAuth URL retrieval
+        let authUrl: string | undefined;
         try {
-          oauthResponse = await supabase.functions.invoke('google-oauth-init', {
+          const { data, error } = await supabase.functions.invoke('google-oauth-init', {
             body: { 
               monday_user_id: String(mondayUserId),
               force_consent: forceConsent 
             }
           });
-          // Only log relevant data, not the entire response
-          const oauthUrl = oauthResponse?.data?.url;
-          console.log('✅ [handleConnect] Got OAuth URL:', typeof oauthUrl === 'string' ? oauthUrl : 'undefined');
-        } catch (supabaseErr) {
-          const errorMsg = toMsg(supabaseErr);
-          console.error('❌ [handleConnect] Supabase function error:', errorMsg);
-          throw new Error(`Supabase function error: ${errorMsg}`);
+          
+          // Check for FUNCTION-LEVEL errors first, using the safe message converter
+          if (error) {
+            console.error('❌ [handleConnect] Supabase function invocation failed:', toMsg(error));
+            throw new Error(`Failed to initialize OAuth: ${toMsg(error)}`);
+          }
+          
+          // Check if the expected URL property exists in the data and is a string
+          if (!data?.url || typeof data.url !== 'string') {
+            console.error('❌ [handleConnect] Edge function did not return a valid URL. Response data:', 
+              typeof data === 'object' ? 'Response missing URL property' : 'Invalid response data');
+            throw new Error('Failed to generate OAuth URL from backend.');
+          }
+          
+          // If everything is okay, assign the URL to a local variable
+          authUrl = data.url;
+          console.log('✅ [handleConnect] Got OAuth URL from Edge Function. Force consent:', forceConsent);
+          
+        } catch (invokeError) {
+          // Catch errors specifically from the invoke call or initial checks
+          // Re-throw using the safe message converter to ensure the outer catch handles a string
+          const errorMsg = toMsg(invokeError);
+          console.error('❌ [handleConnect] OAuth initialization error:', errorMsg);
+          throw new Error(`OAuth Initialization Error: ${errorMsg}`);
         }
         
-        if (!oauthResponse) {
-          throw new Error('No response from OAuth initialization');
-        }
-        
-        const { data, error } = oauthResponse;
-        
-        if (error) {
-          const errorMsg = toMsg(error);
-          console.error('❌ [handleConnect] OAuth init returned error:', errorMsg);
-          throw new Error(`OAuth initialization error: ${errorMsg}`);
-        }
-        
-        if (!data?.url) {
-          // Use primitive values only in logging
-          const safeData = typeof data === 'object' ? 'Response missing URL property' : 'Invalid response data';
-          console.error('❌ [handleConnect] No URL in OAuth init response:', safeData);
-          throw new Error('Failed to generate OAuth URL');
+        // Only proceed if we have a valid authUrl
+        if (!authUrl) {
+          throw new Error('No valid OAuth URL was generated');
         }
         
         // Step 3: Redirect the already-open popup
-        console.log('🔍 [handleConnect] Redirecting popup to OAuth URL:', data.url);
+        console.log('🔍 [handleConnect] Redirecting popup to OAuth URL');
         
         // Check if popup is still open before redirecting
         if (popup.closed) {
@@ -367,9 +372,8 @@ export function GoogleSheetsConnect() {
         
         // Try-catch around the redirect to handle potential cross-origin issues
         try {
-          // Store the URL in a local variable to avoid potential circular references
-          const redirectUrl = data.url;
-          popup.location.href = redirectUrl;
+          // Use the local authUrl variable to avoid potential circular references
+          popup.location.href = authUrl;
           console.log('✅ [handleConnect] Popup redirected successfully to OAuth URL');
         } catch (redirectErr) {
           const errorMsg = toMsg(redirectErr);
