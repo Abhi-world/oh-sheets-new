@@ -12,6 +12,10 @@ import { Info, RefreshCw, CheckCircle, ArrowRight, AlertTriangle } from 'lucide-
 import { isEmbeddedMode, execMondayQuery } from '@/utils/mondaySDK';
 import { safeStringify, toMsg, scrubDanger } from '@/lib/safeJson';
 
+// Add a safer error handling utility function
+const toSafeMsg = (e: unknown) => 
+  e instanceof Error ? e.message : typeof e === 'string' ? e : 'Unexpected error';
+
 // Using the safer toMsg function from safeJson utility
 
 export function GoogleSheetsConnect() {
@@ -42,7 +46,7 @@ export function GoogleSheetsConnect() {
         const userResponse = await execMondayQuery(`query { me { id } }`);
         mondayUserId = userResponse?.data?.me?.id;
       } catch (err) {
-        console.error('Error executing Monday query:', err);
+        console.error('Error executing Monday query:', toSafeMsg(err));
         throw new Error('Failed to retrieve Monday.com user information.');
       }
 
@@ -217,7 +221,7 @@ export function GoogleSheetsConnect() {
                                 null
                         };
                     } catch (err) {
-                        console.error('Error extracting data from message event:', toMsg(err));
+                        console.error('Error extracting data from message event:', toSafeMsg(err));
                         safeData = { type: null };
                     }
                 } else if (typeof rawData === 'string') {
@@ -339,39 +343,45 @@ export function GoogleSheetsConnect() {
           throw new Error('Could not get Monday.com user to initiate connection.');
         }
         
-        // Get OAuth URL from edge function
-        console.log('🔄 [handleConnect] Getting OAuth URL from Edge Function...');
+        // Get OAuth URL from edge function using direct fetch to avoid circular JSON issues
+        console.log('🔄 [handleConnect] Getting OAuth URL from Edge Function using direct fetch...');
         
-        let oauthResponse;
+        // Get Supabase URL and anon key from environment variables
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseAnon = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseAnon) {
+          throw new Error('Missing Supabase configuration. Please check your environment variables.');
+        }
+        
         try {
-          oauthResponse = await supabase.functions.invoke('google-oauth-init', {
-            body: { 
-              monday_user_id: String(mondayUserId),
+          const res = await fetch(`${supabaseUrl}/functions/v1/google-oauth-init`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': supabaseAnon,
+              'Authorization': `Bearer ${supabaseAnon}`, // no-verify-jwt function
+            },
+            body: JSON.stringify({ 
+              monday_user_id: String(mondayUserId), 
               force_consent: forceConsent 
-            }
+            }),
           });
-        } catch (invokeError) {
-          const errorMsg = toMsg(invokeError);
-          console.error('❌ [handleConnect] OAuth initialization error:', errorMsg);
-          throw new Error(`OAuth Initialization Error: ${errorMsg}`);
-        }
-        
-        // Check for function-level errors
-        if (oauthResponse.error) {
-          const errorMsg = typeof oauthResponse.error === 'string' 
-            ? oauthResponse.error 
-            : toMsg(oauthResponse.error);
-          console.error('❌ [handleConnect] Supabase function error:', errorMsg);
-          throw new Error(`Failed to initialize OAuth: ${errorMsg}`);
-        }
-        
-        // Validate the URL in the response
-        const authUrl = oauthResponse.data?.url;
-        if (!authUrl || typeof authUrl !== 'string') {
-          console.error('❌ [handleConnect] Invalid OAuth URL response:', 
-            JSON.stringify(oauthResponse.data || {}).substring(0, 100));
-          throw new Error('Failed to generate OAuth URL from backend.');
-        }
+          
+          if (!res.ok) {
+            const errBody = await res.text();
+            console.error('❌ [handleConnect] OAuth initialization HTTP error:', res.status, errBody);
+            throw new Error(`OAuth init failed (${res.status}): ${errBody}`);
+          }
+          
+          const data = await res.json();
+          const authUrl = data?.url;
+          
+          if (!authUrl) {
+            console.error('❌ [handleConnect] Backend did not return OAuth URL:', 
+              JSON.stringify(data || {}).substring(0, 100));
+            throw new Error('Backend did not return OAuth URL');
+          }
         
         console.log('✅ [handleConnect] Got OAuth URL from Edge Function');
         
@@ -425,7 +435,7 @@ export function GoogleSheetsConnect() {
         }
         
       } catch (err) {
-        const msg = toMsg(err);
+        const msg = toSafeMsg(err);
         console.error('❌ [handleConnect] Error during OAuth process:', msg);
         setConnectionError(msg);
         toast({ 
