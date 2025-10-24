@@ -30,23 +30,26 @@ export function GoogleSheetsConnect() {
   const { toast } = useToast();
 
   const checkConnection = useCallback(async () => {
-    console.log('🔄 [checkConnection] Starting...');
+    console.log('🔄 [checkConnection] Starting connection check...');
     setIsLoading(true);
     setConnectionError(null);
     setNoSpreadsheetsFound(false);
 
     try {
       if (!isEmbeddedMode()) {
+        console.error('❌ [checkConnection] Not running in embedded mode');
         throw new Error('This app must be run inside Monday.com.');
       }
 
       // Use a try-catch block to handle potential circular structure errors
       let mondayUserId;
       try {
+        console.log('🔄 [checkConnection] Retrieving Monday user ID...');
         const userResponse = await execMondayQuery(`query { me { id } }`);
         mondayUserId = userResponse?.data?.me?.id;
+        console.log('✅ [checkConnection] Successfully retrieved Monday user ID:', mondayUserId);
       } catch (err) {
-        console.error('Error executing Monday query:', toSafeMsg(err));
+        console.error('❌ [checkConnection] Error executing Monday query:', toSafeMsg(err));
         throw new Error('Failed to retrieve Monday.com user information.');
       }
 
@@ -61,23 +64,31 @@ export function GoogleSheetsConnect() {
         return;
       }
       
+      console.log('🔄 [checkConnection] Invoking check-google-connection function...');
       const { data, error } = await supabase.functions.invoke('check-google-connection', {
         body: { monday_user_id: String(mondayUserId) }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ [checkConnection] Error checking connection:', toSafeMsg(error));
+        throw error;
+      }
 
+      console.log('✅ [checkConnection] Connection check result:', data?.connected ? 'Connected' : 'Not connected');
       if (data?.connected) {
         setIsConnected(true);
         
         // Check if we can fetch spreadsheets to verify OAuth scopes
         try {
-          console.log('🔍 Checking if spreadsheets can be fetched...');
+          console.log('🔍 [checkConnection] Checking if spreadsheets can be fetched...');
           const { data: sheetsData, error: sheetsError } = await supabase.functions.invoke('gs-list-spreadsheets', {
             body: { monday_user_id: String(mondayUserId) }
           });
           
-          if (sheetsError) throw sheetsError;
+          if (sheetsError) {
+            console.error('❌ [checkConnection] Error fetching spreadsheets:', toSafeMsg(sheetsError));
+            throw sheetsError;
+          }
           
           // If no spreadsheets are returned, it might be an OAuth scope issue
           if (!sheetsData?.spreadsheets || sheetsData.spreadsheets.length === 0) {
@@ -130,7 +141,7 @@ export function GoogleSheetsConnect() {
             const userResponse = await execMondayQuery(`query { me { id } }`);
             mondayUserId = userResponse?.data?.me?.id;
         } catch (err) {
-            console.error('Error executing Monday query:', err);
+            console.error('Error executing Monday query:', toSafeMsg(err));
             throw new Error('Failed to retrieve Monday.com user information.');
         }
         
@@ -139,17 +150,24 @@ export function GoogleSheetsConnect() {
         }
         
         console.log('🔄 [exchangeCodeForTokens] Calling google-oauth-exchange function');
-        const { error } = await supabase.functions.invoke('google-oauth-exchange', {
+        const { data, error } = await supabase.functions.invoke('google-oauth-exchange', {
             body: { code, monday_user_id: String(mondayUserId) }
         });
         
         if (error) throw error;
-
-        toast({ title: 'Success!', description: 'Google Sheets connected successfully!' });
+        
+        if (data?.success) {
+            console.log('✅ [exchangeCodeForTokens] Token exchange successful');
+            toast({ title: 'Success!', description: 'Google Sheets connected successfully!' });
+        } else {
+            console.log('⚠️ [exchangeCodeForTokens] Token exchange succeeded but no success flag');
+        }
+        
         await checkConnection();
     } catch (err)
     {
         const msg = toMsg(err);
+        console.error('❌ [exchangeCodeForTokens] Error during token exchange:', msg);
         setConnectionError(msg);
         toast({
             title: 'Connection Error',
@@ -203,7 +221,10 @@ export function GoogleSheetsConnect() {
             const safeOrigin = typeof evt.origin === 'string' ? evt.origin : 'unknown';
             console.log('📨 [GoogleSheetsConnect] origin:', safeOrigin);
             
-            // Use cross-realm safe scrubDanger function to handle MessageEvent data
+            // Log connection attempt for debugging
+            console.log('🔄 [GoogleSheetsConnect] Processing message from origin:', safeOrigin);
+            
+            // Use cross-realm safe approach to handle MessageEvent data
             // This prevents circular references from Window/Event objects across iframes
             let safeData;
             if (evt?.data) {
@@ -212,7 +233,7 @@ export function GoogleSheetsConnect() {
                 if (typeof rawData === 'object') {
                     try {
                         // Extract only the properties we need directly to avoid circular references
-                        // Don't use scrubDanger on the entire object as it may still cause issues
+                        // Don't use any methods that might cause circular reference issues
                         safeData = {
                             type: typeof rawData.type === 'string' ? rawData.type : null,
                             code: typeof rawData.code === 'string' ? rawData.code : null,
@@ -285,7 +306,20 @@ export function GoogleSheetsConnect() {
     const popupName = 'google-oauth-popup';
     
     // Open the popup without storing a direct reference to the window object
-    const popup = window.open(popupUrl, popupName, popupFeatures);
+    // Use a try-catch to handle potential errors with window.open
+    let popup;
+    try {
+      popup = window.open(popupUrl, popupName, popupFeatures);
+    } catch (err) {
+      console.error('❌ [handleConnect] Error opening popup:', err);
+      toast({
+        title: 'Error',
+        description: 'Failed to open authentication popup. Please try again.',
+        variant: 'destructive'
+      });
+      setIsLoading(false);
+      return;
+    }
     
     if (!popup) {
       toast({
@@ -357,6 +391,9 @@ export function GoogleSheetsConnect() {
         let authUrl: string | undefined; // HOISTED so it's visible in outer scope
         
         try {
+          // Log the request attempt
+          console.log('🔄 [handleConnect] Sending request to google-oauth-init endpoint');
+          
           const res = await fetch(`${supabaseUrl}/functions/v1/google-oauth-init`, {
             method: 'POST',
             headers: {
@@ -376,8 +413,20 @@ export function GoogleSheetsConnect() {
             throw new Error(`OAuth init failed (${res.status}): ${errBody}`);
           }
           
-          const data = await res.json();
-          authUrl = data?.url; // Assign to the hoisted variable
+          // Parse response text first to avoid JSON circular reference issues
+          const responseText = await res.text();
+          console.log('✅ [handleConnect] Received response from google-oauth-init');
+          
+          try {
+            // Safely parse the JSON response
+            const data = JSON.parse(responseText);
+            authUrl = data?.url; // Assign to the hoisted variable
+            console.log('✅ [handleConnect] Successfully parsed OAuth URL from response');
+          } catch (parseError) {
+            console.error('❌ [handleConnect] Failed to parse JSON response:', toSafeMsg(parseError));
+            console.log('Response text (first 100 chars):', responseText.substring(0, 100));
+            throw new Error(`Failed to parse OAuth URL response: ${toSafeMsg(parseError)}`);
+          }
           
           if (!authUrl) {
             console.error('❌ [handleConnect] Backend did not return OAuth URL:', 
@@ -392,7 +441,16 @@ export function GoogleSheetsConnect() {
         }
         
         // Step 3: Redirect the popup to the OAuth URL
-        if (popup.closed) {
+        // Check if popup is closed without directly accessing properties that might cause circular references
+        let isPopupClosed = false;
+        try {
+          isPopupClosed = popup.closed;
+        } catch (err) {
+          console.error('❌ [handleConnect] Error checking if popup is closed:', err);
+          isPopupClosed = true;
+        }
+        
+        if (isPopupClosed) {
           console.error('❌ [handleConnect] Popup was closed by user before redirect');
           throw new Error('Authentication popup was closed');
         }
@@ -404,12 +462,16 @@ export function GoogleSheetsConnect() {
         
         // Use a safer approach to redirect
         try {
-          // First try: Direct location change
-          popup.location.href = authUrl;
-          console.log('✅ [handleConnect] Popup redirected successfully to OAuth URL');
-        } catch (redirectErr) {
-          console.error('❌ [handleConnect] Error with direct redirect:', toMsg(redirectErr));
-          
+          // First try: Direct location change with safe error handling
+          try {
+            popup.location.href = authUrl;
+            console.log('✅ [handleConnect] Popup redirected successfully to OAuth URL');
+          } catch (redirectErr) {
+            // Handle the error without trying to stringify the entire error object
+            console.error('❌ [handleConnect] Error with direct redirect:', typeof redirectErr === 'string' ? redirectErr : 'Redirect error');
+            throw redirectErr; // Re-throw to try alternative methods
+          }
+        } catch (firstMethodErr) {
           // Second try: Open a new window with the URL
           try {
             const newPopup = window.open(authUrl, popupName);
@@ -418,11 +480,19 @@ export function GoogleSheetsConnect() {
             }
             console.log('✅ [handleConnect] Opened new popup with OAuth URL');
           } catch (newPopupErr) {
-            console.error('❌ [handleConnect] Error opening new popup:', toMsg(newPopupErr));
+            console.error('❌ [handleConnect] Error opening new popup:', typeof newPopupErr === 'string' ? newPopupErr : 'New popup error');
             
             // Last resort: Try to write a redirect script to the popup
             try {
-              if (!popup.closed) {
+              // Check if popup is closed again before attempting to write to it
+              let isStillOpen = false;
+              try {
+                isStillOpen = !popup.closed;
+              } catch (checkErr) {
+                console.error('❌ [handleConnect] Error checking if popup is still open:', checkErr);
+              }
+              
+              if (isStillOpen) {
                 popup.document.write(`
                   <html>
                     <head>
@@ -707,8 +777,26 @@ export function GoogleSheetsConnect() {
     return (
       <div className="flex flex-col items-center gap-4 w-full">
         <Button onClick={handleConnect} disabled={isLoading || isAuthorizing} className="flex items-center gap-2 bg-[#0F9D58] hover:bg-[#0F9D58]/90 text-white" size="lg">Connect Google Sheets</Button>
-        {connectionError && (<Alert variant="destructive" className="w-full"><Info className="h-4 w-4" /><AlertTitle>Connection Issue</AlertTitle><AlertDescription>{safeText(connectionError)}</AlertDescription></Alert>)
-        }
+        {connectionError && (
+          <Alert variant="destructive" className="w-full">
+            <Info className="h-4 w-4" />
+            <AlertTitle>Connection Issue</AlertTitle>
+            <AlertDescription>
+              {connectionError.includes('circular structure') ? (
+                <>
+                  Failed to get OAuth URL: Converting circular structure to JSON
+                  --&gt; starting at object with constructor 'Window'
+                  --- property 'window' closes the circle
+                  <div className="mt-2 text-sm">
+                    <p>Please close this window and try again. If the problem persists, check your Google Cloud Console configuration.</p>
+                  </div>
+                </>
+              ) : (
+                safeText(connectionError)
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
       </div>
     );
   };

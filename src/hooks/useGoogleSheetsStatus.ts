@@ -22,36 +22,38 @@ export const useGoogleSheetsStatus = () => {
       const mondayUserId = await getMondayUserId();
       
       if (!mondayUserId) {
-        console.log('❌ [useGoogleSheetsStatus] No Monday user ID');
+        console.log('⚠️ [useGoogleSheetsStatus] No Monday user ID available, skipping check');
         setIsConnected(false);
         setIsLoading(false);
         return;
       }
 
-      console.log('👤 [useGoogleSheetsStatus] Monday User ID:', mondayUserId);
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('google_sheets_credentials')
-        .eq('monday_user_id', String(mondayUserId))
-        .maybeSingle();
+      console.log('🔄 [useGoogleSheetsStatus] Checking Google Sheets connection for user:', mondayUserId);
+      
+      const { data, error } = await supabase.functions.invoke('check-google-connection', {
+        body: { monday_user_id: String(mondayUserId) }
+      });
 
       if (error) {
-        console.error('❌ [useGoogleSheetsStatus] Database error:', error);
+        console.error('❌ [useGoogleSheetsStatus] Connection check error:', error);
         setIsConnected(false);
         setIsLoading(false);
         return;
       }
-
-      // Log the raw data for debugging
-      console.log('📄 [useGoogleSheetsStatus] Raw profile data:', data);
-      console.log('📄 [useGoogleSheetsStatus] Credentials:', data?.google_sheets_credentials);
-
-      const hasCredentials = !!(data?.google_sheets_credentials);
-      console.log('✅ [useGoogleSheetsStatus] Has credentials:', hasCredentials);
-      setIsConnected(hasCredentials);
-    } catch (error) {
-      console.error('❌ [useGoogleSheetsStatus] Error:', error);
+      
+      const isConnected = !!data?.connected;
+      console.log(`${isConnected ? '✅' : '❌'} [useGoogleSheetsStatus] Connection status:`, isConnected);
+      setIsConnected(isConnected);
+    } catch (err) {
+      // Safely log error without risking circular reference issues
+      let errorMessage = 'Unknown error';
+      if (typeof err === 'string') {
+        errorMessage = err;
+      } else if (err instanceof Error) {
+        errorMessage = err.message || 'Error object';
+      }
+      
+      console.error('❌ [useGoogleSheetsStatus] Error checking Google Sheets connection:', errorMessage);
       setIsConnected(false);
     } finally {
       setIsLoading(false);
