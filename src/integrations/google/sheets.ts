@@ -39,7 +39,7 @@ class GoogleSheetsService {
     // Correct scopes (space-separated URLs, no Markdown formatting)
     const scopes = [
       "https://www.googleapis.com/auth/spreadsheets",
-      "https://www.googleapis.com/auth/drive.metadata.readonly"
+      "https://www.googleapis.com/auth/drive"
     ].join(" ");
     
     const p = new URLSearchParams({
