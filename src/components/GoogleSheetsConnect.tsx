@@ -733,15 +733,17 @@ export function GoogleSheetsConnect() {
           {noSpreadsheetsFound && (
             <Alert variant="warning" className="bg-amber-50 border-amber-200 w-full">
               <AlertTriangle className="h-4 w-4 text-amber-600" />
-              <AlertTitle className="text-amber-800">No Spreadsheets Found</AlertTitle>
+              <AlertTitle className="text-amber-800 text-lg">No Spreadsheets Found</AlertTitle>
               <AlertDescription className="text-amber-700">
-                <p className="mb-2">Your Google account may need additional permissions to access spreadsheets.</p>
+                <p className="mb-2 font-medium">Your Google account needs to reconnect with updated permissions to access spreadsheets.</p>
+                <p className="mb-3">We've updated our permissions to fix issues with accessing Google Sheets. Please click the button below to reconnect.</p>
                 <Button 
                   onClick={reconnectGoogle} 
                   disabled={isReconnecting}
-                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                  className="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 text-md"
+                  size="lg"
                 >
-                  {isReconnecting ? 'Reconnecting...' : 'Reconnect with Full Permissions'}
+                  {isReconnecting ? <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Reconnecting...</> : <><RefreshCw className="h-4 w-4 mr-2" /> Reconnect with Full Permissions</>}
                 </Button>
               </AlertDescription>
             </Alert>
