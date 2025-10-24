@@ -295,7 +295,7 @@ export function GoogleSheetsConnect() {
   }, [checkConnection, exchangeCodeForTokens, toast]);
 
 
-  const handleConnect = (forceConsent = false) => {
+  const handleConnect = (forceConsent = true) => {
     setIsLoading(true);
     setConnectionError(null);
     
