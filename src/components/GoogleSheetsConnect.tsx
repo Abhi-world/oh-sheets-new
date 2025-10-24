@@ -311,7 +311,7 @@ export function GoogleSheetsConnect() {
     try {
       popup = window.open(popupUrl, popupName, popupFeatures);
     } catch (err) {
-      console.error('❌ [handleConnect] Error opening popup:', err);
+      console.error('❌ [handleConnect] Error opening popup:', toSafeMsg(err));
       toast({
         title: 'Error',
         description: 'Failed to open authentication popup. Please try again.',
@@ -353,22 +353,23 @@ export function GoogleSheetsConnect() {
       popup.document.write(loadingHtml);
       popup.document.close();
     } catch (e) {
-      console.warn('Could not write to popup document, but continuing anyway:', toMsg(e));
+      console.warn('Could not write to popup document, but continuing anyway:', toSafeMsg(e));
     }
     
     // Step 2: Asynchronously get the URL and redirect the popup
     const getUrlAndRedirect = async () => {
       try {
-        // Get Monday user ID
         console.log('🔄 [handleConnect] Getting Monday user ID...');
-        let mondayUserId;
+        let mondayUserId: string | null = null;
         
         try {
           const userResponse = await execMondayQuery('query { me { id } }');
-          mondayUserId = userResponse?.data?.me?.id;
+          const rawId = userResponse?.data?.me?.id;
+          // Force clean primitive string - no object references
+          mondayUserId = rawId ? String(rawId) : null;
           console.log('✅ [handleConnect] Got Monday user ID:', mondayUserId);
         } catch (mondayErr) {
-          const errorMsg = toMsg(mondayErr);
+          const errorMsg = toSafeMsg(mondayErr);
           console.error('❌ [handleConnect] Monday query error:', errorMsg);
           throw new Error(`Monday API error: ${errorMsg}`);
         }
@@ -377,10 +378,6 @@ export function GoogleSheetsConnect() {
           throw new Error('Could not get Monday.com user to initiate connection.');
         }
         
-        // Get OAuth URL from edge function using direct fetch to avoid circular JSON issues
-        console.log('🔄 [handleConnect] Getting OAuth URL from Edge Function using direct fetch...');
-        
-        // Get Supabase URL and anon key from environment variables
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
         const supabaseAnon = import.meta.env.VITE_SUPABASE_ANON_KEY;
         
@@ -388,10 +385,27 @@ export function GoogleSheetsConnect() {
           throw new Error('Missing Supabase configuration. Please check your environment variables.');
         }
         
-        let authUrl: string | undefined; // HOISTED so it's visible in outer scope
+        let authUrl: string | undefined;
         
         try {
-          // Log the request attempt
+          console.log('🔄 [handleConnect] Building request body...');
+          
+          // Create a completely fresh plain object with explicit primitives
+          const requestPayload = {
+            monday_user_id: String(mondayUserId),
+            force_consent: Boolean(forceConsent)
+          };
+          
+          // Pre-stringify with error handling to catch circular refs
+          let requestBody: string;
+          try {
+            requestBody = JSON.stringify(requestPayload);
+            console.log('✅ [handleConnect] Request body stringified, length:', requestBody.length);
+          } catch (stringifyError) {
+            console.error('❌ [handleConnect] JSON.stringify failed:', toSafeMsg(stringifyError));
+            throw new Error('Failed to serialize request data. Please try again.');
+          }
+          
           console.log('🔄 [handleConnect] Sending request to google-oauth-init endpoint');
           
           const res = await fetch(`${supabaseUrl}/functions/v1/google-oauth-init`, {
@@ -401,40 +415,27 @@ export function GoogleSheetsConnect() {
               'apikey': supabaseAnon,
               'Authorization': `Bearer ${supabaseAnon}`, // no-verify-jwt function
             },
-            body: JSON.stringify({ 
-              monday_user_id: String(mondayUserId), 
-              force_consent: forceConsent 
-            }),
+            body: requestBody, // Use pre-stringified body
           });
           
           if (!res.ok) {
             const errBody = await res.text();
-            console.error('❌ [handleConnect] OAuth initialization HTTP error:', res.status, errBody);
+            console.error('❌ [handleConnect] OAuth init HTTP error:', res.status, errBody);
             throw new Error(`OAuth init failed (${res.status}): ${errBody}`);
           }
           
-          // Parse response text first to avoid JSON circular reference issues
           const responseText = await res.text();
           console.log('✅ [handleConnect] Received response from google-oauth-init');
           
           try {
-            // Safely parse the JSON response
             const data = JSON.parse(responseText);
-            authUrl = data?.url; // Assign to the hoisted variable
-            console.log('✅ [handleConnect] Successfully parsed OAuth URL from response');
+            authUrl = data?.url;
+            if (!authUrl) throw new Error('Backend did not return OAuth URL');
+            console.log('✅ [handleConnect] Successfully parsed OAuth URL');
           } catch (parseError) {
-            console.error('❌ [handleConnect] Failed to parse JSON response:', toSafeMsg(parseError));
-            console.log('Response text (first 100 chars):', responseText.substring(0, 100));
-            throw new Error(`Failed to parse OAuth URL response: ${toSafeMsg(parseError)}`);
+            console.error('❌ [handleConnect] Failed to parse response:', toSafeMsg(parseError));
+            throw new Error(`Failed to parse OAuth response: ${toSafeMsg(parseError)}`);
           }
-          
-          if (!authUrl) {
-            console.error('❌ [handleConnect] Backend did not return OAuth URL:', 
-              JSON.stringify(data || {}).substring(0, 100));
-            throw new Error('Backend did not return OAuth URL');
-          }
-          
-          console.log('✅ [handleConnect] Got OAuth URL from Edge Function');
         } catch (fetchErr) {
           console.error('❌ [handleConnect] Fetch error:', toSafeMsg(fetchErr));
           throw new Error(`Failed to get OAuth URL: ${toSafeMsg(fetchErr)}`);
