@@ -168,8 +168,8 @@ export function GoogleSheetsConnect() {
             throw new Error('Could not retrieve Monday.com user to link account.');
         }
         
-        console.log('🔄 [exchangeCodeForTokens] Calling google-oauth-exchange function');
-        const { data, error } = await supabase.functions.invoke('google-oauth-exchange', {
+        console.log('🔄 [exchangeCodeForTokens] Calling save-google-token function');
+        const { data, error } = await supabase.functions.invoke('save-google-token', {
             body: { code, monday_user_id: String(mondayUserId) }
         });
         

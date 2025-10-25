@@ -36,3 +36,6 @@ verify_jwt = false
 
 [functions.google-oauth-init]
 verify_jwt = false
+
+[functions.save-google-token]
+verify_jwt = false
