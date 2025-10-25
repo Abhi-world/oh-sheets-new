@@ -79,25 +79,44 @@ export function GoogleSheetsConnect() {
         setIsConnected(true);
         
         // Check if we can fetch spreadsheets to verify OAuth scopes
-        try {
-          console.log('🔍 [checkConnection] Checking if spreadsheets can be fetched...');
-          const { data: sheetsData, error: sheetsError } = await supabase.functions.invoke('gs-list-spreadsheets', {
-            body: { monday_user_id: String(mondayUserId) }
-          });
-          
-          if (sheetsError) {
-            console.error('❌ [checkConnection] Error fetching spreadsheets:', toSafeMsg(sheetsError));
-            throw sheetsError;
-          }
-          
-          // If no spreadsheets are returned, it might be an OAuth scope issue
-          if (!sheetsData?.spreadsheets || sheetsData.spreadsheets.length === 0) {
-            console.log('⚠️ No spreadsheets found - likely an OAuth scope issue');
-            setNoSpreadsheetsFound(true);
-          } else {
-            console.log('✅ Spreadsheets found:', sheetsData.spreadsheets.length);
-            setNoSpreadsheetsFound(false);
-          }
+      try {
+        console.log('🔍 [checkConnection] Getting access token for spreadsheets fetch...');
+        
+        // Call the function to get the access token for this user
+        const { data: tokenData, error: tokenError } = await supabase.functions.invoke('get-google-token', {
+          body: { monday_user_id: String(mondayUserId) }
+        });
+        
+        if (tokenError) {
+          console.error('❌ [checkConnection] Error getting access token:', toSafeMsg(tokenError));
+          throw tokenError;
+        }
+        
+        const accessToken = tokenData?.access_token;
+        if (!accessToken) {
+          throw new Error('No access token found - please reconnect');
+        }
+        
+        console.log('✅ [checkConnection] Got access token, now fetching spreadsheets...');
+        
+        // Now call gs-list-spreadsheets with the access_token
+        const { data: sheetsData, error: sheetsError } = await supabase.functions.invoke('gs-list-spreadsheets', {
+          body: { access_token: accessToken }  // Pass access_token, not monday_user_id
+        });
+        
+        if (sheetsError) {
+          console.error('❌ [checkConnection] Error fetching spreadsheets:', toSafeMsg(sheetsError));
+          throw sheetsError;
+        }
+        
+        // If no spreadsheets are returned, it might be an OAuth scope issue
+        if (!sheetsData?.spreadsheets || sheetsData.spreadsheets.length === 0) {
+          console.log('⚠️ No spreadsheets found - likely an OAuth scope issue');
+          setNoSpreadsheetsFound(true);
+        } else {
+          console.log('✅ Spreadsheets found:', sheetsData.spreadsheets.length);
+          setNoSpreadsheetsFound(false);
+        }
         } catch (sheetsErr) {
           const msg = toMsg(sheetsErr);
           console.error('❌ Sheets fetch error details:', msg);
