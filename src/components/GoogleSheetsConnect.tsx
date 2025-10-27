@@ -169,8 +169,36 @@ export function GoogleSheetsConnect() {
         }
         
         console.log('🔄 [exchangeCodeForTokens] Calling save-google-token function');
+        
+        // Exchange the authorization code for tokens
+        const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                code,
+                client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+                client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET,
+                redirect_uri: import.meta.env.VITE_GOOGLE_REDIRECT_URI,
+                grant_type: 'authorization_code'
+            })
+        });
+        
+        const tokenData = await tokenResponse.json();
+        
+        if (!tokenResponse.ok) {
+            console.error('Google token exchange failed:', tokenData);
+            throw new Error(`Failed to exchange code for tokens: ${tokenData.error_description || tokenData.error}`);
+        }
+        
+        // Now save the tokens to our backend
         const { data, error } = await supabase.functions.invoke('save-google-token', {
-            body: { code, monday_user_id: String(mondayUserId) }
+            body: { 
+                monday_user_id: String(mondayUserId),
+                access_token: tokenData.access_token,
+                refresh_token: tokenData.refresh_token,
+                expires_in: tokenData.expires_in,
+                scope: tokenData.scope
+            }
         });
         
         if (error) throw error;
