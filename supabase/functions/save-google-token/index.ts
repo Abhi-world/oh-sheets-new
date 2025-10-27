@@ -1,4 +1,3 @@
-// supabase/functions/save-google-token/index.ts
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
@@ -14,121 +13,60 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Parse request data
     const requestData = await req.json();
     console.log('[save-google-token] Request data:', JSON.stringify(requestData));
     
-    const { code, monday_user_id } = requestData;
-
-    if (!code || !monday_user_id) {
-      console.error('❌ Missing required parameters: code or monday_user_id');
-      throw new Error('Authorization code and Monday User ID are required.');
+    const { monday_user_id, access_token, refresh_token, expires_in, scope } = requestData;
+    
+    if (!monday_user_id || !access_token || !refresh_token) {
+      console.error('[save-google-token] Missing required parameters');
+      throw new Error('Missing required parameters: monday_user_id, access_token, and refresh_token are required');
     }
     
-    // Get Google OAuth credentials from environment variables
-    const clientId = Deno.env.get('GOOGLE_CLIENT_ID');
-    const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
+    // Create Supabase client
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
     
-    // Log environment variable status for debugging
-    console.log('[save-google-token] Environment check:', {
-      GOOGLE_CLIENT_ID_exists: !!clientId,
-      GOOGLE_CLIENT_SECRET_exists: !!clientSecret,
-      SUPABASE_URL_exists: !!Deno.env.get('SUPABASE_URL'),
-      SUPABASE_SERVICE_ROLE_KEY_exists: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    });
+    // Calculate expiry date
+    const expiryDate = new Date(Date.now() + (expires_in || 3600) * 1000).toISOString();
     
-    if (!clientId || !clientSecret) {
-      console.error('❌ Missing environment variables: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET');
-      throw new Error('Google API credentials not configured properly. Please check Supabase secrets deployment.');
-    }
+    // Prepare credentials to store
+    const credentials = {
+      access_token,
+      refresh_token,
+      expiry_date: expiryDate,
+      scope: scope || '',
+    };
     
-    // Use the correct redirect URI - MUST match exactly what's in google-oauth-init and Google Cloud Console
-    const redirectUri = 'https://funny-otter-9faa67.netlify.app/google-oauth';
-    
-    // Exchange the authorization code for tokens
-    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        code,
-        client_id: clientId,
-        client_secret: clientSecret,
-        redirect_uri: redirectUri,
-        grant_type: 'authorization_code',
-      }),
-    });
-    
-    if (!tokenResponse.ok) {
-      const errorData = await tokenResponse.text();
-      console.error('❌ Token exchange failed:', tokenResponse.status, errorData);
-      throw new Error(`Failed to exchange authorization code: ${tokenResponse.status} ${errorData}`);
-    }
-    
-    const tokenData = await tokenResponse.json();
-    console.log('[save-google-token] Token exchange successful');
-    
-    // Calculate token expiration time
-    const expiresIn = tokenData.expires_in || 3600; // Default to 1 hour if not specified
-    const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString();
-    
-    // Connect to Supabase
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
-    if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Missing Supabase environment variables');
-    }
-    
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    
-    // Store the tokens in the database
-    const { data, error } = await supabase
-      .from('google_tokens')
+    // Store the credentials in the 'profiles' table using upsert
+    const { error: dbError } = await supabaseAdmin
+      .from('profiles')
       .upsert({
-        monday_user_id,
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token,
-        expires_at: expiresAt,
-        created_at: new Date().toISOString(),
+        monday_user_id: String(monday_user_id),
+        google_sheets_credentials: credentials,
         updated_at: new Date().toISOString()
       }, {
         onConflict: 'monday_user_id'
       });
     
-    if (error) {
-      console.error('❌ Error storing tokens:', error);
-      throw new Error(`Failed to store Google tokens: ${error.message}`);
+    if (dbError) {
+      console.error('[save-google-token] Database error:', dbError);
+      throw new Error(`Failed to save credentials: ${dbError.message}`);
     }
     
-    console.log('[save-google-token] Tokens stored successfully for user:', monday_user_id);
-    
-    // Return success response
-    return new Response(
-      JSON.stringify({ 
-        success: true,
-        message: 'Google authorization successful',
-        expires_at: expiresAt
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
-      }
-    );
+    console.log(`[save-google-token] ✅ Credentials stored for Monday user: ${monday_user_id}`);
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    });
     
   } catch (error) {
-    console.error('[save-google-token] Error:', error);
-    
-    return new Response(
-      JSON.stringify({ 
-        success: false,
-        error: error.message 
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400
-      }
-    );
+    console.error('[save-google-token] Error:', error.message);
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 400,
+    });
   }
 });
