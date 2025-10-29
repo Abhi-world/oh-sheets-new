@@ -32,6 +32,7 @@ Deno.serve(async (req) => {
     // Exchange the authorization code for tokens
     console.log('[save-google-token] Exchanging authorization code for tokens');
     
+    // Using the exact format Google expects for token exchange
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 
@@ -43,6 +44,7 @@ Deno.serve(async (req) => {
         client_secret: Deno.env.get('GOOGLE_CLIENT_SECRET')!,
         redirect_uri: Deno.env.get('GOOGLE_REDIRECT_URI')!,
         grant_type: 'authorization_code'
+        // Removed scope parameter as it violates Google's OAuth 2.0 specification
       }).toString()
     });
     
