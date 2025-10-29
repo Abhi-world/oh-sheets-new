@@ -32,6 +32,9 @@ Deno.serve(async (req) => {
     // Exchange the authorization code for tokens
     console.log('[save-google-token] Exchanging authorization code for tokens');
     
+    // 🔥 FIX: Hardcode redirect_uri to match google-oauth-init
+    const redirectUri = 'https://funny-otter-9faa67.netlify.app/google-oauth';
+    
     // Using the exact format Google expects for token exchange
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -42,7 +45,7 @@ Deno.serve(async (req) => {
         code,
         client_id: Deno.env.get('GOOGLE_CLIENT_ID')!,
         client_secret: Deno.env.get('GOOGLE_CLIENT_SECRET')!,
-        redirect_uri: Deno.env.get('GOOGLE_REDIRECT_URI')!,
+        redirect_uri: redirectUri, // Use hardcoded value instead of env variable
         grant_type: 'authorization_code'
         // Removed scope parameter as it violates Google's OAuth 2.0 specification
       }).toString()
