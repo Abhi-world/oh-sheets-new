@@ -16,11 +16,11 @@ Deno.serve(async (req) => {
     const requestData = await req.json();
     console.log('[save-google-token] Request data:', JSON.stringify(requestData));
     
-    const { monday_user_id, access_token, refresh_token, expires_in, scope } = requestData;
+    const { monday_user_id, code } = requestData;
     
-    if (!monday_user_id || !access_token || !refresh_token) {
+    if (!monday_user_id || !code) {
       console.error('[save-google-token] Missing required parameters');
-      throw new Error('Missing required parameters: monday_user_id, access_token, and refresh_token are required');
+      throw new Error('Missing required parameters: monday_user_id and code are required');
     }
     
     // Create Supabase client
@@ -28,6 +28,39 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
+    
+    // Exchange the authorization code for tokens
+    console.log('[save-google-token] Exchanging authorization code for tokens');
+    
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: new URLSearchParams({
+        code,
+        client_id: Deno.env.get('GOOGLE_CLIENT_ID')!,
+        client_secret: Deno.env.get('GOOGLE_CLIENT_SECRET')!,
+        redirect_uri: Deno.env.get('GOOGLE_REDIRECT_URI')!,
+        grant_type: 'authorization_code',
+        scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly'
+      }).toString()
+    });
+    
+    const tokenData = await tokenResponse.json();
+    
+    if (!tokenResponse.ok) {
+      console.error('[save-google-token] Google token exchange failed:', tokenData);
+      throw new Error(`Failed to exchange code for tokens: ${tokenData.error_description || tokenData.error}`);
+    }
+    
+    const { access_token, refresh_token, expires_in, scope } = tokenData;
+    
+    if (!access_token || !refresh_token) {
+      console.error('[save-google-token] Missing tokens in Google response');
+      throw new Error('Google did not return the required tokens');
+    }
     
     // Calculate expiry date
     const expiryDate = new Date(Date.now() + (expires_in || 3600) * 1000).toISOString();
