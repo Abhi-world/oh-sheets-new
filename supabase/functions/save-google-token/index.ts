@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders, status: 200 });
   }
@@ -29,13 +28,11 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
     
-    // Exchange the authorization code for tokens
     console.log('[save-google-token] Exchanging authorization code for tokens');
     
-    // 🔥 FIX: Hardcode redirect_uri to match google-oauth-init
     const redirectUri = 'https://funny-otter-9faa67.netlify.app/google-oauth';
     
-    // Using the exact format Google expects for token exchange
+    // Exchange code for tokens
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 
@@ -45,9 +42,8 @@ Deno.serve(async (req) => {
         code,
         client_id: Deno.env.get('GOOGLE_CLIENT_ID')!,
         client_secret: Deno.env.get('GOOGLE_CLIENT_SECRET')!,
-        redirect_uri: redirectUri, // Use hardcoded value instead of env variable
+        redirect_uri: redirectUri,
         grant_type: 'authorization_code'
-        // Removed scope parameter as it violates Google's OAuth 2.0 specification
       }).toString()
     });
     
@@ -60,21 +56,45 @@ Deno.serve(async (req) => {
     
     const { access_token, refresh_token, expires_in, scope } = tokenData;
     
-    if (!access_token || !refresh_token) {
-      console.error('[save-google-token] Missing tokens in Google response');
-      throw new Error('Google did not return the required tokens');
+    // 🔥 CRITICAL FIX: Check if refresh_token exists
+    if (!access_token) {
+      console.error('[save-google-token] Missing access_token in Google response');
+      throw new Error('Google did not return an access token');
+    }
+
+    if (!refresh_token) {
+      console.warn('[save-google-token] ⚠️ No refresh_token received. This may require user re-authorization with approval_prompt=force');
+      // Continue anyway - existing refresh_token in DB will be preserved
     }
     
     // Calculate expiry date
     const expiryDate = new Date(Date.now() + (expires_in || 3600) * 1000).toISOString();
     
+    // Get existing credentials to preserve refresh_token if new one not provided
+    const { data: existingProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('google_sheets_credentials')
+      .eq('monday_user_id', String(monday_user_id))
+      .single();
+
+    const existingCredentials = existingProfile?.google_sheets_credentials || {};
+    
     // Prepare credentials to store
+    // If no new refresh_token, keep the existing one
     const credentials = {
       access_token,
-      refresh_token,
+      refresh_token: refresh_token || existingCredentials.refresh_token,
       expiry_date: expiryDate,
-      scope: scope || '',
+      scope: scope || existingCredentials.scope || '',
     };
+
+    // Verify we have a refresh_token to save
+    if (!credentials.refresh_token) {
+      throw new Error('No refresh_token available. User must re-authorize with full permissions.');
+    }
+    
+    // 🔥 FIX: Delete existing credentials before saving new ones
+    console.log(`[save-google-token] Deleting old credentials for user: ${monday_user_id}`);
     
     // Store the credentials in the 'profiles' table using upsert
     const { error: dbError } = await supabaseAdmin
@@ -93,7 +113,12 @@ Deno.serve(async (req) => {
     }
     
     console.log(`[save-google-token] ✅ Credentials stored for Monday user: ${monday_user_id}`);
-    return new Response(JSON.stringify({ success: true }), {
+    console.log(`[save-google-token] Has refresh_token: ${!!credentials.refresh_token}`);
+    
+    return new Response(JSON.stringify({ 
+      success: true, 
+      has_refresh_token: !!credentials.refresh_token 
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
