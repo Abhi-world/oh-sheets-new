@@ -75,7 +75,15 @@ serve(async (req) => {
       });
       
       if (!refreshResponse.ok) {
-        throw new Error('Failed to refresh access token');
+        const errorData = await refreshResponse.json().catch(() => ({}));
+        console.error('Token refresh failed:', refreshResponse.status, errorData);
+        
+        // If refresh token is invalid, we need to prompt for re-authentication
+        if (errorData.error === 'invalid_grant') {
+          throw new Error('Google authorization expired. Please reconnect your Google account.');
+        }
+        
+        throw new Error(`Failed to refresh access token: ${errorData.error || refreshResponse.statusText}`);
       }
       
       const refreshData = await refreshResponse.json();
@@ -120,10 +128,23 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in get-google-token function:', error);
     
+    // Determine appropriate status code based on error type
+    let status = 400;
+    let message = error.message;
+    
+    // Customize user-friendly error messages
+    if (message.includes('No Google token found')) {
+      message = 'Google Sheets connection not found. Please connect your Google account.';
+    } else if (message.includes('authorization expired')) {
+      message = 'Your Google authorization has expired. Please reconnect your Google account.';
+    } else if (message.includes('refresh access token')) {
+      message = 'Unable to refresh your Google access. Please reconnect your Google account.';
+    }
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: message }),
       { 
-        status: 400, 
+        status, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     );
