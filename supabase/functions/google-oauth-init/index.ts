@@ -61,13 +61,8 @@ Deno.serve(async (req) => {
     // Modern OAuth 2.0 best practices - use prompt instead of approval_prompt
     // Remove approval_prompt as it's deprecated
     
-    // Force consent if requested (important for re-consent with new scopes)
-    if (force_consent) {
-      authUrl.searchParams.append('prompt', 'consent');
-    } else {
-      // Even on normal connect, request consent if incremental auth might miss new scopes
-      authUrl.searchParams.append('prompt', 'select_account consent');
-    }
+    // 🔥 CRITICAL FIX: Always force consent to ensure we get a new refresh_token
+    authUrl.searchParams.append('prompt', 'consent');
     
     // Add state parameter with Monday user ID
     authUrl.searchParams.append('state', monday_user_id);
