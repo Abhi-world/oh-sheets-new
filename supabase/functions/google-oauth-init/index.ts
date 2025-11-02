@@ -45,9 +45,7 @@ Deno.serve(async (req) => {
     
     // Define the required scopes for Google Sheets and Drive access
     const scopes = [
-      'https://www.googleapis.com/auth/userinfo.profile',
-      'https://www.googleapis.com/auth/userinfo.email',
-      'https://www.googleapis.com/auth/drive',                 // REQUIRED: Full access to list all user's spreadsheets
+      'https://www.googleapis.com/auth/drive.readonly',        // REQUIRED: Read-only access to list user's spreadsheets
       'https://www.googleapis.com/auth/spreadsheets'           // REQUIRED: Allow reading/writing for sheets
     ];
     

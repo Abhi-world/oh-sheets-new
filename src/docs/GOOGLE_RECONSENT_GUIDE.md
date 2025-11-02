@@ -22,7 +22,7 @@ To benefit from these improvements, you need to re-consent to the Google Sheets 
    - Follow the Google authentication flow
    - Ensure you approve both required scopes:
      - `https://www.googleapis.com/auth/spreadsheets` (for reading/writing to spreadsheets)
-     - `https://www.googleapis.com/auth/drive.metadata.readonly` (for listing spreadsheets, including shared ones)
+     - `https://www.googleapis.com/auth/drive.readonly` (for listing spreadsheets, including shared ones)
 
 3. **Verify Connection**
    - After reconnecting, open any dropdown that lists spreadsheets

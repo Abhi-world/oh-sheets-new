@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { safeStringify } from '../lib/safeJson';
 
 export function GoogleOAuthCallback() {
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState('Processing...');
 
   useEffect(() => {
     console.log('GoogleOAuth: Callback initiated');
@@ -31,53 +30,6 @@ export function GoogleOAuthCallback() {
 
     console.log('GoogleOAuth: Created result object (sanitized)');
     
-    // CRITICAL FIX: Call save-google-token function to exchange code for tokens
-    const exchangeCodeForToken = async () => {
-      if (code && state) {
-        try {
-          setStatus('Exchanging authorization code for tokens...');
-          
-          // Get Supabase URL and anon key from environment
-          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-          const supabaseAnon = import.meta.env.VITE_SUPABASE_ANON_KEY;
-          
-          if (!supabaseUrl || !supabaseAnon) {
-            throw new Error('Missing Supabase configuration');
-          }
-          
-          // Call the save-google-token function with the code and monday_user_id (from state)
-          const response = await fetch(`${supabaseUrl}/functions/v1/save-google-token`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'apikey': supabaseAnon,
-              'Authorization': `Bearer ${supabaseAnon}`,
-            },
-            body: JSON.stringify({
-              code,
-              monday_user_id: state
-            }),
-          });
-          
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error('GoogleOAuth: ❌ Token exchange failed:', response.status, errorText);
-            setStatus('Authentication failed. Please try again.');
-            result.error = `Token exchange failed: ${response.status}`;
-          } else {
-            const data = await response.json();
-            console.log('GoogleOAuth: ✅ Token exchange successful');
-            setStatus('Authentication successful!');
-            result.success = true;
-          }
-        } catch (err) {
-          console.error('GoogleOAuth: ❌ Token exchange error:', err.message);
-          setStatus('Authentication error. Please try again.');
-          result.error = err.message;
-        }
-      }
-    };
-    
     // First try: postMessage to parent window
     let postMessageSuccess = false;
     if (window.opener) {
@@ -102,34 +54,21 @@ export function GoogleOAuthCallback() {
     } catch (err) {
       console.error('GoogleOAuth: ❌ localStorage write failed:', err.message);
     }
+
+    // Close popup after delay (longer if postMessage failed)
+    const closeDelay = postMessageSuccess ? 800 : 1500;
+    console.log(`GoogleOAuth: Window will close in ${closeDelay}ms`);
     
-    // Execute the token exchange
-    if (code && state) {
-      exchangeCodeForToken().then(() => {
-        // Close popup after delay (longer if postMessage failed)
-        const closeDelay = postMessageSuccess ? 1500 : 2500;
-        console.log(`GoogleOAuth: Window will close in ${closeDelay}ms`);
-        
-        setTimeout(() => {
-          console.log('GoogleOAuth: Closing window now');
-          window.close();
-        }, closeDelay);
-      });
-    } else {
-      // Close popup after delay if no code/state (error case)
-      const closeDelay = postMessageSuccess ? 800 : 1500;
-      console.log(`GoogleOAuth: Window will close in ${closeDelay}ms`);
-      
-      setTimeout(() => {
-        console.log('GoogleOAuth: Closing window now');
-        window.close();
-      }, closeDelay);
-    }
+    setTimeout(() => {
+      console.log('GoogleOAuth: Closing window now');
+      window.close();
+    }, closeDelay);
+
   }, [searchParams]);
 
   return (
     <div style={{ padding: '20px', textAlign: 'center' }}>
-      <h2>{status}</h2>
+      <h2>Processing authentication...</h2>
       <p>This window will close automatically.</p>
     </div>
   );
