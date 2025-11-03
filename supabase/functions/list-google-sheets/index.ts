@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // If monday_user_id not provided (common in Field Types), fallback to the most recently connected profile
+  // If monday_user_id not provided (common in Field Types), fallback to the most recently connected profile
     if (!monday_user_id) {
       console.warn('⚠️ monday_user_id missing. Falling back to the most recently connected profile...');
       const { data: fallbackProfiles, error: fallbackErr } = await supabase
@@ -120,48 +120,41 @@ Deno.serve(async (req) => {
       throw new Error('spreadsheet_id is required');
     }
 
-    // Fetch Google Sheets credentials for this Monday user
-    console.log('🔍 Fetching credentials from profiles table...');
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('google_sheets_credentials')
+    // Fetch Google Sheets credentials for this Monday user from google_tokens (unified source)
+    console.log('🔍 Fetching credentials from google_tokens table...');
+    const { data: tokenRow, error: tokenErr } = await supabase
+      .from('google_tokens')
+      .select('access_token, refresh_token, expires_at')
       .eq('monday_user_id', String(monday_user_id))
-      .single();
+      .maybeSingle();
 
-    if (profileError || !profile?.google_sheets_credentials) {
-      console.error('❌ No credentials found:', profileError);
+    if (tokenErr || !tokenRow) {
+      console.error('❌ No credentials found in google_tokens:', tokenErr);
       throw new Error('Google Sheets not connected. Please connect your Google account first.');
     }
 
-    const credentials = profile.google_sheets_credentials as GoogleSheetsCredentials;
-    console.log('✅ Credentials found');
-
     // Get or refresh access token
-    let accessToken = credentials.access_token;
-    
-    // Check if token might be expired
-    if (credentials.expiry_date) {
-      const expiryDate = new Date(credentials.expiry_date);
-      const now = new Date();
-      if (expiryDate <= now) {
-        console.log('🔄 Token expired, refreshing...');
-        const clientId = Deno.env.get('GOOGLE_CLIENT_ID')!;
-        const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET')!;
-        accessToken = await refreshGoogleToken(credentials.refresh_token, clientId, clientSecret);
-        
-        // Update the credentials with new access token
-        const newExpiryDate = new Date(Date.now() + 3600 * 1000); // 1 hour from now
-        await supabase
-          .from('profiles')
-          .update({
-            google_sheets_credentials: {
-              ...credentials,
-              access_token: accessToken,
-              expiry_date: newExpiryDate.toISOString(),
-            },
-          })
-          .eq('monday_user_id', String(monday_user_id));
+    let accessToken = tokenRow.access_token as string;
+    const refreshToken: string | null = tokenRow.refresh_token;
+    const expiresAt: number | null = tokenRow.expires_at; // unix seconds
+
+    // Refresh when expiring
+    const nowUnix = Math.floor(Date.now() / 1000);
+    if (expiresAt && expiresAt <= nowUnix + 300) {
+      console.log('🔄 Token expired/expiring, refreshing...');
+      if (!refreshToken) {
+        throw new Error('Token expired and no refresh token available. Please reconnect Google.');
       }
+      const clientId = Deno.env.get('GOOGLE_CLIENT_ID')!;
+      const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET')!;
+      accessToken = await refreshGoogleToken(refreshToken, clientId, clientSecret);
+
+      // Persist new token expiry
+      const newExpiresAt = nowUnix + 3600;
+      await supabase
+        .from('google_tokens')
+        .update({ access_token: accessToken, expires_at: newExpiresAt })
+        .eq('monday_user_id', String(monday_user_id));
     }
 
     // Fetch sheets from Google Sheets API
@@ -185,7 +178,10 @@ Deno.serve(async (req) => {
         console.log('🔄 Token invalid, refreshing...');
         const clientId = Deno.env.get('GOOGLE_CLIENT_ID')!;
         const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET')!;
-        accessToken = await refreshGoogleToken(credentials.refresh_token, clientId, clientSecret);
+        if (!refreshToken) {
+          throw new Error('No refresh token available to renew Google access.');
+        }
+        accessToken = await refreshGoogleToken(refreshToken, clientId, clientSecret);
         
         // Try again with fresh token
         const retryResponse = await fetch(
